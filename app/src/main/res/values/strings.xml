@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">Tumar SuperApp</string>
+    <string name="title_home">Главная</string>
+    <string name="title_promotions">Акции</string>
+    <string name="title_profile">Профиль</string>
+    <string name="title_card">Карта</string> <string name="action_top_up">Пополнить</string>
+    <string name="action_history">История</string>
+    <string name="action_transfer">Перевод</string>
+    <string name="action_payments">Платежи</string>
+
+    <string name="tumar_wallet_title">Tumar кошелёк</string>
+    <string name="placeholder_user_id">+7 XXX XXX XX XX</string>
+    <string name="placeholder_balance">0.00 ₸</string>
+
+    <string name="no_card_message">У вас еще нет карты Tumar Wallet</string>
+    <string name="create_card_button">Создать виртуальную карту</string>
+    <string name="card_expiry_label">Срок до</string>
+    <string name="card_cvv_label">CVV</string>
+    <string name="card_created_toast">Виртуальная карта Tumar Wallet успешно создана!</string>
+    <string name="card_security_warning">Внимание: Отображение CVV небезопасно.</string>
+
+    <string name="card_management_title">Управление картой</string> <string name="reissue_card_button">Перевыпустить карту</string>
+    <string name="delete_card_button">Удалить карту</string>
+    <string name="block_card_button">Заблокировать карту</string>
+    <string name="unblock_card_button">Разблокировать карту</string>
+    <string name="card_blocked_overlay_text">КАРТА ЗАБЛОКИРОВАНА</string>
+    <string name="card_reissued_toast">Карта успешно перевыпущена!</string>
+    <string name="card_deleted_toast">Карта удалена.</string>
+    <string name="card_blocked_toast">Карта заблокирована.</string>
+    <string name="card_unblocked_toast">Карта разблокирована.</string>
+    <string name="delete_card_confirmation_title">Удаление карты</string>
+    <string name="delete_card_confirmation_message">Вы уверены, что хотите удалить эту карту? Это действие необратимо.</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+    <string name="reissue_card_subtitle">Новый номер, срок, CVV</string>
+    <string name="block_card_subtitle">Приостановить операции по карте</string>
+    <string name="unblock_card_subtitle">Возобновить операции по карте</string>
+    <string name="delete_card_subtitle">Это действие необратимо</string>
+
+    <string name="rename_card_button">Переименовать карту</string>
+    <string name="rename_card_subtitle">Задайте имя для удобства</string>
+    <string name="rename_card_dialog_title">Переименовать карту</string>
+    <string name="rename_card_dialog_hint">Название карты</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="card_renamed_toast">Карта переименована: %s</string>
+    <string name="default_card_name">Моя карта</string>
+
+    <string name="default_card_name_value">Tumar карта</string>
+    <string name="error_card_name_empty">Название карты не может быть пустым</string>
+
+    <string name="pin_instruction_set_new">Придумайте ПИН-код (4 цифры)</string>
+    <string name="pin_instruction_set_new_change_mode">Введите новый ПИН-код (4 цифры)</string> <string name="pin_instruction_confirm">Повторите ПИН-код</string>
+    <string name="pin_button_next">Далее</string>
+    <string name="pin_button_confirm">Подтвердить</string>
+    <string name="pin_error_mismatch">ПИН-коды не совпадают</string>
+    <string name="pin_error_enter_4_digits">Введите 4 цифры</string>
+    <string name="pin_error_save_failed">Ошибка сохранения ПИН-кода</string>
+    <string name="pin_save_success_toast">ПИН-код успешно установлен!</string>
+
+    <string name="pin_required_toast">Необходимо установить ПИН-код</string>
+
+    <string name="profile_section_security">Безопасность</string>
+    <string name="profile_action_change_pin">Сменить код доступа</string>
+    <string name="pin_change_success_toast">ПИН-код успешно изменен</string>
+    
+    <string name="logo_description">Логотип</string>
+    <string name="banner_content_description">Рекламный баннер</string>
+</resources>
+
+

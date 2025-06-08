@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="32dp"
+    tools:context=".PinSetupActivity">
+
+    <TextView
+        android:id="@+id/tv_pin_instruction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:textSize="18sp"
+        android:text="Придумайте ПИН-код (4 цифры)"
+        android:gravity="center"/>
+
+    <EditText
+        android:id="@+id/et_pin_entry_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:maxLength="4"
+        android:inputType="numberPassword"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:hint="----"
+        android:letterSpacing="0.3"/> <EditText
+    android:id="@+id/et_pin_entry_2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:maxLength="4"
+    android:inputType="numberPassword"
+    android:gravity="center"
+    android:textSize="24sp"
+    android:hint="----"
+    android:letterSpacing="0.3"
+    android:visibility="gone" /> <Button
+    android:id="@+id/btn_pin_confirm"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="32dp"
+    android:text="Далее"/>
+
+    <TextView
+        android:id="@+id/tv_pin_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/holo_red_dark"
+        android:visibility="gone"
+        tools:text="ПИН-коды не совпадают"
+        tools:visibility="visible"/>
+
+
+</LinearLayout>

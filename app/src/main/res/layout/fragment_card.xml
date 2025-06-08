@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".CardFragment">
+
+    <LinearLayout
+        android:id="@+id/layout_no_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:visibility="gone"> <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_card_message"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/button_create_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_card_button" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_card_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"> <androidx.cardview.widget.CardView
+        android:id="@+id/card_view_clickable_area" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true" android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground" app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/colorPrimary"> <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/text_card_custom_name_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="16sp" android:visibility="gone" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"  tools:text="Карта для покупок"
+            tools:visibility="visible"/>
+
+        <TextView
+            android:id="@+id/text_card_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" tools:text="7722 33XX XXXX XXXX"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:fontFamily="monospace"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_card_custom_name_main" /> <TextView
+        android:id="@+id/text_expiry_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/card_expiry_label"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_card_number"/>
+        <TextView
+            android:id="@+id/text_card_expiry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="12/30"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:fontFamily="monospace"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_expiry_label"/>
+
+        <TextView
+            android:id="@+id/text_cvv_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/card_cvv_label"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/text_expiry_label"/>
+        <TextView
+            android:id="@+id/text_card_cvv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="***"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:fontFamily="monospace"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_cvv_label"/>
+
+        <TextView
+            android:id="@+id/text_card_blocked_overlay_main"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#AA000000"
+            android:gravity="center"
+            android:text="@string/card_blocked_overlay_text"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:visibility="gone" app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/card_security_warning"
+            android:textSize="12sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:layout_gravity="center_horizontal"/>
+
+    </LinearLayout>
+
+</FrameLayout>
