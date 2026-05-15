@@ -1,7 +1,6 @@
 package com.digitalcompany.tumarsuperapp.network;
 
 import android.content.Context;
-import com.digitalcompany.tumarsuperapp.BuildConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -24,7 +23,7 @@ public class ApiClient {
             // Создаем OkHttpClient один раз (ленивая инициализация)
             if (okHttpClient == null) {
                 HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                loggingInterceptor.setLevel(BuildConfig.DEBUG
+                loggingInterceptor.setLevel(android.util.Log.isLoggable("ApiClient", android.util.Log.DEBUG)
                         ? HttpLoggingInterceptor.Level.BASIC
                         : HttpLoggingInterceptor.Level.NONE);
 
