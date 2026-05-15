@@ -85,6 +85,10 @@ public class HomeFragment extends Fragment implements MenuProvider {
         tvPhoneNumber.setText("+7 ...");
         tvBalance.setText("---.-- ???");
 
+        // Карточка Travel
+        view.findViewById(R.id.card_travel).setOnClickListener(v ->
+                navigateToFragment(new TravelFragment(), "travel"));
+
         // Устанавливаем слушатели кликов
         setupActionButtons();
 

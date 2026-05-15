@@ -10,4 +10,12 @@
     <color name="grey_medium">#BDBDBD</color>
     <color name="red_error">#FF0000</color>
     <color name="green_success">#008000</color>
+
+    <!-- Travel section -->
+    <color name="travel_dark">#1A1A1A</color>
+    <color name="travel_surface">#2C2C2E</color>
+    <color name="travel_accent_red">#E53935</color>
+    <color name="travel_accent_blue">#1E88E5</color>
+    <color name="travel_gold">#FFC107</color>
+    <color name="travel_text_secondary">#9E9E9E</color>
 </resources>
