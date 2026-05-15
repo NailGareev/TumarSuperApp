@@ -12,6 +12,8 @@ import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
 import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
 import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
+import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
+import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -65,10 +67,15 @@ public interface ApiService {
 
     /**
      * Пополнение баланса текущего пользователя.
-     * Требует валидного JWT токена.
      */
     @POST("api/topup")
     Call<TopUpResponse> topUp(@Body TopUpRequest topUpRequest);
+
+    /**
+     * Оплата услуг (мобильная связь, ЖКХ, интернет и др.).
+     */
+    @POST("api/pay")
+    Call<PayResponse> pay(@Body PayRequest payRequest);
 
     // --- КОНЕЦ: Добавленные методы ---
 

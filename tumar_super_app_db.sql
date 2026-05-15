@@ -45,7 +45,7 @@ CREATE TABLE `balances` (
 CREATE TABLE `transactions` (
   `id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
-  `recipient_id` int(11) NOT NULL,
+  `recipient_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'KZT',
   `transaction_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRANSFER',
@@ -141,3 +141,9 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Migration: allow NULL recipient_id for PAYMENT-type transactions
+-- Run this on existing databases:
+-- ALTER TABLE `transactions` DROP FOREIGN KEY `fk_recipient`;
+-- ALTER TABLE `transactions` MODIFY `recipient_id` int(11) DEFAULT NULL;
+-- ALTER TABLE `transactions` ADD CONSTRAINT `fk_recipient` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);

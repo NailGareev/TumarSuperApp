@@ -281,15 +281,16 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
         connection = await pool.getConnection();
         const sql = `
             SELECT
-                t.id, t.sender_id, t.recipient_id, t.amount, t.currency, t.transaction_type, t.timestamp,
-                sender.first_name AS sender_first_name,
-                sender.last_name AS sender_last_name,
-                sender.phone AS sender_phone,
+                t.id, t.sender_id, t.recipient_id, t.amount, t.currency,
+                t.transaction_type, t.description, t.timestamp,
+                sender.first_name    AS sender_first_name,
+                sender.last_name     AS sender_last_name,
+                sender.phone         AS sender_phone,
                 recipient.first_name AS recipient_first_name,
-                recipient.last_name AS recipient_last_name,
-                recipient.phone AS recipient_phone
+                recipient.last_name  AS recipient_last_name,
+                recipient.phone      AS recipient_phone
             FROM transactions t
-            LEFT JOIN users sender ON t.sender_id = sender.id
+            LEFT JOIN users sender    ON t.sender_id    = sender.id
             LEFT JOIN users recipient ON t.recipient_id = recipient.id
             WHERE t.sender_id = ? OR t.recipient_id = ?
             ORDER BY t.timestamp DESC;
@@ -308,6 +309,63 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
 });
 // === КОНЕЦ: Роут для получения истории транзакций ===
 
+
+// === POST /api/pay - Оплата услуг (мобильная связь, ЖКХ, интернет и др.) ===
+app.post('/api/pay', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { service, accountNumber, amount } = req.body;
+
+    if (!service || !accountNumber) {
+        return res.status(400).json({ success: false, message: 'Service and account number are required' });
+    }
+
+    let parsedAmount;
+    try {
+        parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount < 1 || parsedAmount > 500000) throw new Error();
+    } catch (e) {
+        return res.status(400).json({ success: false, message: 'Invalid amount (1–500,000 KZT)' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [balances] = await connection.execute(
+            'SELECT balance, currency FROM balances WHERE user_id = ? FOR UPDATE',
+            [userId]
+        );
+
+        if (balances.length === 0 || balances[0].balance < parsedAmount) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'Insufficient funds' });
+        }
+
+        await connection.execute(
+            'UPDATE balances SET balance = balance - ?, updated_at = NOW() WHERE user_id = ?',
+            [parsedAmount, userId]
+        );
+
+        const description = `${service}: ${accountNumber}`;
+        await connection.execute(
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
+            [userId, parsedAmount, balances[0].currency || 'KZT', 'PAYMENT', description]
+        );
+
+        await connection.commit();
+
+        const [rows] = await connection.execute('SELECT balance FROM balances WHERE user_id = ?', [userId]);
+        res.status(200).json({ success: true, message: 'Payment successful', newBalance: rows[0].balance });
+
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error(`Payment error for user ID ${userId}:`, error);
+        res.status(500).json({ success: false, message: 'Internal server error during payment' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
 
 // === POST /api/topup - Пополнение баланса ===
 app.post('/api/topup', authenticateToken, async (req, res) => {
