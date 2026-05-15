@@ -22,9 +22,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.app.AlertDialog;
+import android.text.InputType;
+import android.widget.EditText;
+
 // Импорты для сети и моделей
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 
 // Импорты для форматирования
@@ -110,32 +116,85 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     // Метод для установки слушателей на кнопки действий
     private void setupActionButtons() {
-        buttonTopUp.setOnClickListener(v -> showToast("Нажата кнопка Пополнить"));
+        buttonTopUp.setOnClickListener(v -> showTopUpDialog());
 
-        // --- ИЗМЕНЕНИЕ: Навигация на HistoryFragment ---
         buttonHistory.setOnClickListener(v -> {
-            Log.d(TAG, "Кнопка История нажата, переход на HistoryFragment");
             if (getActivity() != null) {
-                // Создаем экземпляр HistoryFragment (код для него был предоставлен ранее)
-                HistoryFragment historyFragment = new HistoryFragment();
-                navigateToFragment(historyFragment, "history"); // Используем вспомогательный метод
-            } else {
-                Log.e(TAG, "Activity is null when History button clicked.");
+                navigateToFragment(new HistoryFragment(), "history");
             }
         });
-        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
         buttonTransfer.setOnClickListener(v -> {
-            Log.d(TAG, "Кнопка Перевод нажата");
             if (getActivity() != null) {
-                TransferFragment transferFragment = new TransferFragment();
-                navigateToFragment(transferFragment, "transfer");
-            } else {
-                Log.e(TAG, "Activity is null when Transfer button clicked.");
+                navigateToFragment(new TransferFragment(), "transfer");
             }
         });
 
-        buttonPayments.setOnClickListener(v -> showToast("Нажата кнопка Платежи"));
+        buttonPayments.setOnClickListener(v -> showPaymentsComingSoonDialog());
+    }
+
+    private void showTopUpDialog() {
+        if (getContext() == null) return;
+        EditText etAmount = new EditText(requireContext());
+        etAmount.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        etAmount.setHint("Сумма (KZT)");
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        etAmount.setPadding(padding, padding, padding, padding);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Пополнение баланса")
+                .setView(etAmount)
+                .setPositiveButton("Пополнить", (dialog, which) -> {
+                    String amountStr = etAmount.getText().toString().trim();
+                    if (amountStr.isEmpty()) {
+                        showToast("Введите сумму");
+                        return;
+                    }
+                    try {
+                        BigDecimal amount = new BigDecimal(amountStr);
+                        if (amount.compareTo(BigDecimal.ONE) < 0 || amount.compareTo(new BigDecimal("1000000")) > 0) {
+                            showToast("Сумма должна быть от 1 до 1 000 000 KZT");
+                            return;
+                        }
+                        performTopUp(amount);
+                    } catch (NumberFormatException e) {
+                        showToast("Некорректная сумма");
+                    }
+                })
+                .setNegativeButton("Отмена", null)
+                .show();
+    }
+
+    private void performTopUp(BigDecimal amount) {
+        if (apiService == null || getContext() == null) return;
+        apiService.topUp(new TopUpRequest(amount)).enqueue(new Callback<TopUpResponse>() {
+            @Override
+            public void onResponse(Call<TopUpResponse> call, Response<TopUpResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    showToast("Баланс пополнен на " + amount.toPlainString() + " KZT");
+                    loadUserProfileData();
+                } else {
+                    String msg = response.body() != null ? response.body().getMessage() : "Ошибка сервера";
+                    showToast("Ошибка пополнения: " + msg);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TopUpResponse> call, Throwable t) {
+                if (!isAdded() || getContext() == null) return;
+                showToast("Ошибка сети: " + t.getMessage());
+            }
+        });
+    }
+
+    private void showPaymentsComingSoonDialog() {
+        if (getContext() == null) return;
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Платежи")
+                .setMessage("Раздел «Платежи» находится в разработке.\nСкоро здесь появится оплата услуг ЖКХ, мобильной связи и других сервисов.")
+                .setPositiveButton("Понятно", null)
+                .show();
     }
 
     // Вспомогательный метод для навигации

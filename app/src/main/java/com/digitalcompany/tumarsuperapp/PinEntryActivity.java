@@ -118,17 +118,22 @@ public class PinEntryActivity extends AppCompatActivity {
         String storedHash = pinPrefs.getString(KEY_PIN_HASH, null);
 
         if (storedHash == null) {
-            Log.e(TAG, "Ошибка: PIN помечен как установленный, но хэш отсутствует!");
+            Log.e(TAG, "Ошибка: PIN помечен как установленным, но хэш отсутствует!");
             showError("Ошибка входа. Попробуйте переустановить приложение.");
-            // Можно добавить перенаправление на LoginActivity или PinSetupActivity
-            // navigateTo(LoginActivity.class);
             return;
         }
 
-        // Предполагается, что SecurityUtils.verifyPin существует и работает корректно
         if (SecurityUtils.verifyPin(enteredPin, storedHash)) {
+            // Migrate legacy SHA-256 hash to PBKDF2 on first successful login
+            if (!storedHash.contains(":")) {
+                String newHash = SecurityUtils.hashPin(enteredPin);
+                if (newHash != null) {
+                    pinPrefs.edit().putString(KEY_PIN_HASH, newHash).apply();
+                    Log.d(TAG, "PIN hash migrated from SHA-256 to PBKDF2.");
+                }
+            }
             Log.d(TAG, "Проверка PIN успешна. Запуск MainActivity.");
-            navigateTo(MainActivity.class); // Используем navigateTo для консистентности
+            navigateTo(MainActivity.class);
         } else {
             Log.w(TAG, "Проверка PIN не удалась.");
             showError("Неверный ПИН-код");

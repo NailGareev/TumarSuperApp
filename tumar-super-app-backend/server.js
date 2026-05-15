@@ -15,11 +15,10 @@ const app = express();
 // Определяем порт: из переменных окружения или 3000 по умолчанию
 const port = process.env.PORT || 3000;
 
-// Секретный ключ для подписи JWT токенов
-// ВАЖНО: Храните этот ключ безопасно! Лучше всего в переменной окружения (.env файле)
-const JWT_SECRET = process.env.JWT_SECRET || '123'; // <<< ЗАМЕНИТЕ НА СВОЙ НАДЕЖНЫЙ КЛЮЧ В .env !!!
-if (JWT_SECRET === 'your-default-super-secret-key-replace-me') {
-    console.warn('!!! WARNING: Using default or weak JWT_SECRET. Please set a strong secret in your .env file! !!!');
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    console.error('!!! FATAL: JWT_SECRET is missing or too short (< 32 chars). Set a strong secret in .env !!!');
+    process.exit(1);
 }
 
 // --- Настройка Middleware ---
@@ -74,31 +73,27 @@ app.post('/api/register', async (req, res) => {
     }
     let connection;
     try {
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(password, saltRounds);
+        const passwordHash = await bcrypt.hash(password, 10);
         connection = await pool.getConnection();
-        console.log("Database connection obtained for registration.");
+        await connection.beginTransaction();
         try {
-            // await connection.beginTransaction();
             const userSql = 'INSERT INTO users (first_name, last_name, email, phone, age, password_hash) VALUES (?, ?, ?, ?, ?, ?)';
             const [userResult] = await connection.execute(userSql, [firstName, lastName, email, phone, age ? parseInt(age, 10) : null, passwordHash]);
             const newUserId = userResult.insertId;
-            console.log('User inserted with ID:', newUserId);
             const balanceSql = 'INSERT INTO balances (user_id, balance, currency, updated_at) VALUES (?, ?, ?, NOW())';
-            await connection.execute(balanceSql, [newUserId, 0.00, 'KZT']); // Валюта по умолчанию
-            console.log('Initial balance created for user ID:', newUserId);
-            // await connection.commit();
+            await connection.execute(balanceSql, [newUserId, 0.00, 'KZT']);
+            await connection.commit();
             res.status(201).json({ success: true, message: 'User registered successfully', userId: newUserId });
         } catch (insertError) {
-            // if (connection) await connection.rollback();
+            await connection.rollback();
             console.error('Error during user/balance insertion:', insertError);
             if (insertError.code === 'ER_DUP_ENTRY') {
-                 return res.status(409).json({ success: false, message: 'Email or phone already exists' });
+                return res.status(409).json({ success: false, message: 'Email or phone already exists' });
             }
             res.status(500).json({ success: false, message: 'Failed to save user data' });
         }
     } catch (error) {
-        console.error('Registration process error (e.g., hashing):', error);
+        console.error('Registration process error:', error);
         res.status(500).json({ success: false, message: 'Internal server error during registration' });
     } finally {
         if (connection) connection.release();
@@ -119,18 +114,16 @@ app.post('/api/login', async (req, res) => {
         const sql = 'SELECT id, email, password_hash FROM users WHERE email = ? LIMIT 1';
         const [users] = await connection.execute(sql, [email]);
         if (users.length === 0) {
-            console.log(`Login attempt failed: User not found for email ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
         const user = users[0];
         const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordMatch) {
-            console.log(`Login attempt failed: Invalid password for email ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
         const payload = { userId: user.id, email: user.email };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
-        console.log(`User ${user.email} (ID: ${user.id}) logged in successfully.`);
+        console.log(`User ID ${user.id} logged in successfully.`);
         res.status(200).json({ success: true, message: 'Login successful', token: token, userId: user.id });
     } catch (error) {
         console.error('Login error:', error);
@@ -315,6 +308,52 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
 });
 // === КОНЕЦ: Роут для получения истории транзакций ===
 
+
+// === POST /api/topup - Пополнение баланса ===
+app.post('/api/topup', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { amount } = req.body;
+
+    let parsedAmount;
+    try {
+        parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount < 1 || parsedAmount > 1000000) {
+            throw new Error('Invalid amount');
+        }
+    } catch (e) {
+        return res.status(400).json({ success: false, message: 'Invalid top-up amount (must be 1 – 1,000,000)' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [result] = await connection.execute(
+            'UPDATE balances SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?',
+            [parsedAmount, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Balance record not found' });
+        }
+
+        const [rows] = await connection.execute(
+            'SELECT balance FROM balances WHERE user_id = ?',
+            [userId]
+        );
+
+        await connection.commit();
+        res.status(200).json({ success: true, message: 'Top-up successful', newBalance: rows[0].balance });
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error(`Top-up error for user ID ${userId}:`, error);
+        res.status(500).json({ success: false, message: 'Internal server error during top-up' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
 
 // --- Запуск сервера ---
 app.listen(port, async () => {

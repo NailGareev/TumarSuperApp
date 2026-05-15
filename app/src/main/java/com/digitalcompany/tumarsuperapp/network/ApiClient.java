@@ -1,6 +1,7 @@
 package com.digitalcompany.tumarsuperapp.network;
 
 import android.content.Context;
+import com.digitalcompany.tumarsuperapp.BuildConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -22,10 +23,10 @@ public class ApiClient {
         if (retrofit == null) {
             // Создаем OkHttpClient один раз (ленивая инициализация)
             if (okHttpClient == null) {
-                // Настройка логгирования HTTP запросов
                 HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                // Уровни: NONE, BASIC, HEADERS, BODY
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Логируем тело запроса/ответа
+                loggingInterceptor.setLevel(BuildConfig.DEBUG
+                        ? HttpLoggingInterceptor.Level.BASIC
+                        : HttpLoggingInterceptor.Level.NONE);
 
                 // Создаем строитель OkHttpClient
                 OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();

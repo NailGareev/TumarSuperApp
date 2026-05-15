@@ -9,7 +9,9 @@ import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 // --- НАЧАЛО: Импорты для перевода и истории ---
 import com.digitalcompany.tumarsuperapp.network.models.TransferRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
-import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse; // Модель для ответа истории
+import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -61,9 +63,13 @@ public interface ApiService {
     @GET("api/transactions")
     Call<TransactionHistoryResponse> getTransactionHistory();
 
+    /**
+     * Пополнение баланса текущего пользователя.
+     * Требует валидного JWT токена.
+     */
+    @POST("api/topup")
+    Call<TopUpResponse> topUp(@Body TopUpRequest topUpRequest);
+
     // --- КОНЕЦ: Добавленные методы ---
-
-
-    // Здесь можно добавлять другие методы API по мере необходимости
 
 }
