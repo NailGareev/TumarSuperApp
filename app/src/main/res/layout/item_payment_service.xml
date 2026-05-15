@@ -7,7 +7,7 @@
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginTop="4dp"
-    app:cardCornerRadius="14dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="1dp"
     app:cardBackgroundColor="@color/card_bg">
 
@@ -18,22 +18,21 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
-        android:paddingEnd="12dp"
+        android:paddingEnd="14dp"
         android:paddingTop="14dp"
         android:paddingBottom="14dp">
 
-        <LinearLayout
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_icon_circle_purple"
-            android:gravity="center"
-            android:orientation="vertical">
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_icon_circle_purple">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="💳"
-                android:textSize="18sp" />
-        </LinearLayout>
+                android:textSize="20sp" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tv_service_name"
@@ -42,7 +41,8 @@
             android:layout_weight="1"
             android:layout_marginStart="14dp"
             android:textSize="15sp"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
 
         <ImageView
             android:layout_width="18dp"
@@ -50,6 +50,5 @@
             android:src="@drawable/ic_chevron_right_24dp"
             android:tint="@color/grey_medium"
             android:contentDescription="@null" />
-
     </LinearLayout>
 </androidx.cardview.widget.CardView>

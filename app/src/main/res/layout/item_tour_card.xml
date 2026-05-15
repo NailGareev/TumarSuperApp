@@ -4,9 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="0dp"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
     app:cardBackgroundColor="@color/travel_surface">
 
     <LinearLayout
@@ -17,10 +17,10 @@
         android:clickable="true"
         android:focusable="true">
 
-        <!-- Photo + overlays -->
+        <!-- Photo with overlays -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="130dp">
+            android:layout_height="140dp">
 
             <ImageView
                 android:id="@+id/iv_tour"
@@ -29,56 +29,99 @@
                 android:scaleType="centerCrop"
                 android:contentDescription="@null" />
 
-            <!-- Installment badge (top-left) -->
+            <!-- Gradient overlay -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#44000000" />
+
+            <!-- Installment badge -->
             <TextView
                 android:id="@+id/tv_installment_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
-                android:layout_margin="6dp"
+                android:layout_margin="8dp"
                 android:text="0·0·12"
                 android:textColor="#1A1A1A"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
-
-            <!-- Location badge (bottom-left) -->
-            <TextView
-                android:id="@+id/tv_location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|start"
-                android:layout_margin="6dp"
-                android:textColor="@color/white"
-                android:textSize="11sp"
                 android:paddingStart="6dp"
                 android:paddingEnd="6dp"
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp" />
 
+            <!-- Location badge -->
+            <TextView
+                android:id="@+id/tv_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="8dp"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
         </FrameLayout>
 
-        <!-- Card details -->
+        <!-- Details -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="10dp">
 
-            <!-- Hotel name + stars -->
             <TextView
                 android:id="@+id/tv_hotel_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:textSize="12sp"
+                android:textStyle="bold"
                 android:maxLines="2"
-                android:ellipsize="end" />
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="1.2" />
 
-            <!-- Price row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:id="@+id/tv_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_monthly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:textColor="#1A1A1A"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/tv_x_months"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:textColor="@color/travel_text_secondary"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,67 +130,25 @@
                 android:layout_marginTop="4dp">
 
                 <TextView
-                    android:id="@+id/tv_price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tv_monthly"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:textColor="#1A1A1A"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
-                    android:paddingTop="1dp"
-                    android:paddingBottom="1dp" />
-
-                <TextView
-                    android:id="@+id/tv_x_months"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="2dp"
-                    android:textColor="@color/travel_text_secondary"
-                    android:textSize="10sp" />
-
-            </LinearLayout>
-
-            <!-- Discount row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="3dp">
-
-                <TextView
                     android:id="@+id/tv_discount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white"
+                    android:textColor="#FFFFFF"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
-                    android:paddingTop="1dp"
-                    android:paddingBottom="1dp" />
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp" />
 
                 <TextView
                     android:id="@+id/tv_original_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
+                    android:layout_marginStart="6dp"
                     android:textColor="@color/travel_text_secondary"
                     android:textSize="10sp" />
-
             </LinearLayout>
-
         </LinearLayout>
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

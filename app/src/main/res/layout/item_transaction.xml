@@ -8,7 +8,7 @@
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginTop="6dp"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="20dp"
     app:cardElevation="1dp"
     app:cardBackgroundColor="@color/card_bg">
 
@@ -20,23 +20,20 @@
         android:padding="16dp"
         android:background="?attr/selectableItemBackground">
 
-        <!-- Icon circle -->
         <FrameLayout
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:background="@drawable/bg_icon_circle_purple">
-
             <ImageView
                 android:id="@+id/iv_transaction_icon"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_gravity="center"
-                tools:srcCompat="@drawable/ic_arrow_upward"
                 android:tint="@color/colorPrimary"
+                tools:srcCompat="@drawable/ic_arrow_upward"
                 android:contentDescription="@null" />
         </FrameLayout>
 
-        <!-- Description + timestamp -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -60,13 +57,12 @@
                 android:id="@+id/tv_transaction_timestamp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
+                android:layout_marginTop="4dp"
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"
-                tools:text="5 мая 2025 г., 08:15" />
+                tools:text="5 мая 2025, 08:15" />
         </LinearLayout>
 
-        <!-- Amount -->
         <TextView
             android:id="@+id/tv_transaction_amount"
             android:layout_width="wrap_content"
@@ -75,6 +71,5 @@
             android:textStyle="bold"
             tools:text="-500 ₸"
             tools:textColor="@color/expense_color" />
-
     </LinearLayout>
 </androidx.cardview.widget.CardView>
