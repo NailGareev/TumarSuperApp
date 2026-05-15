@@ -22,8 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.app.AlertDialog;
-
 // Импорты для сети и моделей
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
@@ -130,15 +128,7 @@ public class HomeFragment extends Fragment implements MenuProvider {
             }
         });
 
-        buttonPayments.setOnClickListener(v -> {
-            if (getContext() != null) {
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Платежи")
-                        .setMessage("Раздел «Платежи» находится в разработке.")
-                        .setPositiveButton("Понятно", null)
-                        .show();
-            }
-        });
+        buttonPayments.setOnClickListener(v -> navigateToFragment(new PaymentsFragment(), "payments"));
     }
 
     // Вспомогательный метод для навигации
