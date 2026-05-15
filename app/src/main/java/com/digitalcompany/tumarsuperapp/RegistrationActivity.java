@@ -19,6 +19,7 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -67,6 +68,11 @@ public class RegistrationActivity extends AppCompatActivity {
 
         // --- Установка слушателя на кнопку ---
         btnRegister.setOnClickListener(v -> attemptRegistration());
+
+        TextView tvGoToLogin = findViewById(R.id.tv_go_to_login);
+        if (tvGoToLogin != null) {
+            tvGoToLogin.setOnClickListener(v -> finish());
+        }
     }
 
     private void attemptRegistration() {
