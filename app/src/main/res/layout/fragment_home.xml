@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:paddingBottom="24dp">
 
-        <!-- Wallet gradient card -->
+        <!-- Wallet card with gradient -->
         <androidx.cardview.widget.CardView
             android:id="@+id/home_content_card"
             android:layout_width="match_parent"
@@ -22,8 +22,8 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="6dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
             app:cardBackgroundColor="#6200EE">
 
             <LinearLayout
@@ -33,7 +33,7 @@
                 android:background="@drawable/bg_wallet_card"
                 android:padding="24dp">
 
-                <!-- Logo + wallet title + phone row -->
+                <!-- Top row: logo + title + phone -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:orientation="vertical">
 
                         <TextView
@@ -61,47 +61,46 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/tumar_wallet_title"
+                            android:textColor="#FFFFFF"
                             android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/userIdTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/placeholder_user_id"
-                            android:textColor="#CCFFFFFF"
-                            android:textSize="13sp" />
+                            android:textColor="#BBFFFFFF"
+                            android:textSize="13sp"
+                            android:layout_marginTop="2dp" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Balance label -->
+                <!-- Balance section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Ваш баланс"
-                    android:textColor="#CCFFFFFF"
+                    android:layout_marginTop="28dp"
+                    android:text="Доступный баланс"
+                    android:textColor="#99FFFFFF"
                     android:textSize="12sp"
                     android:letterSpacing="0.05" />
 
-                <!-- Balance amount -->
                 <TextView
                     android:id="@+id/balanceTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:text="@string/placeholder_balance"
                     android:textColor="#FFFFFF"
-                    android:textSize="32sp"
+                    android:textSize="36sp"
                     android:textStyle="bold" />
 
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="24dp"
                     android:background="#33FFFFFF" />
 
                 <!-- Action buttons -->
@@ -109,7 +108,7 @@
                     android:id="@+id/actionsLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="20dp"
                     android:baselineAligned="false"
                     android:orientation="horizontal">
 
@@ -118,31 +117,32 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="8dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-                        <LinearLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="#33FFFFFF"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="4dp">
+
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:background="#2AFFFFFF">
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
                                 app:srcCompat="@drawable/ic_add_circle_outline"
                                 android:tint="#FFFFFF"
                                 android:contentDescription="@null" />
-                        </LinearLayout>
+                        </FrameLayout>
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="8dp"
                             android:text="@string/action_top_up"
-                            android:textColor="#CCFFFFFF"
+                            android:textColor="#DDFFFFFF"
                             android:textSize="11sp"
                             android:gravity="center" />
                     </LinearLayout>
@@ -152,31 +152,32 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="8dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-                        <LinearLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="#33FFFFFF"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="4dp">
+
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:background="#2AFFFFFF">
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
                                 app:srcCompat="@drawable/ic_history"
                                 android:tint="#FFFFFF"
                                 android:contentDescription="@null" />
-                        </LinearLayout>
+                        </FrameLayout>
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="8dp"
                             android:text="@string/action_history"
-                            android:textColor="#CCFFFFFF"
+                            android:textColor="#DDFFFFFF"
                             android:textSize="11sp"
                             android:gravity="center" />
                     </LinearLayout>
@@ -186,31 +187,32 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="8dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-                        <LinearLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="#33FFFFFF"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="4dp">
+
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:background="#2AFFFFFF">
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
                                 app:srcCompat="@drawable/ic_swap_horiz"
                                 android:tint="#FFFFFF"
                                 android:contentDescription="@null" />
-                        </LinearLayout>
+                        </FrameLayout>
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="8dp"
                             android:text="@string/action_transfer"
-                            android:textColor="#CCFFFFFF"
+                            android:textColor="#DDFFFFFF"
                             android:textSize="11sp"
                             android:gravity="center" />
                     </LinearLayout>
@@ -220,31 +222,32 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="8dp"
+                        android:gravity="center"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless">
-                        <LinearLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="#33FFFFFF"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="4dp">
+
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:background="#2AFFFFFF">
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
                                 app:srcCompat="@drawable/ic_payment"
                                 android:tint="#FFFFFF"
                                 android:contentDescription="@null" />
-                        </LinearLayout>
+                        </FrameLayout>
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="8dp"
                             android:text="@string/action_payments"
-                            android:textColor="#CCFFFFFF"
+                            android:textColor="#DDFFFFFF"
                             android:textSize="11sp"
                             android:gravity="center" />
                     </LinearLayout>
@@ -253,27 +256,51 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Section label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:text="АКЦИИ И ПРЕДЛОЖЕНИЯ"
+            android:textColor="@color/colorPrimary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
         <!-- Banner card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/banner_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
             app:cardBackgroundColor="@color/card_bg">
 
             <ImageView
                 android:id="@+id/iv_banner"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:adjustViewBounds="true"
+                android:layout_height="160dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/banner1"
                 android:contentDescription="@string/banner_content_description" />
         </androidx.cardview.widget.CardView>
+
+        <!-- Section label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:text="ПУТЕШЕСТВИЯ"
+            android:textColor="@color/colorPrimary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
 
         <!-- Travel card -->
         <androidx.cardview.widget.CardView
@@ -281,10 +308,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp"
             app:cardBackgroundColor="@color/travel_dark">
 
             <LinearLayout
@@ -297,18 +323,17 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <LinearLayout
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:background="#33FFFFFF"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="#2AFFFFFF">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:text="✈"
-                        android:textSize="24sp" />
-                </LinearLayout>
+                        android:textSize="26sp" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -322,23 +347,23 @@
                         android:layout_height="wrap_content"
                         android:text="Travel"
                         android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textSize="19sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
+                        android:layout_marginTop="4dp"
                         android:text="Авиа · ЖД · Туры · Отели"
                         android:textColor="@color/travel_text_secondary"
                         android:textSize="13sp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_chevron_right_24dp"
-                    android:tint="#FFFFFF"
+                    android:tint="#AAFFFFFF"
                     android:contentDescription="@null" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

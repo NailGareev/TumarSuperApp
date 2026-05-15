@@ -11,24 +11,23 @@
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="140dp"
+        android:layout_height="130dp"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@drawable/bg_auth_header">
 
-        <LinearLayout
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:background="#33FFFFFF"
-            android:gravity="center"
-            android:orientation="vertical">
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="#2AFFFFFF">
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
                 app:srcCompat="@drawable/ic_swap_horiz"
                 android:tint="#FFFFFF"
                 android:contentDescription="@null" />
-        </LinearLayout>
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -36,11 +35,11 @@
             android:layout_marginTop="10dp"
             android:text="Перевод средств"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Form card -->
+    <!-- Form -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -53,18 +52,18 @@
             android:orientation="vertical"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:paddingTop="28dp"
-            android:paddingBottom="32dp">
+            android:paddingTop="32dp"
+            android:paddingBottom="40dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Получатель"
-                android:textSize="12sp"
+                android:text="НОМЕР ПОЛУЧАТЕЛЯ"
+                android:textSize="11sp"
                 android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.08"
-                android:layout_marginBottom="8dp" />
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="10dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_recipient_phone"
@@ -86,27 +85,74 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Сумма"
-                android:textSize="12sp"
+                android:layout_marginTop="24dp"
+                android:text="СУММА ПЕРЕВОДА"
+                android:textSize="11sp"
                 android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.08"
-                android:layout_marginBottom="8dp" />
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="10dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_transfer_amount"
                 style="@style/AuthInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Сумма перевода (KZT)">
+                android:hint="0 ₸">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_transfer_amount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal" />
+                    android:inputType="numberDecimal"
+                    android:textSize="18sp" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Quick amount chips -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="1 000 ₸"
+                    android:textSize="13sp"
+                    android:textColor="@color/colorPrimary"
+                    android:background="@drawable/bg_icon_circle_purple"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="5 000 ₸"
+                    android:textSize="13sp"
+                    android:textColor="@color/colorPrimary"
+                    android:background="@drawable/bg_icon_circle_purple"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="10 000 ₸"
+                    android:textSize="13sp"
+                    android:textColor="@color/colorPrimary"
+                    android:background="@drawable/bg_icon_circle_purple"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
             <ProgressBar
                 android:id="@+id/progressBarTransfer"
@@ -120,15 +166,13 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_confirm_transfer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_marginTop="32dp"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
                 android:text="Перевести"
-                android:textSize="16sp"
-                app:cornerRadius="14dp" />
+                android:textSize="17sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </ScrollView>
-
 </LinearLayout>

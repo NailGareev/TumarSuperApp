@@ -8,20 +8,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
+    android:background="@color/app_bg"
     tools:context=".MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:elevation="4dp">
+        android:background="@drawable/bg_auth_header"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
-            style="@style/Widget.MaterialComponents.Toolbar.PrimarySurface"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            />
+            android:background="@android:color/transparent"
+            app:titleTextColor="@android:color/white"
+            app:subtitleTextColor="#CCFFFFFF"
+            app:navigationIconTint="@android:color/white"
+            app:menuIconTint="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
@@ -34,8 +39,12 @@
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="?android:attr/windowBackground"
-        app:menu="@menu/bottom_nav_menu" />
+        android:background="@color/card_bg"
+        app:itemActiveIndicatorStyle="@null"
+        app:itemIconTint="@color/colorPrimary"
+        app:itemTextColor="@color/colorPrimary"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu"
+        app:elevation="12dp" />
 
 </LinearLayout>

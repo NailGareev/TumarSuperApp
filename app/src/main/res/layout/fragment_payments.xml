@@ -5,10 +5,9 @@
     android:orientation="vertical"
     android:background="@color/app_bg">
 
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@drawable/bg_auth_header">
@@ -16,17 +15,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Платежи и переводы"
+            android:text="Платежи и услуги"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="21sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Оплатите услуги онлайн"
-            android:textColor="#CCFFFFFF"
+            android:text="Оплатите онлайн за несколько секунд"
+            android:textColor="#BBFFFFFF"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -37,6 +36,5 @@
         android:background="@color/app_bg"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="16dp" />
-
+        android:paddingBottom="24dp" />
 </LinearLayout>

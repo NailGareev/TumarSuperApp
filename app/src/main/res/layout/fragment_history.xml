@@ -11,7 +11,7 @@
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@drawable/bg_auth_header">
@@ -21,11 +21,18 @@
             android:layout_height="wrap_content"
             android:text="История операций"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="21sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Все ваши транзакции"
+            android:textColor="#BBFFFFFF"
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- List / states -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -35,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="8dp"
+            android:paddingTop="12dp"
             android:paddingBottom="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_transaction" />
@@ -46,8 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/tv_history_empty"
@@ -56,34 +62,34 @@
             android:layout_gravity="center"
             android:orientation="vertical"
             android:gravity="center"
-            android:visibility="gone"
-            tools:visibility="gone">
+            android:padding="32dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="📋"
-                android:textSize="48sp" />
+                android:textSize="56sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="20dp"
                 android:text="История пуста"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Здесь появятся ваши операции"
+                android:layout_marginTop="10dp"
+                android:text="Здесь появятся ваши переводы,\nпополнения и платежи"
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary"
-                android:gravity="center" />
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.4" />
         </LinearLayout>
 
     </FrameLayout>
-
 </LinearLayout>
