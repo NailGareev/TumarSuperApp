@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.digitalcompany.tumarsuperapp.adapter.TransactionAdapter; // Импорт адаптера
@@ -36,7 +35,7 @@ public class HistoryFragment extends Fragment {
     private TransactionAdapter transactionAdapter;
     private ApiService apiService;
     private ProgressBar progressBarHistory;
-    private TextView tvHistoryEmpty;
+    private View tvHistoryEmpty;
 
     public HistoryFragment() {
         // Required empty public constructor
@@ -119,7 +118,6 @@ public class HistoryFragment extends Fragment {
                     } else {
                         Log.w(TAG, "API вернул success=false при загрузке истории.");
                         Toast.makeText(getContext(), "Не удалось загрузить историю", Toast.LENGTH_SHORT).show();
-                        tvHistoryEmpty.setText("Ошибка загрузки истории"); // Меняем текст
                         tvHistoryEmpty.setVisibility(View.VISIBLE);
                         rvTransactions.setVisibility(View.GONE);
                         // Возможно, токен невалиден?
@@ -128,7 +126,6 @@ public class HistoryFragment extends Fragment {
                 } else {
                     Log.e(TAG, "Ошибка ответа сервера при загрузке истории: " + response.code());
                     Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_SHORT).show();
-                    tvHistoryEmpty.setText("Ошибка сервера");
                     tvHistoryEmpty.setVisibility(View.VISIBLE);
                     rvTransactions.setVisibility(View.GONE);
                     if (response.code() == 401 || response.code() == 403) {
@@ -143,7 +140,6 @@ public class HistoryFragment extends Fragment {
                 if (!isAdded() || getContext() == null) return; // Проверка
                 Log.e(TAG, "Ошибка сети при загрузке истории", t);
                 Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                tvHistoryEmpty.setText("Ошибка сети");
                 tvHistoryEmpty.setVisibility(View.VISIBLE);
                 rvTransactions.setVisibility(View.GONE);
             }

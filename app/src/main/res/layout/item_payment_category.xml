@@ -2,11 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F5F5F5"
-    android:paddingStart="16dp"
+    android:background="@color/app_bg"
+    android:paddingStart="20dp"
     android:paddingEnd="16dp"
-    android:paddingTop="14dp"
-    android:paddingBottom="6dp">
+    android:paddingTop="20dp"
+    android:paddingBottom="8dp">
 
     <TextView
         android:id="@+id/tv_category_name"
@@ -14,8 +14,8 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="#757575"
+        android:textColor="@color/colorPrimary"
         android:textAllCaps="true"
-        android:letterSpacing="0.08" />
+        android:letterSpacing="0.1" />
 
 </LinearLayout>

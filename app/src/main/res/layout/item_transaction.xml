@@ -1,61 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="12dp"
-    android:paddingHorizontal="16dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/card_bg">
 
-    <ImageView
-        android:id="@+id/iv_transaction_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:srcCompat="@drawable/ic_arrow_upward"
-        app:tint="?android:attr/textColorPrimary"/>
-    <TextView
-        android:id="@+id/tv_transaction_description"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
-        android:textSize="16sp"
-        android:textColor="?android:attr/textColorPrimary"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_constraintStart_toEndOf="@+id/iv_transaction_icon"
-        app:layout_constraintEnd_toStartOf="@+id/tv_transaction_amount"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/tv_transaction_timestamp"
-        app:layout_constraintVertical_chainStyle="packed"
-        tools:text="Перевод Ивану И." />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:background="?attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/tv_transaction_timestamp"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="2dp"
-        android:textSize="12sp"
-        android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintStart_toEndOf="@+id/iv_transaction_icon"
-        app:layout_constraintEnd_toEndOf="@+id/tv_transaction_description"
-        app:layout_constraintTop_toBottomOf="@+id/tv_transaction_description"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:text="5 мая 2025 г., 08:15" />
+        <!-- Icon circle -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icon_circle_purple">
 
-    <TextView
-        android:id="@+id/tv_transaction_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:text="-500 ₸"
-        tools:textColor="@color/red_error"/> </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:id="@+id/iv_transaction_icon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                tools:srcCompat="@drawable/ic_arrow_upward"
+                android:tint="@color/colorPrimary"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <!-- Description + timestamp -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_transaction_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Перевод Ивану И." />
+
+            <TextView
+                android:id="@+id/tv_transaction_timestamp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                tools:text="5 мая 2025 г., 08:15" />
+        </LinearLayout>
+
+        <!-- Amount -->
+        <TextView
+            android:id="@+id/tv_transaction_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="-500 ₸"
+            tools:textColor="@color/expense_color" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
