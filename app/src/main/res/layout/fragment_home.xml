@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_bg"
     tools:context=".HomeFragment">
 
     <LinearLayout
@@ -13,7 +14,7 @@
         android:orientation="vertical"
         android:paddingBottom="24dp">
 
-        <!-- Wallet card -->
+        <!-- Wallet gradient card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/home_content_card"
             android:layout_width="match_parent"
@@ -21,195 +22,235 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/colorSurface">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#6200EE">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp">
+                android:orientation="vertical"
+                android:background="@drawable/bg_wallet_card"
+                android:padding="24dp">
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/logoImageView"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:scaleType="centerCrop"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_tumar_logo"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.App.RoundedSquareImageView"
-                    android:contentDescription="@string/logo_description" />
-
-                <TextView
-                    android:id="@+id/walletTitleTextView"
-                    android:layout_width="0dp"
+                <!-- Logo + wallet title + phone row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/tumar_wallet_title"
-                    android:textSize="@dimen/title_text_size"
-                    android:textStyle="bold"
-                    android:textColor="?android:attr/textColorPrimary"
-                    app:layout_constraintBottom_toTopOf="@+id/userIdTextView"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/logoImageView"
-                    app:layout_constraintTop_toTopOf="@+id/logoImageView"
-                    app:layout_constraintVertical_chainStyle="packed" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/logoImageView"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:scaleType="centerCrop"
+                        app:srcCompat="@drawable/ic_tumar_logo"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.RoundedSquareImageView"
+                        android:contentDescription="@string/logo_description" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/walletTitleTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tumar_wallet_title"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF" />
+
+                        <TextView
+                            android:id="@+id/userIdTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_user_id"
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Balance label -->
                 <TextView
-                    android:id="@+id/userIdTextView"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/placeholder_user_id"
-                    android:textColor="@color/grey_text"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="@+id/logoImageView"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/logoImageView"
-                    app:layout_constraintTop_toBottomOf="@+id/walletTitleTextView" />
+                    android:layout_marginTop="24dp"
+                    android:text="Ваш баланс"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.05" />
 
+                <!-- Balance amount -->
                 <TextView
                     android:id="@+id/balanceTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="4dp"
                     android:text="@string/placeholder_balance"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="@dimen/balance_text_size"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/logoImageView" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
 
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Action buttons -->
                 <LinearLayout
                     android:id="@+id/actionsLayout"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="16dp"
                     android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/balanceTextView"
-                    app:layout_constraintBottom_toBottomOf="parent">
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:id="@+id/buttonTopUp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/action_button_background"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="@dimen/action_button_padding"
+                        android:padding="8dp"
                         android:clickable="true"
-                        android:focusable="true">
-                        <ImageView
-                            android:layout_width="@dimen/action_button_icon_size"
-                            android:layout_height="@dimen/action_button_icon_size"
-                            app:srcCompat="@drawable/ic_add_circle_outline"
-                            app:tint="?attr/colorPrimary"
-                            android:contentDescription="@null" />
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="#33FFFFFF"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                app:srcCompat="@drawable/ic_add_circle_outline"
+                                android:tint="#FFFFFF"
+                                android:contentDescription="@null" />
+                        </LinearLayout>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/action_top_up"
-                            android:textColor="@color/grey_text"
-                            android:textSize="10sp"
-                            android:gravity="center_horizontal"
-                            android:maxLines="1" />
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="11sp"
+                            android:gravity="center" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/buttonHistory"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:background="@drawable/action_button_background"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="@dimen/action_button_padding"
+                        android:padding="8dp"
                         android:clickable="true"
-                        android:focusable="true">
-                        <ImageView
-                            android:layout_width="@dimen/action_button_icon_size"
-                            android:layout_height="@dimen/action_button_icon_size"
-                            app:srcCompat="@drawable/ic_history"
-                            app:tint="?attr/colorPrimary"
-                            android:contentDescription="@null" />
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="#33FFFFFF"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                app:srcCompat="@drawable/ic_history"
+                                android:tint="#FFFFFF"
+                                android:contentDescription="@null" />
+                        </LinearLayout>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/action_history"
-                            android:textColor="@color/grey_text"
-                            android:textSize="10sp"
-                            android:gravity="center_horizontal"
-                            android:maxLines="1" />
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="11sp"
+                            android:gravity="center" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/buttonTransfer"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:background="@drawable/action_button_background"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="@dimen/action_button_padding"
+                        android:padding="8dp"
                         android:clickable="true"
-                        android:focusable="true">
-                        <ImageView
-                            android:layout_width="@dimen/action_button_icon_size"
-                            android:layout_height="@dimen/action_button_icon_size"
-                            app:srcCompat="@drawable/ic_swap_horiz"
-                            app:tint="?attr/colorPrimary"
-                            android:contentDescription="@null" />
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="#33FFFFFF"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                app:srcCompat="@drawable/ic_swap_horiz"
+                                android:tint="#FFFFFF"
+                                android:contentDescription="@null" />
+                        </LinearLayout>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/action_transfer"
-                            android:textColor="@color/grey_text"
-                            android:textSize="10sp"
-                            android:gravity="center_horizontal"
-                            android:maxLines="1" />
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="11sp"
+                            android:gravity="center" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/buttonPayments"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:background="@drawable/action_button_background"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:padding="@dimen/action_button_padding"
+                        android:padding="8dp"
                         android:clickable="true"
-                        android:focusable="true">
-                        <ImageView
-                            android:layout_width="@dimen/action_button_icon_size"
-                            android:layout_height="@dimen/action_button_icon_size"
-                            app:srcCompat="@drawable/ic_payment"
-                            app:tint="?attr/colorPrimary"
-                            android:contentDescription="@null" />
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="#33FFFFFF"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                app:srcCompat="@drawable/ic_payment"
+                                android:tint="#FFFFFF"
+                                android:contentDescription="@null" />
+                        </LinearLayout>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/action_payments"
-                            android:textColor="@color/grey_text"
-                            android:textSize="10sp"
-                            android:gravity="center_horizontal"
-                            android:maxLines="1" />
+                            android:textColor="#CCFFFFFF"
+                            android:textSize="11sp"
+                            android:gravity="center" />
                     </LinearLayout>
 
                 </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Banner card -->
@@ -220,14 +261,14 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/colorSurface">
+            app:cardBackgroundColor="@color/card_bg">
 
             <ImageView
                 android:id="@+id/iv_banner"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="150dp"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
                 android:src="@drawable/banner1"
@@ -242,7 +283,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="@color/travel_dark">
 
@@ -251,21 +292,35 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
 
                 <LinearLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:background="#33FFFFFF"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✈"
+                        android:textSize="24sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginStart="16dp"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="✈  Travel"
+                        android:text="Travel"
                         android:textColor="@color/white"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -273,23 +328,20 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="3dp"
                         android:text="Авиа · ЖД · Туры · Отели"
                         android:textColor="@color/travel_text_secondary"
                         android:textSize="13sp" />
-
                 </LinearLayout>
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_chevron_right_24dp"
-                    android:tint="@color/white"
+                    android:tint="#FFFFFF"
                     android:contentDescription="@null" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>
-
 </androidx.core.widget.NestedScrollView>
