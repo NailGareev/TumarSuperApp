@@ -395,16 +395,14 @@
                     style="@style/AuthInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="0000 0000 0000 0000"
-                    app:startIconDrawable="@drawable/ic_payment">
+                    android:hint="0000 0000 0000 0000">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_recipient_card"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:maxLength="19"
-                        android:fontFamily="monospace" />
+                        android:maxLength="19" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
