@@ -167,6 +167,36 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/lookup-phone - Поиск клиента Tumar по номеру телефона (защищено токеном)
+app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
+    const { phone } = req.query;
+    if (!phone || !phone.startsWith('+7') || phone.length !== 12) {
+        return res.status(400).json({ success: false, message: 'Invalid phone format' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            'SELECT first_name, last_name FROM users WHERE phone = ? LIMIT 1',
+            [phone]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const user = rows[0];
+        res.status(200).json({
+            success: true,
+            firstName: user.first_name,
+            lastNameInitial: user.last_name ? user.last_name.charAt(0).toUpperCase() + '.' : ''
+        });
+    } catch (error) {
+        console.error('Error during phone lookup:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // === НАЧАЛО: Роут для перевода средств ===
 app.post('/api/transfer', authenticateToken, async (req, res) => {
     const senderId = req.user.userId;

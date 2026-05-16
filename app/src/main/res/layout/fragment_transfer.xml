@@ -93,7 +93,7 @@
                         android:textSize="22sp" />
 
                     <TextView
-                        android:id="@+id/tab_phone_label"
+                        android:id="@+id/tab_phone_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
@@ -105,6 +105,7 @@
                         android:lineSpacingMultiplier="1.2" />
 
                     <TextView
+                        android:id="@+id/tab_phone_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
@@ -112,7 +113,6 @@
                         android:textSize="10sp"
                         android:textColor="#CCFFFFFF"
                         android:gravity="center" />
-
                 </LinearLayout>
 
                 <!-- Tab: by card -->
@@ -135,7 +135,7 @@
                         android:textSize="22sp" />
 
                     <TextView
-                        android:id="@+id/tab_card_label"
+                        android:id="@+id/tab_card_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
@@ -147,6 +147,7 @@
                         android:lineSpacingMultiplier="1.2" />
 
                     <TextView
+                        android:id="@+id/tab_card_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
@@ -154,12 +155,10 @@
                         android:textSize="10sp"
                         android:textColor="@color/text_secondary"
                         android:gravity="center" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Phone input (mode: phone) -->
+            <!-- ===== Phone section ===== -->
             <LinearLayout
                 android:id="@+id/section_phone"
                 android:layout_width="match_parent"
@@ -183,8 +182,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="+7 000 000 00 00"
-                    app:counterEnabled="true"
-                    app:counterMaxLength="12"
                     app:startIconDrawable="@drawable/ic_phone_24dp">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -195,18 +192,134 @@
                         android:maxLength="12" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Recipient info card (shown after lookup) -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_recipient_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/income_bg">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_icon_circle_green">
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_check_circle_24dp"
+                                android:tint="@color/income_color"
+                                android:contentDescription="@null" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Клиент Tumar Bank"
+                                android:textSize="11sp"
+                                android:textColor="@color/income_color" />
+
+                            <TextView
+                                android:id="@+id/tv_recipient_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                tools:text="Айдар С." />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Lookup loading indicator -->
+                <LinearLayout
+                    android:id="@+id/card_lookup_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        style="?android:attr/progressBarStyle" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="Поиск клиента..."
+                        android:textSize="13sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Not found hint -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_recipient_not_found"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/expense_bg">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_error_outline_24dp"
+                            android:tint="@color/expense_color"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="Клиент Tumar Bank не найден"
+                            android:textSize="13sp"
+                            android:textColor="@color/expense_color" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:text="💡 Переводы на номер телефона — мгновенно и без комиссии"
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingMultiplier="1.3" />
-
             </LinearLayout>
 
-            <!-- Card input (mode: card) -->
+            <!-- ===== Card section ===== -->
             <LinearLayout
                 android:id="@+id/section_card"
                 android:layout_width="match_parent"
@@ -230,8 +343,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="0000 0000 0000 0000"
-                    app:counterEnabled="true"
-                    app:counterMaxLength="19"
                     app:startIconDrawable="@drawable/ic_payment">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -240,11 +351,9 @@
                         android:layout_height="wrap_content"
                         android:inputType="number"
                         android:maxLength="19"
-                        android:fontFamily="monospace"
-                        android:letterSpacing="0.05" />
+                        android:fontFamily="monospace" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Bank chips row -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -293,7 +402,6 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_secondary"
                         android:background="@drawable/bg_icon_circle_purple" />
-
                 </LinearLayout>
 
                 <TextView
@@ -304,7 +412,6 @@
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingMultiplier="1.3" />
-
             </LinearLayout>
 
             <!-- Amount -->

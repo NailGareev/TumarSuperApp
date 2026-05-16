@@ -1,6 +1,8 @@
 package com.digitalcompany.tumarsuperapp;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -14,12 +16,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.TransferRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
+import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -34,17 +38,24 @@ import retrofit2.Response;
 public class TransferFragment extends Fragment {
 
     private static final String TAG = "TransferFragment";
+    private static final long LOOKUP_DEBOUNCE_MS = 600;
 
     private enum TransferMode { PHONE, CARD }
     private TransferMode currentMode = TransferMode.PHONE;
 
     // Tabs
     private LinearLayout tabPhone, tabCard;
+    private TextView tabPhoneTitle, tabPhoneSub, tabCardTitle, tabCardSub;
     private LinearLayout sectionPhone, sectionCard;
 
     // Phone inputs
     private TextInputLayout tilRecipientPhone;
     private TextInputEditText etRecipientPhone;
+
+    // Recipient info cards
+    private CardView cardRecipientInfo, cardRecipientNotFound;
+    private LinearLayout cardLookupLoading;
+    private TextView tvRecipientName;
 
     // Card inputs
     private TextInputLayout tilRecipientCard;
@@ -58,6 +69,10 @@ public class TransferFragment extends Fragment {
     private ProgressBar progressBarTransfer;
 
     private ApiService apiService;
+    private final Handler lookupHandler = new Handler(Looper.getMainLooper());
+    private Runnable lookupRunnable;
+    private Call<UserLookupResponse> pendingLookup;
+    private boolean recipientFound = false;
 
     public TransferFragment() {}
 
@@ -78,24 +93,59 @@ public class TransferFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Tabs
         tabPhone = view.findViewById(R.id.tab_phone);
         tabCard = view.findViewById(R.id.tab_card);
+        tabPhoneTitle = view.findViewById(R.id.tab_phone_title);
+        tabPhoneSub = view.findViewById(R.id.tab_phone_sub);
+        tabCardTitle = view.findViewById(R.id.tab_card_title);
+        tabCardSub = view.findViewById(R.id.tab_card_sub);
         sectionPhone = view.findViewById(R.id.section_phone);
         sectionCard = view.findViewById(R.id.section_card);
 
+        // Phone
         tilRecipientPhone = view.findViewById(R.id.til_recipient_phone);
         etRecipientPhone = view.findViewById(R.id.et_recipient_phone);
+
+        // Recipient lookup
+        cardRecipientInfo = view.findViewById(R.id.card_recipient_info);
+        cardRecipientNotFound = view.findViewById(R.id.card_recipient_not_found);
+        cardLookupLoading = view.findViewById(R.id.card_lookup_loading);
+        tvRecipientName = view.findViewById(R.id.tv_recipient_name);
+
+        // Card
         tilRecipientCard = view.findViewById(R.id.til_recipient_card);
         etRecipientCard = view.findViewById(R.id.et_recipient_card);
+
+        // Amount
         tilTransferAmount = view.findViewById(R.id.til_transfer_amount);
         etTransferAmount = view.findViewById(R.id.et_transfer_amount);
+
         btnConfirmTransfer = view.findViewById(R.id.btn_confirm_transfer);
         progressBarTransfer = view.findViewById(R.id.progressBarTransfer);
 
         tabPhone.setOnClickListener(v -> switchMode(TransferMode.PHONE));
         tabCard.setOnClickListener(v -> switchMode(TransferMode.CARD));
 
-        // Auto-format card number with spaces (XXXX XXXX XXXX XXXX)
+        // Phone lookup on text change (debounced)
+        etRecipientPhone.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                tilRecipientPhone.setError(null);
+                hideLookupCards();
+                recipientFound = false;
+                String phone = s.toString().trim();
+                if (phone.length() == 12 && phone.startsWith("+7")) {
+                    scheduleLookup(phone);
+                } else {
+                    cancelPendingLookup();
+                }
+            }
+        });
+
+        // Card auto-format
         etRecipientCard.addTextChangedListener(new CardNumberFormatter());
 
         // Quick amount chips
@@ -106,139 +156,178 @@ public class TransferFragment extends Fragment {
         btnConfirmTransfer.setOnClickListener(v -> attemptTransfer());
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        cancelPendingLookup();
+    }
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+
     private void switchMode(TransferMode mode) {
         currentMode = mode;
+        hideLookupCards();
+        recipientFound = false;
+        tilRecipientPhone.setError(null);
+        tilRecipientCard.setError(null);
 
         if (mode == TransferMode.PHONE) {
             tabPhone.setBackgroundResource(R.drawable.bg_tab_active);
             tabCard.setBackgroundResource(R.drawable.bg_tab_inactive);
-            ((TextView) tabPhone.findViewWithTag(null) != null
-                    ? tabPhone.getChildAt(1) : tabPhone.getChildAt(1))
-                    .setVisibility(View.VISIBLE);
-
+            tabPhoneTitle.setTextColor(0xFFFFFFFF);
+            tabPhoneSub.setTextColor(0xCCFFFFFF);
+            tabCardTitle.setTextColor(0xFF6200EE);
+            tabCardSub.setTextColor(0xFF757575);
             sectionPhone.setVisibility(View.VISIBLE);
             sectionCard.setVisibility(View.GONE);
-            btnConfirmTransfer.setText("Перевести");
-
-            // Reset tab label colors
-            setTabLabelColors(tabPhone, "#FFFFFF", "#CCFFFFFF");
-            setTabLabelColors(tabCard, "#6200EE", "#757575");
-
-            tilRecipientCard.setError(null);
         } else {
             tabCard.setBackgroundResource(R.drawable.bg_tab_active);
             tabPhone.setBackgroundResource(R.drawable.bg_tab_inactive);
-
+            tabCardTitle.setTextColor(0xFFFFFFFF);
+            tabCardSub.setTextColor(0xCCFFFFFF);
+            tabPhoneTitle.setTextColor(0xFF6200EE);
+            tabPhoneSub.setTextColor(0xFF757575);
             sectionCard.setVisibility(View.VISIBLE);
             sectionPhone.setVisibility(View.GONE);
-            btnConfirmTransfer.setText("Перевести");
-
-            setTabLabelColors(tabCard, "#FFFFFF", "#CCFFFFFF");
-            setTabLabelColors(tabPhone, "#6200EE", "#757575");
-
-            tilRecipientPhone.setError(null);
         }
     }
 
-    private void setTabLabelColors(LinearLayout tab, String labelColor, String sublabelColor) {
-        if (tab.getChildCount() >= 3) {
-            ((TextView) tab.getChildAt(1)).setTextColor(android.graphics.Color.parseColor(labelColor));
-            ((TextView) tab.getChildAt(2)).setTextColor(android.graphics.Color.parseColor(sublabelColor));
+    // ── Phone lookup ──────────────────────────────────────────────────────────
+
+    private void scheduleLookup(String phone) {
+        cancelPendingLookup();
+        cardLookupLoading.setVisibility(View.VISIBLE);
+        lookupRunnable = () -> lookupUser(phone);
+        lookupHandler.postDelayed(lookupRunnable, LOOKUP_DEBOUNCE_MS);
+    }
+
+    private void cancelPendingLookup() {
+        if (lookupRunnable != null) {
+            lookupHandler.removeCallbacks(lookupRunnable);
+            lookupRunnable = null;
+        }
+        if (pendingLookup != null) {
+            pendingLookup.cancel();
+            pendingLookup = null;
         }
     }
+
+    private void lookupUser(String phone) {
+        if (apiService == null || !isAdded()) return;
+        pendingLookup = apiService.lookupUserByPhone(phone);
+        pendingLookup.enqueue(new Callback<UserLookupResponse>() {
+            @Override
+            public void onResponse(Call<UserLookupResponse> call, Response<UserLookupResponse> response) {
+                if (!isAdded() || getContext() == null || call.isCanceled()) return;
+                cardLookupLoading.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    recipientFound = true;
+                    tvRecipientName.setText(response.body().getDisplayName());
+                    cardRecipientInfo.setVisibility(View.VISIBLE);
+                    cardRecipientNotFound.setVisibility(View.GONE);
+                } else {
+                    recipientFound = false;
+                    cardRecipientInfo.setVisibility(View.GONE);
+                    cardRecipientNotFound.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserLookupResponse> call, Throwable t) {
+                if (!isAdded() || call.isCanceled()) return;
+                cardLookupLoading.setVisibility(View.GONE);
+                Log.w(TAG, "Lookup failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void hideLookupCards() {
+        if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.GONE);
+        if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.GONE);
+        if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
+    }
+
+    // ── Transfer ──────────────────────────────────────────────────────────────
 
     private void attemptTransfer() {
         tilTransferAmount.setError(null);
-
         String amountInput = etTransferAmount.getText() != null
                 ? etTransferAmount.getText().toString().trim() : "";
 
         BigDecimal amount = null;
-        boolean cancel = false;
+        boolean amountInvalid = false;
 
         if (amountInput.isEmpty()) {
             tilTransferAmount.setError("Введите сумму перевода");
             etTransferAmount.requestFocus();
-            cancel = true;
+            amountInvalid = true;
         } else {
             try {
                 amount = new BigDecimal(amountInput).setScale(2, RoundingMode.HALF_UP);
                 if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                     tilTransferAmount.setError("Сумма должна быть больше нуля");
                     etTransferAmount.requestFocus();
-                    cancel = true;
+                    amountInvalid = true;
                     amount = null;
                 }
             } catch (NumberFormatException e) {
                 tilTransferAmount.setError("Введите корректное число");
                 etTransferAmount.requestFocus();
-                cancel = true;
+                amountInvalid = true;
             }
         }
 
         if (currentMode == TransferMode.PHONE) {
-            cancel = validateAndTransferByPhone(amount, cancel);
+            transferByPhone(amount, amountInvalid);
         } else {
-            cancel = validateAndTransferByCard(amount, cancel);
+            transferByCard(amount, amountInvalid);
         }
     }
 
-    private boolean validateAndTransferByPhone(BigDecimal amount, boolean amountInvalid) {
+    private void transferByPhone(BigDecimal amount, boolean amountInvalid) {
         tilRecipientPhone.setError(null);
-
-        String phoneInput = etRecipientPhone.getText() != null
+        String phone = etRecipientPhone.getText() != null
                 ? etRecipientPhone.getText().toString().trim() : "";
-        boolean cancel = amountInvalid;
+        boolean invalid = amountInvalid;
 
-        if (phoneInput.isEmpty()) {
+        if (phone.isEmpty()) {
             tilRecipientPhone.setError("Введите номер телефона получателя");
             etRecipientPhone.requestFocus();
-            cancel = true;
-        } else if (!phoneInput.startsWith("+7") || phoneInput.length() != 12) {
-            tilRecipientPhone.setError("Формат: +7XXXXXXXXXX (12 символов)");
+            invalid = true;
+        } else if (!phone.startsWith("+7") || phone.length() != 12) {
+            tilRecipientPhone.setError("Формат: +7XXXXXXXXXX");
             etRecipientPhone.requestFocus();
-            cancel = true;
-        } else if (!phoneInput.substring(1).matches("\\d+")) {
-            tilRecipientPhone.setError("Только цифры после +");
+            invalid = true;
+        } else if (!recipientFound) {
+            tilRecipientPhone.setError("Клиент Tumar Bank не найден");
             etRecipientPhone.requestFocus();
-            cancel = true;
+            invalid = true;
         }
 
-        if (cancel) return true;
+        if (invalid || amount == null) return;
 
-        Log.d(TAG, "Transfer by phone to " + phoneInput + ", amount " + amount);
         showLoading(true);
-
-        TransferRequest request = new TransferRequest(phoneInput, amount);
-
         if (apiService == null) {
             Toast.makeText(getContext(), "Ошибка сети", Toast.LENGTH_SHORT).show();
             showLoading(false);
-            return true;
+            return;
         }
 
-        apiService.transferFunds(request).enqueue(new Callback<TransferResponse>() {
+        apiService.transferFunds(new TransferRequest(phone, amount)).enqueue(new Callback<TransferResponse>() {
             @Override
             public void onResponse(Call<TransferResponse> call, Response<TransferResponse> response) {
                 showLoading(false);
                 if (!isAdded() || getContext() == null) return;
-
-                if (response.isSuccessful() && response.body() != null) {
-                    TransferResponse result = response.body();
-                    if (result.isSuccess()) {
-                        Toast.makeText(getContext(), "Перевод выполнен успешно!", Toast.LENGTH_LONG).show();
-                        etRecipientPhone.setText("");
-                        etTransferAmount.setText("");
-                    } else {
-                        String msg = result.getMessage() != null ? result.getMessage() : "Не удалось выполнить перевод";
-                        if (msg.toLowerCase().contains("recipient") || msg.toLowerCase().contains("получател")) {
-                            tilRecipientPhone.setError(msg);
-                        } else {
-                            Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
-                        }
-                    }
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(getContext(), "Перевод выполнен успешно!", Toast.LENGTH_LONG).show();
+                    etRecipientPhone.setText("");
+                    etTransferAmount.setText("");
+                    hideLookupCards();
+                    recipientFound = false;
                 } else {
-                    Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_LONG).show();
+                    String msg = response.body() != null && response.body().getMessage() != null
+                            ? response.body().getMessage() : "Не удалось выполнить перевод";
+                    Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -246,40 +335,32 @@ public class TransferFragment extends Fragment {
             public void onFailure(Call<TransferResponse> call, Throwable t) {
                 showLoading(false);
                 if (!isAdded() || getContext() == null) return;
-                Log.e(TAG, "Network error", t);
                 Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-
-        return false;
     }
 
-    private boolean validateAndTransferByCard(BigDecimal amount, boolean amountInvalid) {
+    private void transferByCard(BigDecimal amount, boolean amountInvalid) {
         tilRecipientCard.setError(null);
-
-        String cardInput = etRecipientCard.getText() != null
+        String card = etRecipientCard.getText() != null
                 ? etRecipientCard.getText().toString().replaceAll("\\s", "") : "";
-        boolean cancel = amountInvalid;
+        boolean invalid = amountInvalid;
 
-        if (cardInput.isEmpty()) {
+        if (card.isEmpty()) {
             tilRecipientCard.setError("Введите номер карты получателя");
             etRecipientCard.requestFocus();
-            cancel = true;
-        } else if (!cardInput.matches("\\d{16}")) {
+            invalid = true;
+        } else if (!card.matches("\\d{16}")) {
             tilRecipientCard.setError("Номер карты должен содержать 16 цифр");
             etRecipientCard.requestFocus();
-            cancel = true;
+            invalid = true;
         }
 
-        if (cancel) return true;
+        if (invalid || amount == null) return;
 
-        // Card transfers — feature in development, show informational message
         Toast.makeText(getContext(),
-                "Перевод по карте №" + maskCard(cardInput) + " на сумму " +
-                        amount.toPlainString() + " ₸ — функция в разработке",
+                "Перевод на карту " + maskCard(card) + " — функция в разработке",
                 Toast.LENGTH_LONG).show();
-
-        return false;
     }
 
     private String maskCard(String card) {
@@ -288,40 +369,33 @@ public class TransferFragment extends Fragment {
     }
 
     private void showLoading(boolean isLoading) {
-        if (progressBarTransfer != null) {
+        if (progressBarTransfer != null)
             progressBarTransfer.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        }
-        if (btnConfirmTransfer != null) {
+        if (btnConfirmTransfer != null)
             btnConfirmTransfer.setEnabled(!isLoading);
-        }
     }
 
-    // Auto-formats card input as: XXXX XXXX XXXX XXXX
+    // ── Card number formatter ─────────────────────────────────────────────────
+
     private static class CardNumberFormatter implements TextWatcher {
-        private boolean isFormatting;
+        private boolean formatting;
 
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
         @Override
         public void afterTextChanged(Editable s) {
-            if (isFormatting) return;
-            isFormatting = true;
-
+            if (formatting) return;
+            formatting = true;
             String digits = s.toString().replaceAll("\\s", "");
             if (digits.length() > 16) digits = digits.substring(0, 16);
-
-            StringBuilder formatted = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < digits.length(); i++) {
-                if (i > 0 && i % 4 == 0) formatted.append(' ');
-                formatted.append(digits.charAt(i));
+                if (i > 0 && i % 4 == 0) sb.append(' ');
+                sb.append(digits.charAt(i));
             }
-
-            s.replace(0, s.length(), formatted.toString());
-            isFormatting = false;
+            s.replace(0, s.length(), sb.toString());
+            formatting = false;
         }
     }
 }

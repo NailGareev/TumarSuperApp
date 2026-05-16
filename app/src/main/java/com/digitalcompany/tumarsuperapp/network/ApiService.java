@@ -14,6 +14,7 @@ import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
 import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
+import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -22,6 +23,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Интерфейс, описывающий эндпоинты API для Retrofit.
@@ -76,6 +78,12 @@ public interface ApiService {
      */
     @POST("api/pay")
     Call<PayResponse> pay(@Body PayRequest payRequest);
+
+    /**
+     * Поиск клиента Tumar по номеру телефона (для подтверждения получателя перевода).
+     */
+    @GET("api/lookup-phone")
+    Call<UserLookupResponse> lookupUserByPhone(@Query("phone") String phone);
 
     // --- КОНЕЦ: Добавленные методы ---
 
