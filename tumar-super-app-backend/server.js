@@ -569,6 +569,27 @@ app.post('/api/card/issue', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/tours - Список активных туров (публичный)
+app.get('/api/tours', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT id, location, hotel_name, stars, price, months,
+                    discount_percent, original_price, image_url, is_hot
+             FROM tours
+             WHERE is_active = 1
+             ORDER BY created_at DESC`
+        );
+        res.json({ success: true, tours: rows });
+    } catch (err) {
+        console.error('Get tours error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {

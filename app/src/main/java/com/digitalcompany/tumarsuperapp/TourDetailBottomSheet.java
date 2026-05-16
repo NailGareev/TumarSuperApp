@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.digitalcompany.tumarsuperapp.adapter.TourCardAdapter.TourCard;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
@@ -22,15 +23,15 @@ import java.util.Locale;
 
 public class TourDetailBottomSheet extends BottomSheetDialogFragment {
 
-    private static final String KEY_LOCATION      = "location";
-    private static final String KEY_HOTEL         = "hotel";
-    private static final String KEY_STARS         = "stars";
-    private static final String KEY_PRICE         = "price";
-    private static final String KEY_MONTHLY       = "monthly";
-    private static final String KEY_MONTHS        = "months";
-    private static final String KEY_DISCOUNT      = "discount";
-    private static final String KEY_ORIG_PRICE    = "orig_price";
-    private static final String KEY_IMAGE_RES     = "image_res";
+    private static final String KEY_LOCATION   = "location";
+    private static final String KEY_HOTEL      = "hotel";
+    private static final String KEY_STARS      = "stars";
+    private static final String KEY_PRICE      = "price";
+    private static final String KEY_MONTHLY    = "monthly";
+    private static final String KEY_MONTHS     = "months";
+    private static final String KEY_DISCOUNT   = "discount";
+    private static final String KEY_ORIG_PRICE = "orig_price";
+    private static final String KEY_IMAGE_URL  = "image_url";
 
     public static TourDetailBottomSheet newInstance(TourCard card) {
         TourDetailBottomSheet sheet = new TourDetailBottomSheet();
@@ -43,7 +44,7 @@ public class TourDetailBottomSheet extends BottomSheetDialogFragment {
         args.putInt(KEY_MONTHS,        card.months);
         args.putInt(KEY_DISCOUNT,      card.discountPercent);
         args.putLong(KEY_ORIG_PRICE,   card.originalPrice);
-        args.putInt(KEY_IMAGE_RES,     card.imageRes);
+        args.putString(KEY_IMAGE_URL,  card.imageUrl);
         sheet.setArguments(args);
         return sheet;
     }
@@ -63,16 +64,20 @@ public class TourDetailBottomSheet extends BottomSheetDialogFragment {
 
         NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("ru"));
 
-        view.<ImageView>findViewById(R.id.iv_detail_photo)
-                .setImageResource(args.getInt(KEY_IMAGE_RES));
+        ImageView ivPhoto = view.findViewById(R.id.iv_detail_photo);
+        Glide.with(this)
+                .load(args.getString(KEY_IMAGE_URL))
+                .placeholder(R.drawable.placeholder_tour)
+                .error(R.drawable.placeholder_tour)
+                .centerCrop()
+                .into(ivPhoto);
+
         view.<TextView>findViewById(R.id.tv_detail_location)
                 .setText(args.getString(KEY_LOCATION));
-
-        String stars = buildStars(args.getInt(KEY_STARS));
-        view.<TextView>findViewById(R.id.tv_detail_stars).setText(stars);
+        view.<TextView>findViewById(R.id.tv_detail_stars)
+                .setText(buildStars(args.getInt(KEY_STARS)));
         view.<TextView>findViewById(R.id.tv_detail_hotel)
                 .setText(args.getString(KEY_HOTEL));
-
         view.<TextView>findViewById(R.id.tv_detail_price)
                 .setText(fmt.format(args.getLong(KEY_PRICE)) + " ₸");
 
@@ -97,8 +102,7 @@ public class TourDetailBottomSheet extends BottomSheetDialogFragment {
         view.<TextView>findViewById(R.id.tv_detail_installment)
                 .setText("× " + args.getInt(KEY_MONTHS) + " мес  (0·0·" + args.getInt(KEY_MONTHS) + ")");
 
-        MaterialButton btnBook = view.findViewById(R.id.btn_book);
-        btnBook.setOnClickListener(v -> {
+        view.<MaterialButton>findViewById(R.id.btn_book).setOnClickListener(v -> {
             Toast.makeText(requireContext(),
                     "Бронирование будет доступно в полной версии",
                     Toast.LENGTH_SHORT).show();

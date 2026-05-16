@@ -16,6 +16,7 @@ import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
 import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
+import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -91,6 +92,9 @@ public interface ApiService {
 
     @POST("api/card/issue")
     Call<CardResponse> issueCard();
+
+    @GET("api/tours")
+    Call<TourListResponse> getTours();
 
     // --- КОНЕЦ: Добавленные методы ---
 

@@ -9,7 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.digitalcompany.tumarsuperapp.R;
+import com.digitalcompany.tumarsuperapp.network.models.Tour;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +28,13 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         public final int months;
         public final int discountPercent;
         public final long originalPrice;
-        public final int imageRes;
+        public final String imageUrl;
         public final boolean isHot;
 
         public TourCard(String location, String hotelName, int stars,
                         long price, long monthlyPrice, int months,
                         int discountPercent, long originalPrice,
-                        int imageRes, boolean isHot) {
+                        String imageUrl, boolean isHot) {
             this.location = location;
             this.hotelName = hotelName;
             this.stars = stars;
@@ -41,8 +43,23 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
             this.months = months;
             this.discountPercent = discountPercent;
             this.originalPrice = originalPrice;
-            this.imageRes = imageRes;
+            this.imageUrl = imageUrl;
             this.isHot = isHot;
+        }
+
+        public static TourCard from(Tour t) {
+            return new TourCard(
+                    t.location,
+                    t.hotelName,
+                    t.stars,
+                    t.price,
+                    t.getMonthlyPrice(),
+                    t.months,
+                    t.discountPercent,
+                    t.originalPrice,
+                    t.imageUrl,
+                    t.isHot == 1
+            );
         }
     }
 
@@ -76,7 +93,13 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int pos) {
         TourCard card = items.get(pos);
 
-        h.ivTour.setImageResource(card.imageRes);
+        Glide.with(h.ivTour.getContext())
+                .load(card.imageUrl)
+                .placeholder(R.drawable.placeholder_tour)
+                .error(R.drawable.placeholder_tour)
+                .centerCrop()
+                .into(h.ivTour);
+
         h.tvLocation.setText(card.location);
         h.tvHotelName.setText(card.hotelName + "  " + stars(card.stars));
         h.tvPrice.setText(fmt.format(card.price) + " ₸");
@@ -86,25 +109,21 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         h.tvOriginalPrice.setText(fmt.format(card.originalPrice) + " ₸");
         h.tvOriginalPrice.setPaintFlags(h.tvOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
-        // Yellow badge for monthly price
         GradientDrawable yellowBg = new GradientDrawable();
         yellowBg.setColor(0xFFFFC107);
         yellowBg.setCornerRadius(dp(h, 4));
         h.tvMonthly.setBackground(yellowBg);
 
-        // Red badge for discount
         GradientDrawable redBg = new GradientDrawable();
         redBg.setColor(0xFFE53935);
         redBg.setCornerRadius(dp(h, 4));
         h.tvDiscount.setBackground(redBg);
 
-        // Yellow badge for "0·0·12" installment
         GradientDrawable installBg = new GradientDrawable();
         installBg.setColor(0xFFFFC107);
         installBg.setCornerRadius(dp(h, 4));
         h.tvInstallmentBadge.setBackground(installBg);
 
-        // Dark semi-transparent badge for location
         GradientDrawable darkBg = new GradientDrawable();
         darkBg.setColor(0xCC000000);
         darkBg.setCornerRadius(dp(h, 8));

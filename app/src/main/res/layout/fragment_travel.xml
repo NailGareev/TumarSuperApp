@@ -161,6 +161,28 @@
                 app:cornerRadius="22dp" />
         </LinearLayout>
 
+        <!-- Loading indicator -->
+        <ProgressBar
+            android:id="@+id/progress_tours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
+            android:visibility="gone" />
+
+        <!-- Empty state -->
+        <TextView
+            android:id="@+id/tv_tours_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="32dp"
+            android:gravity="center"
+            android:text="Туры не найдены"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
         <!-- Tour grid -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_tours"
