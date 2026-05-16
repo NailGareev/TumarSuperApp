@@ -24,8 +24,12 @@ public class CardResponse {
         @SerializedName("expiry")
         private String expiry;
 
+        @SerializedName("cvv")
+        private String cvv;
+
         public String getCardNumber() { return cardNumber; }
         public String getExpiry() { return expiry; }
+        public String getCvv() { return cvv; }
 
         public String getFormattedNumber() {
             if (cardNumber == null || cardNumber.length() != 16) return cardNumber;

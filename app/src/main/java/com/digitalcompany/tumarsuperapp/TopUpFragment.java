@@ -58,7 +58,7 @@ public class TopUpFragment extends Fragment {
     private ProgressBar progressCardLoad;
     private CardView cardDisplayContainer;
     private LinearLayout layoutNoCard;
-    private TextView tvVirtualCardNumber, tvVirtualCardExpiry;
+    private TextView tvVirtualCardNumber, tvVirtualCardExpiry, tvVirtualCardCvv;
     private MaterialButton btnIssueCard;
 
     // Method selector cards
@@ -108,6 +108,7 @@ public class TopUpFragment extends Fragment {
         layoutNoCard = view.findViewById(R.id.layout_no_card);
         tvVirtualCardNumber = view.findViewById(R.id.tv_virtual_card_number);
         tvVirtualCardExpiry = view.findViewById(R.id.tv_virtual_card_expiry);
+        tvVirtualCardCvv    = view.findViewById(R.id.tv_virtual_card_cvv);
         btnIssueCard = view.findViewById(R.id.btn_issue_card);
 
         view.findViewById(R.id.chip_topup_500).setOnClickListener(v -> etAmount.setText("500"));
@@ -198,6 +199,7 @@ public class TopUpFragment extends Fragment {
     private void showVirtualCard(CardResponse.CardData card) {
         tvVirtualCardNumber.setText(card.getFormattedNumber());
         tvVirtualCardExpiry.setText(card.getExpiry());
+        if (card.getCvv() != null) tvVirtualCardCvv.setText(card.getCvv());
         cardDisplayContainer.setVisibility(View.VISIBLE);
         layoutNoCard.setVisibility(View.GONE);
     }

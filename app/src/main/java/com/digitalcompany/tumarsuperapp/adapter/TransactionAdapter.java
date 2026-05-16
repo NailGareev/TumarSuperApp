@@ -89,33 +89,53 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
         // Метод для заполнения View данными транзакции
         public void bind(Transaction transaction, int currentUserId) {
+            String type = transaction.getTransactionType();
             boolean isIncoming = transaction.getRecipientId() == currentUserId;
             boolean isOutgoing = transaction.getSenderId() == currentUserId;
 
-            // 1. Устанавливаем иконку и описание
+            // 1. Иконка, описание и знак суммы определяются по типу транзакции
             String description;
-            if (isIncoming) {
-                ivIcon.setImageResource(R.drawable.ic_arrow_downward); // Иконка входящего
-                String senderName = formatName(transaction.getSenderFirstName(), transaction.getSenderLastName());
-                description = "Перевод от " + (senderName != null ? senderName : transaction.getSenderPhone());
-            } else if (isOutgoing) {
-                ivIcon.setImageResource(R.drawable.ic_arrow_upward); // Иконка исходящего
-                String recipientName = formatName(transaction.getRecipientFirstName(), transaction.getRecipientLastName());
-                description = "Перевод " + (recipientName != null ? recipientName : transaction.getRecipientPhone());
+            String amountPrefix;
+            int amountColor;
+
+            if ("PAYMENT".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_payment);
+                String raw = transaction.getDescription();
+                description = (raw != null && !raw.isEmpty()) ? raw : "Оплата услуг";
+                amountPrefix = "-";
+                amountColor = ContextCompat.getColor(context, R.color.red_error);
+
+            } else if ("TOPUP".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_add_circle_outline);
+                description = "Пополнение баланса";
+                amountPrefix = "+";
+                amountColor = ContextCompat.getColor(context, R.color.green_success);
+
             } else {
-                // Другие типы транзакций (пополнение, оплата) - пока просто иконка по умолчанию
-                ivIcon.setImageResource(R.drawable.ic_history); // Пример иконки по умолчанию
-                description = transaction.getTransactionType(); // Отображаем тип
+                // TRANSFER — входящий или исходящий
+                if (isIncoming) {
+                    ivIcon.setImageResource(R.drawable.ic_arrow_downward);
+                    String name = formatName(transaction.getSenderFirstName(), transaction.getSenderLastName());
+                    description = "Перевод от " + (name != null ? name : nvl(transaction.getSenderPhone(), "—"));
+                    amountPrefix = "+";
+                    amountColor = ContextCompat.getColor(context, R.color.green_success);
+                } else {
+                    ivIcon.setImageResource(R.drawable.ic_arrow_upward);
+                    String name = formatName(transaction.getRecipientFirstName(), transaction.getRecipientLastName());
+                    description = "Перевод " + (name != null ? name : nvl(transaction.getRecipientPhone(), "—"));
+                    amountPrefix = "-";
+                    amountColor = ContextCompat.getColor(context, R.color.red_error);
+                }
             }
+
             tvDescription.setText(description);
 
-            // 2. Форматируем и устанавливаем сумму и цвет
+            // 2. Форматируем сумму
             BigDecimal amount = transaction.getAmount() != null ? transaction.getAmount() : BigDecimal.ZERO;
             String currencyCode = transaction.getCurrency() != null ? transaction.getCurrency().toUpperCase() : "KZT";
             String formattedAmount;
-            int amountColor;
 
-            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("ru", "KZ")); // Используем локаль
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("ru", "KZ"));
             try {
                 currencyFormat.setCurrency(Currency.getInstance(currencyCode));
                 if ("KZT".equals(currencyCode)) {
@@ -127,24 +147,10 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
                 }
                 formattedAmount = currencyFormat.format(amount);
             } catch (Exception e) {
-                // Запасной вариант
                 formattedAmount = String.format(Locale.US, "%.2f %s", amount, currencyCode);
             }
 
-
-            if (isIncoming) {
-                formattedAmount = "+" + formattedAmount;
-                // Используем цвет из ресурсов, если определен, иначе стандартный зеленый
-                amountColor = ContextCompat.getColor(context, R.color.green_success); // Замените на ваш цвет
-            } else if (isOutgoing) {
-                formattedAmount = "-" + formattedAmount;
-                // Используем цвет из ресурсов, если определен, иначе стандартный красный/черный
-                amountColor = ContextCompat.getColor(context, R.color.red_error); // Замените на ваш цвет
-            } else {
-                // Для других типов - цвет по умолчанию
-                amountColor = ContextCompat.getColor(context, R.color.grey_text); // Замените на ваш цвет
-            }
-            tvAmount.setText(formattedAmount);
+            tvAmount.setText(amountPrefix + formattedAmount);
             tvAmount.setTextColor(amountColor);
 
 
@@ -159,17 +165,19 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
             }
         }
 
-        // Вспомогательный метод для форматирования имени
         private String formatName(String firstName, String lastName) {
             if (firstName != null && !firstName.isEmpty() && lastName != null && !lastName.isEmpty()) {
-                // Возвращаем "Имя Ф." (первая буква фамилии)
                 return firstName + " " + lastName.substring(0, 1).toUpperCase() + ".";
             } else if (firstName != null && !firstName.isEmpty()) {
                 return firstName;
             } else if (lastName != null && !lastName.isEmpty()) {
                 return lastName;
             }
-            return null; // Возвращаем null, если имени/фамилии нет
+            return null;
+        }
+
+        private String nvl(String value, String fallback) {
+            return (value != null && !value.isEmpty()) ? value : fallback;
         }
     }
 }

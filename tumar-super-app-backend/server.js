@@ -9,6 +9,7 @@ const mysql = require('mysql2/promise'); // Используем mysql2 с по�
 const bcrypt = require('bcryptjs');     // Для хэширования и сравнения паролей
 const cors = require('cors');           // Для разрешения кросс-доменных запросов от Android
 const jwt = require('jsonwebtoken');    // Для создания и проверки JWT токенов
+const crypto = require('crypto');       // Для шифрования данных карты
 
 // Создаем экземпляр Express приложения
 const app = express();
@@ -19,6 +20,31 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET.length < 32) {
     console.error('!!! FATAL: JWT_SECRET is missing or too short (< 32 chars). Set a strong secret in .env !!!');
     process.exit(1);
+}
+
+// --- AES-256-CBC encryption helpers for virtual card sensitive fields ---
+const CARD_ENC_KEY = process.env.CARD_ENCRYPTION_KEY;
+if (!CARD_ENC_KEY || CARD_ENC_KEY.length !== 64) {
+    console.error('!!! FATAL: CARD_ENCRYPTION_KEY must be a 64-char hex string (32 bytes). Set it in .env !!!');
+    process.exit(1);
+}
+const CARD_ENC_KEY_BUF = Buffer.from(CARD_ENC_KEY, 'hex');
+
+function encryptField(plaintext) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', CARD_ENC_KEY_BUF, iv);
+    let enc = cipher.update(plaintext, 'utf8', 'hex');
+    enc += cipher.final('hex');
+    return iv.toString('hex') + ':' + enc;
+}
+
+function decryptField(ciphertext) {
+    const [ivHex, enc] = ciphertext.split(':');
+    const iv = Buffer.from(ivHex, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', CARD_ENC_KEY_BUF, iv);
+    let dec = decipher.update(enc, 'hex', 'utf8');
+    dec += decipher.final('utf8');
+    return dec;
 }
 
 // --- Настройка Middleware ---
@@ -443,32 +469,45 @@ app.post('/api/topup', authenticateToken, async (req, res) => {
     }
 });
 
+// Helper: ensure cards table exists with encrypted columns (idempotent migration)
+async function ensureCardsTable(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS cards (
+            id              INT AUTO_INCREMENT PRIMARY KEY,
+            user_id         INT NOT NULL UNIQUE,
+            card_number     VARCHAR(16)  NOT NULL,
+            cvv_encrypted   VARCHAR(255) NOT NULL,
+            expiry_encrypted VARCHAR(255) NOT NULL,
+            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    // Migration: add columns that may be missing in older schema
+    for (const col of [
+        "ADD COLUMN IF NOT EXISTS cvv_encrypted VARCHAR(255) NOT NULL DEFAULT ''",
+        "ADD COLUMN IF NOT EXISTS expiry_encrypted VARCHAR(255) NOT NULL DEFAULT ''"
+    ]) {
+        try { await connection.execute(`ALTER TABLE cards ${col}`); } catch (e) { /* already exists */ }
+    }
+}
+
 // === GET /api/card - Получить виртуальную карту пользователя ===
 app.get('/api/card', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     let connection;
     try {
         connection = await pool.getConnection();
-        await connection.execute(`
-            CREATE TABLE IF NOT EXISTS cards (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL UNIQUE,
-                card_number VARCHAR(16) NOT NULL,
-                expiry_month INT NOT NULL,
-                expiry_year INT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        await ensureCardsTable(connection);
         const [rows] = await connection.execute(
-            'SELECT card_number, expiry_month, expiry_year FROM cards WHERE user_id = ?',
+            'SELECT card_number, cvv_encrypted, expiry_encrypted FROM cards WHERE user_id = ?',
             [userId]
         );
         if (rows.length === 0) {
             return res.json({ success: true, card: null });
         }
         const c = rows[0];
-        const expiry = `${String(c.expiry_month).padStart(2,'0')}/${String(c.expiry_year).slice(-2)}`;
-        res.json({ success: true, card: { cardNumber: c.card_number, expiry } });
+        const expiry = decryptField(c.expiry_encrypted);
+        const cvv    = decryptField(c.cvv_encrypted);
+        res.json({ success: true, card: { cardNumber: c.card_number, expiry, cvv } });
     } catch (err) {
         console.error('Get card error:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -483,39 +522,45 @@ app.post('/api/card/issue', authenticateToken, async (req, res) => {
     let connection;
     try {
         connection = await pool.getConnection();
-        await connection.execute(`
-            CREATE TABLE IF NOT EXISTS cards (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL UNIQUE,
-                card_number VARCHAR(16) NOT NULL,
-                expiry_month INT NOT NULL,
-                expiry_year INT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        await ensureCardsTable(connection);
+
         const [existing] = await connection.execute(
-            'SELECT id FROM cards WHERE user_id = ?', [userId]
+            'SELECT card_number, cvv_encrypted, expiry_encrypted FROM cards WHERE user_id = ?', [userId]
         );
         if (existing.length > 0) {
-            const [rows] = await connection.execute(
-                'SELECT card_number, expiry_month, expiry_year FROM cards WHERE user_id = ?', [userId]
-            );
-            const c = rows[0];
-            const expiry = `${String(c.expiry_month).padStart(2,'0')}/${String(c.expiry_year).slice(-2)}`;
-            return res.json({ success: true, card: { cardNumber: c.card_number, expiry } });
+            const c = existing[0];
+            return res.json({
+                success: true,
+                card: {
+                    cardNumber: c.card_number,
+                    expiry: decryptField(c.expiry_encrypted),
+                    cvv:    decryptField(c.cvv_encrypted)
+                }
+            });
         }
-        // Generate card number: 4279 + 12 random digits
+
+        // Generate card: 4279 + 12 random digits
         const suffix = Math.floor(Math.random() * 1e12).toString().padStart(12, '0');
         const cardNumber = '4279' + suffix;
+
+        // Generate CVV: 3 random digits
+        const cvv = String(Math.floor(Math.random() * 900) + 100);
+
+        // Expiry: 5 years from now
         const now = new Date();
-        const expiryMonth = now.getMonth() + 1;
-        const expiryYear = now.getFullYear() + 5;
+        const expiryMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const expiryYear  = String(now.getFullYear() + 5).slice(-2);
+        const expiry = `${expiryMonth}/${expiryYear}`;
+
+        const cvvEncrypted    = encryptField(cvv);
+        const expiryEncrypted = encryptField(expiry);
+
         await connection.execute(
-            'INSERT INTO cards (user_id, card_number, expiry_month, expiry_year) VALUES (?, ?, ?, ?)',
-            [userId, cardNumber, expiryMonth, expiryYear]
+            'INSERT INTO cards (user_id, card_number, cvv_encrypted, expiry_encrypted) VALUES (?, ?, ?, ?)',
+            [userId, cardNumber, cvvEncrypted, expiryEncrypted]
         );
-        const expiry = `${String(expiryMonth).padStart(2,'0')}/${String(expiryYear).slice(-2)}`;
-        res.json({ success: true, card: { cardNumber, expiry } });
+
+        res.json({ success: true, card: { cardNumber, expiry, cvv } });
     } catch (err) {
         console.error('Issue card error:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
