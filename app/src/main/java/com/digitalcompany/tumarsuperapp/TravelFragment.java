@@ -92,8 +92,8 @@ public class TravelFragment extends Fragment {
                 android.content.res.ColorStateList.valueOf(0xFFE53935));
         active.setTextColor(0xFFFFFFFF);
         inactive.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFF2C2C2E));
-        inactive.setTextColor(0xFF9E9E9E);
+                android.content.res.ColorStateList.valueOf(0xFFEEEEEE));
+        inactive.setTextColor(0xFF757575);
     }
 
     private void setupRecyclerView(View root) {
@@ -123,22 +123,22 @@ public class TravelFragment extends Fragment {
 
     private List<TourCard> allCards() {
         return Arrays.asList(
-            new TourCard("Вьетнам, Нячанг",  "Premier Havana Nha Trang Ho...", 5,
-                    657780, 54815, 12, 25, 884923,  R.drawable.banner1, false),
-            new TourCard("Вьетнам, Нячанг",  "Best Western Premier Marvell...", 5,
-                    648869, 54073, 12, 27, 897484,  R.drawable.banner2, true),
+            new TourCard("Вьетнам, Нячанг",  "Premier Havana Nha Trang Hotel", 5,
+                    657780, 54815, 12, 25, 884923,  R.drawable.tour_vietnam_1, false),
+            new TourCard("Вьетнам, Нячанг",  "Best Western Premier Marvell", 5,
+                    648869, 54073, 12, 27, 897484,  R.drawable.tour_vietnam_2, true),
             new TourCard("Вьетнам, Нячанг",  "The Signature Hotel Nha Trang", 5,
-                    815352, 67946, 12,  7, 884294,  R.drawable.banner3, false),
-            new TourCard("Вьетнам, Нячанг",  "The Westin Resort & Spa Cam...",  5,
-                    811220, 67602, 12, 30, 1161047, R.drawable.banner1, true),
+                    815352, 67946, 12,  7, 884294,  R.drawable.tour_vietnam_3, false),
+            new TourCard("Вьетнам, Нячанг",  "The Westin Resort & Spa Cam Ranh", 5,
+                    811220, 67602, 12, 30, 1161047, R.drawable.tour_vietnam_4, true),
             new TourCard("Турция, Анталья",   "Rixos Premium Belek",            5,
-                    890000, 74167, 12, 15, 1047058, R.drawable.banner2, false),
+                    890000, 74167, 12, 15, 1047058, R.drawable.tour_turkey,    false),
             new TourCard("ОАЭ, Дубай",        "Atlantis The Palm",              5,
-                    1200000, 100000, 12, 10, 1333333, R.drawable.banner3, false),
-            new TourCard("Таиланд, Паттайя",  "Amari Pattaya",                  4,
-                    480000, 40000, 12, 20, 600000,  R.drawable.banner1, true),
-            new TourCard("Мальдивы",           "Baros Maldives",                 5,
-                    1350000, 112500, 12, 25, 1800000, R.drawable.banner2, true)
+                    1200000, 100000, 12, 10, 1333333, R.drawable.tour_uae,     false),
+            new TourCard("Таиланд, Паттайя",  "Amari Pattaya Resort",           4,
+                    480000, 40000, 12, 20, 600000,  R.drawable.tour_thailand,  true),
+            new TourCard("Мальдивы",           "Baros Maldives",                5,
+                    1350000, 112500, 12, 25, 1800000, R.drawable.tour_maldives, true)
         );
     }
 

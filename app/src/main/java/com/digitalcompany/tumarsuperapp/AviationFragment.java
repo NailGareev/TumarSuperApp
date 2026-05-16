@@ -71,11 +71,11 @@ public class AviationFragment extends Fragment {
                         if (isFrom) {
                             fromCity = city;
                             tvFrom.setText(city);
-                            tvFrom.setTextColor(0xFFFFFFFF);
+                            tvFrom.setTextColor(0xFF212121);
                         } else {
                             toCity = city;
                             tvTo.setText(city);
-                            tvTo.setTextColor(0xFFFFFFFF);
+                            tvTo.setTextColor(0xFF212121);
                         }
                     }
                 })
@@ -89,9 +89,9 @@ public class AviationFragment extends Fragment {
         toCity = tmp;
 
         tvFrom.setText(fromCity.isEmpty() ? "Откуда" : fromCity);
-        tvFrom.setTextColor(fromCity.isEmpty() ? 0xFF9E9E9E : 0xFFFFFFFF);
+        tvFrom.setTextColor(fromCity.isEmpty() ? 0xFF9E9E9E : 0xFF212121);
         tvTo.setText(toCity.isEmpty() ? "Куда" : toCity);
-        tvTo.setTextColor(toCity.isEmpty() ? 0xFF9E9E9E : 0xFFFFFFFF);
+        tvTo.setTextColor(toCity.isEmpty() ? 0xFF9E9E9E : 0xFF212121);
     }
 
     private void showDatePicker(boolean isDepart) {
@@ -102,10 +102,10 @@ public class AviationFragment extends Fragment {
                     day, monthName(month));
             if (isDepart) {
                 tvDateDepart.setText(date);
-                tvDateDepart.setTextColor(0xFFFFFFFF);
+                tvDateDepart.setTextColor(0xFF212121);
             } else {
                 tvDateReturn.setText(date);
-                tvDateReturn.setTextColor(0xFFFFFFFF);
+                tvDateReturn.setTextColor(0xFF212121);
             }
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
                 .show();
@@ -120,7 +120,7 @@ public class AviationFragment extends Fragment {
                 .setSingleChoiceItems(classes, 0, (d, which) -> selected[0] = which)
                 .setPositiveButton("Выбрать", (d, w) -> {
                     tvPassengers.setText("1 пассажир, " + classes[selected[0]].toLowerCase());
-                    tvPassengers.setTextColor(0xFFFFFFFF);
+                    tvPassengers.setTextColor(0xFF212121);
                 })
                 .setNegativeButton("Отмена", null)
                 .show();

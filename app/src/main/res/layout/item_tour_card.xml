@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="@color/travel_surface">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/card_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,25 +17,25 @@
         android:clickable="true"
         android:focusable="true">
 
-        <!-- Photo with overlays -->
+        <!-- Gradient photo with overlays -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="140dp">
+            android:layout_height="130dp">
 
             <ImageView
                 android:id="@+id/iv_tour"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"
+                android:scaleType="fitXY"
                 android:contentDescription="@null" />
 
-            <!-- Gradient overlay -->
+            <!-- Gradient overlay for readability -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#44000000" />
+                android:background="#33000000" />
 
-            <!-- Installment badge -->
+            <!-- Installment badge top-left -->
             <TextView
                 android:id="@+id/tv_installment_badge"
                 android:layout_width="wrap_content"
@@ -51,7 +51,7 @@
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp" />
 
-            <!-- Location badge -->
+            <!-- Location badge bottom-left -->
             <TextView
                 android:id="@+id/tv_location"
                 android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
                 android:paddingBottom="4dp" />
         </FrameLayout>
 
-        <!-- Details -->
+        <!-- Card details (light background) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -78,13 +78,14 @@
                 android:id="@+id/tv_hotel_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
+                android:textColor="@color/text_primary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:lineSpacingMultiplier="1.2" />
 
+            <!-- Price row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,7 +97,7 @@
                     android:id="@+id/tv_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -118,10 +119,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="3dp"
-                    android:textColor="@color/travel_text_secondary"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp" />
             </LinearLayout>
 
+            <!-- Discount + original price row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -146,7 +148,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
-                    android:textColor="@color/travel_text_secondary"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp" />
             </LinearLayout>
         </LinearLayout>

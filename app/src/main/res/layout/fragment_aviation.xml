@@ -5,57 +5,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/travel_dark">
+    android:background="@color/app_bg">
 
     <!-- Header -->
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@color/travel_accent_blue">
+        android:layout_height="130dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@drawable/bg_auth_header">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/banner2"
-            android:scaleType="centerCrop"
-            android:alpha="0.5"
-            android:contentDescription="@null" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✈"
+            android:textSize="32sp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="✈"
-                android:textSize="32sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Поиск авиабилетов"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </FrameLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Поиск авиабилетов"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <!-- Form -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="@drawable/bg_auth_form">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:paddingTop="28dp">
 
             <!-- From/To card -->
             <androidx.cardview.widget.CardView
@@ -64,7 +52,7 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/travel_surface">
+                app:cardBackgroundColor="@color/card_bg">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -90,13 +78,13 @@
                             android:layout_width="30dp"
                             android:layout_height="wrap_content"
                             android:text="↗"
-                            android:textColor="@color/travel_accent_red"
+                            android:textColor="@color/colorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Откуда" android:textColor="#666666" android:textSize="11sp" />
-                            <TextView android:id="@+id/tv_from" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите город" android:textColor="@color/travel_text_secondary" android:textSize="16sp" android:layout_marginTop="2dp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Откуда" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                            <TextView android:id="@+id/tv_from" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите город" android:textColor="@color/text_primary" android:textSize="16sp" android:layout_marginTop="2dp" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -104,7 +92,7 @@
                         android:id="@+id/divider"
                         android:layout_width="0dp"
                         android:layout_height="1dp"
-                        android:background="#3D3D3D"
+                        android:background="#E0E0E0"
                         app:layout_constraintTop_toBottomOf="@id/ll_from"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
@@ -117,7 +105,7 @@
                         android:text="⇅"
                         android:textColor="@color/white"
                         android:textSize="16sp"
-                        app:backgroundTint="#E53935"
+                        app:backgroundTint="@color/colorPrimary"
                         app:cornerRadius="20dp"
                         app:layout_constraintTop_toTopOf="@id/divider"
                         app:layout_constraintBottom_toBottomOf="@id/divider"
@@ -143,13 +131,13 @@
                             android:layout_width="30dp"
                             android:layout_height="wrap_content"
                             android:text="↘"
-                            android:textColor="@color/travel_accent_red"
+                            android:textColor="@color/colorPrimary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Куда" android:textColor="#666666" android:textSize="11sp" />
-                            <TextView android:id="@+id/tv_to" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите город" android:textColor="@color/travel_text_secondary" android:textSize="16sp" android:layout_marginTop="2dp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Куда" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                            <TextView android:id="@+id/tv_to" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите город" android:textColor="@color/text_primary" android:textSize="16sp" android:layout_marginTop="2dp" />
                         </LinearLayout>
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -172,11 +160,11 @@
                     android:focusable="true"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/travel_surface">
+                    app:cardBackgroundColor="@color/card_bg">
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="64dp" android:orientation="vertical" android:gravity="center_vertical" android:padding="16dp" android:background="?attr/selectableItemBackground">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Туда" android:textColor="#666666" android:textSize="11sp" />
-                        <TextView android:id="@+id/tv_date_depart" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите дату" android:textColor="@color/travel_text_secondary" android:textSize="15sp" android:layout_marginTop="3dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Туда" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                        <TextView android:id="@+id/tv_date_depart" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите дату" android:textColor="@color/text_primary" android:textSize="15sp" android:layout_marginTop="3dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -189,11 +177,11 @@
                     android:focusable="true"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/travel_surface">
+                    app:cardBackgroundColor="@color/card_bg">
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="64dp" android:orientation="vertical" android:gravity="center_vertical" android:padding="16dp" android:background="?attr/selectableItemBackground">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Обратно" android:textColor="#666666" android:textSize="11sp" />
-                        <TextView android:id="@+id/tv_date_return" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите дату" android:textColor="@color/travel_text_secondary" android:textSize="15sp" android:layout_marginTop="3dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Обратно" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                        <TextView android:id="@+id/tv_date_return" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Выберите дату" android:textColor="@color/text_primary" android:textSize="15sp" android:layout_marginTop="3dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
@@ -208,12 +196,12 @@
                 android:focusable="true"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/travel_surface">
+                app:cardBackgroundColor="@color/card_bg">
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="64dp" android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp" android:background="?attr/selectableItemBackground">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👤  " android:textSize="18sp" />
-                    <TextView android:id="@+id/tv_passengers" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1 пассажир, эконом" android:textColor="@color/white" android:textSize="15sp" />
-                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_chevron_right_24dp" android:tint="#666666" android:contentDescription="@null" />
+                    <TextView android:id="@+id/tv_passengers" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1 пассажир, эконом" android:textColor="@color/text_primary" android:textSize="15sp" />
+                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_chevron_right_24dp" android:tint="@color/text_secondary" android:contentDescription="@null" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -227,7 +215,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="17sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/travel_accent_blue"
+                app:backgroundTint="@color/colorPrimary"
                 app:cornerRadius="16dp" />
 
         </LinearLayout>

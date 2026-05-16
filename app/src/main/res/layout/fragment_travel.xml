@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/travel_dark">
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,13 +24,11 @@
                 android:src="@drawable/banner1"
                 android:contentDescription="@null" />
 
-            <!-- Gradient overlay on banner -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#55000000" />
+                android:background="#44000000" />
 
-            <!-- Banner title -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -54,15 +52,6 @@
                     android:textColor="#DDFFFFFF"
                     android:textSize="14sp" />
             </LinearLayout>
-
-            <!-- Dots -->
-            <LinearLayout
-                android:id="@+id/banner_dots"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                android:orientation="horizontal" />
         </FrameLayout>
 
         <!-- Categories -->
@@ -88,7 +77,7 @@
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✈" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Авиа" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Авиа" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -103,7 +92,7 @@
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🚆" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="ЖД" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="ЖД" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -118,7 +107,7 @@
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🌴" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Туры" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Туры" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -132,7 +121,7 @@
                 android:clickable="true"
                 android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏔" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="KZ" android:textColor="@color/white" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="KZ" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -167,8 +156,8 @@
                 android:layout_weight="1"
                 android:text="🔥 Горящие"
                 android:textSize="13sp"
-                android:textColor="@color/travel_text_secondary"
-                android:backgroundTint="@color/travel_surface"
+                android:textColor="@color/text_secondary"
+                android:backgroundTint="#EEEEEE"
                 app:cornerRadius="22dp" />
         </LinearLayout>
 
