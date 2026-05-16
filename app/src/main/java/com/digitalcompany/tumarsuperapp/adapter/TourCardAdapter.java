@@ -46,8 +46,17 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         }
     }
 
+    public interface OnCardClickListener {
+        void onCardClick(TourCard card);
+    }
+
     private final List<TourCard> items = new ArrayList<>();
     private final NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("ru"));
+    private OnCardClickListener clickListener;
+
+    public void setOnCardClickListener(OnCardClickListener listener) {
+        this.clickListener = listener;
+    }
 
     public void setItems(List<TourCard> data) {
         items.clear();
@@ -100,6 +109,10 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         darkBg.setColor(0xCC000000);
         darkBg.setCornerRadius(dp(h, 8));
         h.tvLocation.setBackground(darkBg);
+
+        h.itemView.setOnClickListener(v -> {
+            if (clickListener != null) clickListener.onCardClick(card);
+        });
     }
 
     @Override

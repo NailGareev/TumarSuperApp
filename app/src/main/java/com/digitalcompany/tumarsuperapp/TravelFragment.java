@@ -99,10 +99,16 @@ public class TravelFragment extends Fragment {
     private void setupRecyclerView(View root) {
         RecyclerView rv = root.findViewById(R.id.rv_tours);
         adapter = new TourCardAdapter();
+        adapter.setOnCardClickListener(this::openTourDetail);
         rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         rv.setAdapter(adapter);
         rv.setNestedScrollingEnabled(false);
         adapter.setItems(allCards());
+    }
+
+    private void openTourDetail(TourCardAdapter.TourCard card) {
+        if (getChildFragmentManager() == null) return;
+        TourDetailBottomSheet.newInstance(card).show(getChildFragmentManager(), "tour_detail");
     }
 
     private void navigateTo(Fragment fragment, String tag) {
