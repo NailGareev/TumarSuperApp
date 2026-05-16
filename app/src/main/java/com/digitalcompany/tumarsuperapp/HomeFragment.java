@@ -114,7 +114,7 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     // Метод для установки слушателей на кнопки действий
     private void setupActionButtons() {
-        buttonTopUp.setOnClickListener(v -> navigateToFragment(new PaymentsFragment(), "payments"));
+        buttonTopUp.setOnClickListener(v -> navigateToFragment(new TopUpFragment(), "topup"));
 
         buttonHistory.setOnClickListener(v -> {
             if (getActivity() != null) {
