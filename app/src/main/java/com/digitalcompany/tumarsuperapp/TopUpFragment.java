@@ -1,21 +1,24 @@
 package com.digitalcompany.tumarsuperapp;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
 import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
@@ -26,6 +29,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.Currency;
 import java.util.Locale;
 
@@ -35,14 +39,31 @@ import retrofit2.Response;
 
 public class TopUpFragment extends Fragment {
 
-    private static final String USER_PREFS_NAME = "UserPrefs";
-    private static final String KEY_AUTH_TOKEN = "auth_token";
+    private enum Method { CARD, BANK_TRANSFER }
+    private Method selectedMethod = Method.CARD;
 
     private TextInputLayout tilAmount;
     private TextInputEditText etAmount;
     private TextView tvCurrentBalance;
     private ProgressBar progressBar;
     private MaterialButton btnTopUp;
+
+    // Card input section
+    private LinearLayout sectionCardInput;
+    private TextInputLayout tilCardNumber, tilCardExpiry, tilCardCvv;
+    private TextInputEditText etCardNumber, etCardExpiry, etCardCvv;
+
+    // Bank transfer section
+    private LinearLayout sectionBankTransfer;
+    private ProgressBar progressCardLoad;
+    private CardView cardDisplayContainer;
+    private LinearLayout layoutNoCard;
+    private TextView tvVirtualCardNumber, tvVirtualCardExpiry;
+    private MaterialButton btnIssueCard;
+
+    // Method selector cards
+    private CardView methodCard, methodBank;
+
     private ApiService apiService;
 
     public TopUpFragment() {}
@@ -70,14 +91,60 @@ public class TopUpFragment extends Fragment {
         progressBar = view.findViewById(R.id.progress_topup);
         btnTopUp = view.findViewById(R.id.btn_topup);
 
+        methodCard = view.findViewById(R.id.method_card);
+        methodBank = view.findViewById(R.id.method_bank);
+
+        sectionCardInput = view.findViewById(R.id.section_card_input);
+        tilCardNumber = view.findViewById(R.id.til_card_number);
+        etCardNumber = view.findViewById(R.id.et_card_number);
+        tilCardExpiry = view.findViewById(R.id.til_card_expiry);
+        etCardExpiry = view.findViewById(R.id.et_card_expiry);
+        tilCardCvv = view.findViewById(R.id.til_card_cvv);
+        etCardCvv = view.findViewById(R.id.et_card_cvv);
+
+        sectionBankTransfer = view.findViewById(R.id.section_bank_transfer);
+        progressCardLoad = view.findViewById(R.id.progress_card_load);
+        cardDisplayContainer = view.findViewById(R.id.card_display_container);
+        layoutNoCard = view.findViewById(R.id.layout_no_card);
+        tvVirtualCardNumber = view.findViewById(R.id.tv_virtual_card_number);
+        tvVirtualCardExpiry = view.findViewById(R.id.tv_virtual_card_expiry);
+        btnIssueCard = view.findViewById(R.id.btn_issue_card);
+
         view.findViewById(R.id.chip_topup_500).setOnClickListener(v -> etAmount.setText("500"));
         view.findViewById(R.id.chip_topup_1000).setOnClickListener(v -> etAmount.setText("1000"));
         view.findViewById(R.id.chip_topup_5000).setOnClickListener(v -> etAmount.setText("5000"));
         view.findViewById(R.id.chip_topup_10000).setOnClickListener(v -> etAmount.setText("10000"));
 
+        methodCard.setOnClickListener(v -> selectMethod(Method.CARD));
+        methodBank.setOnClickListener(v -> selectMethod(Method.BANK_TRANSFER));
+
+        btnIssueCard.setOnClickListener(v -> issueCard());
         btnTopUp.setOnClickListener(v -> attemptTopUp());
 
+        etCardNumber.addTextChangedListener(new CardNumberFormatter());
+        etCardExpiry.addTextChangedListener(new ExpiryFormatter());
+
         loadCurrentBalance();
+    }
+
+    private void selectMethod(Method method) {
+        selectedMethod = method;
+        if (method == Method.CARD) {
+            methodCard.setCardBackgroundColor(0xFF6200EE);
+            methodBank.setCardBackgroundColor(resolveCardBg());
+            sectionCardInput.setVisibility(View.VISIBLE);
+            sectionBankTransfer.setVisibility(View.GONE);
+        } else {
+            methodBank.setCardBackgroundColor(0xFF6200EE);
+            methodCard.setCardBackgroundColor(resolveCardBg());
+            sectionCardInput.setVisibility(View.GONE);
+            sectionBankTransfer.setVisibility(View.VISIBLE);
+            loadUserCard();
+        }
+    }
+
+    private int resolveCardBg() {
+        return getResources().getColor(R.color.card_bg, null);
     }
 
     private void loadCurrentBalance() {
@@ -94,6 +161,78 @@ public class TopUpFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<UserProfileResponse> call, Throwable t) {}
+        });
+    }
+
+    private void loadUserCard() {
+        if (apiService == null) return;
+        progressCardLoad.setVisibility(View.VISIBLE);
+        cardDisplayContainer.setVisibility(View.GONE);
+        layoutNoCard.setVisibility(View.GONE);
+
+        apiService.getCard().enqueue(new Callback<CardResponse>() {
+            @Override
+            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                progressCardLoad.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    CardResponse.CardData card = response.body().getCard();
+                    if (card != null) {
+                        showVirtualCard(card);
+                    } else {
+                        layoutNoCard.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    layoutNoCard.setVisibility(View.VISIBLE);
+                }
+            }
+            @Override
+            public void onFailure(Call<CardResponse> call, Throwable t) {
+                if (!isAdded() || getContext() == null) return;
+                progressCardLoad.setVisibility(View.GONE);
+                layoutNoCard.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void showVirtualCard(CardResponse.CardData card) {
+        tvVirtualCardNumber.setText(card.getFormattedNumber());
+        tvVirtualCardExpiry.setText(card.getExpiry());
+        cardDisplayContainer.setVisibility(View.VISIBLE);
+        layoutNoCard.setVisibility(View.GONE);
+    }
+
+    private void issueCard() {
+        if (apiService == null) return;
+        btnIssueCard.setEnabled(false);
+        btnIssueCard.setText("Выпускаем...");
+
+        apiService.issueCard().enqueue(new Callback<CardResponse>() {
+            @Override
+            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                btnIssueCard.setEnabled(true);
+                btnIssueCard.setText("Выпустить карту");
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    CardResponse.CardData card = response.body().getCard();
+                    if (card != null) {
+                        layoutNoCard.setVisibility(View.GONE);
+                        showVirtualCard(card);
+                        Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    String msg = response.body() != null && response.body().getMessage() != null
+                            ? response.body().getMessage() : "Ошибка сервера";
+                    Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<CardResponse> call, Throwable t) {
+                if (!isAdded() || getContext() == null) return;
+                btnIssueCard.setEnabled(true);
+                btnIssueCard.setText("Выпустить карту");
+                Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
     }
 
@@ -126,6 +265,15 @@ public class TopUpFragment extends Fragment {
             return;
         }
 
+        if (selectedMethod == Method.CARD) {
+            if (!validateCardInputs()) return;
+        } else {
+            if (cardDisplayContainer.getVisibility() != View.VISIBLE) {
+                Toast.makeText(getContext(), "Сначала выпустите карту Tumar Bank", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
         setLoading(true);
         apiService.topUp(new TopUpRequest(amount)).enqueue(new Callback<TopUpResponse>() {
             @Override
@@ -138,15 +286,13 @@ public class TopUpFragment extends Fragment {
                     tvCurrentBalance.setText(newBalStr);
                     etAmount.setText("");
                     Toast.makeText(getContext(),
-                            "Баланс пополнен! Новый баланс: " + newBalStr,
-                            Toast.LENGTH_LONG).show();
+                            "Баланс пополнен! Новый баланс: " + newBalStr, Toast.LENGTH_LONG).show();
                 } else {
                     String msg = response.body() != null && response.body().getMessage() != null
                             ? response.body().getMessage() : "Ошибка пополнения";
                     Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
                 }
             }
-
             @Override
             public void onFailure(Call<TopUpResponse> call, Throwable t) {
                 setLoading(false);
@@ -154,6 +300,46 @@ public class TopUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private boolean validateCardInputs() {
+        tilCardNumber.setError(null);
+        tilCardExpiry.setError(null);
+        tilCardCvv.setError(null);
+
+        String rawNumber = etCardNumber.getText() != null ? etCardNumber.getText().toString() : "";
+        String digits = rawNumber.replaceAll("\\s", "");
+        if (digits.length() != 16) {
+            tilCardNumber.setError("Введите 16-значный номер карты");
+            etCardNumber.requestFocus();
+            return false;
+        }
+
+        String expiry = etCardExpiry.getText() != null ? etCardExpiry.getText().toString().trim() : "";
+        if (!expiry.matches("\\d{2}/\\d{2}")) {
+            tilCardExpiry.setError("Формат: ММ/ГГ");
+            etCardExpiry.requestFocus();
+            return false;
+        }
+        int month = Integer.parseInt(expiry.substring(0, 2));
+        int year = 2000 + Integer.parseInt(expiry.substring(3, 5));
+        Calendar cal = Calendar.getInstance();
+        int curMonth = cal.get(Calendar.MONTH) + 1;
+        int curYear = cal.get(Calendar.YEAR);
+        if (month < 1 || month > 12 || year < curYear || (year == curYear && month < curMonth)) {
+            tilCardExpiry.setError("Карта истекла или дата некорректна");
+            etCardExpiry.requestFocus();
+            return false;
+        }
+
+        String cvv = etCardCvv.getText() != null ? etCardCvv.getText().toString().trim() : "";
+        if (cvv.length() < 3 || cvv.length() > 4) {
+            tilCardCvv.setError("CVV: 3–4 цифры");
+            etCardCvv.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
     private void setLoading(boolean loading) {
@@ -170,6 +356,48 @@ public class TopUpFragment extends Fragment {
             return fmt.format(amount);
         } catch (Exception e) {
             return amount.toPlainString() + " ₸";
+        }
+    }
+
+    // Formats card number input as XXXX XXXX XXXX XXXX
+    private static class CardNumberFormatter implements TextWatcher {
+        private boolean editing = false;
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (editing) return;
+            editing = true;
+            String digits = s.toString().replaceAll("[^\\d]", "");
+            if (digits.length() > 16) digits = digits.substring(0, 16);
+            StringBuilder formatted = new StringBuilder();
+            for (int i = 0; i < digits.length(); i++) {
+                if (i > 0 && i % 4 == 0) formatted.append(' ');
+                formatted.append(digits.charAt(i));
+            }
+            s.replace(0, s.length(), formatted);
+            editing = false;
+        }
+    }
+
+    // Formats expiry as MM/YY
+    private static class ExpiryFormatter implements TextWatcher {
+        private boolean editing = false;
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (editing) return;
+            editing = true;
+            String digits = s.toString().replaceAll("[^\\d]", "");
+            if (digits.length() > 4) digits = digits.substring(0, 4);
+            StringBuilder formatted = new StringBuilder();
+            for (int i = 0; i < digits.length(); i++) {
+                if (i == 2) formatted.append('/');
+                formatted.append(digits.charAt(i));
+            }
+            s.replace(0, s.length(), formatted);
+            editing = false;
         }
     }
 }

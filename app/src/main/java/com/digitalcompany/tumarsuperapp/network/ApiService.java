@@ -15,6 +15,7 @@ import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
 import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
+import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -84,6 +85,12 @@ public interface ApiService {
      */
     @GET("api/lookup-phone")
     Call<UserLookupResponse> lookupUserByPhone(@Query("phone") String phone);
+
+    @GET("api/card")
+    Call<CardResponse> getCard();
+
+    @POST("api/card/issue")
+    Call<CardResponse> issueCard();
 
     // --- КОНЕЦ: Добавленные методы ---
 

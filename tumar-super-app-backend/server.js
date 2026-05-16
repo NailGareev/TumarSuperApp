@@ -443,6 +443,87 @@ app.post('/api/topup', authenticateToken, async (req, res) => {
     }
 });
 
+// === GET /api/card - Получить виртуальную карту пользователя ===
+app.get('/api/card', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS cards (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL UNIQUE,
+                card_number VARCHAR(16) NOT NULL,
+                expiry_month INT NOT NULL,
+                expiry_year INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        const [rows] = await connection.execute(
+            'SELECT card_number, expiry_month, expiry_year FROM cards WHERE user_id = ?',
+            [userId]
+        );
+        if (rows.length === 0) {
+            return res.json({ success: true, card: null });
+        }
+        const c = rows[0];
+        const expiry = `${String(c.expiry_month).padStart(2,'0')}/${String(c.expiry_year).slice(-2)}`;
+        res.json({ success: true, card: { cardNumber: c.card_number, expiry } });
+    } catch (err) {
+        console.error('Get card error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === POST /api/card/issue - Выпустить виртуальную карту ===
+app.post('/api/card/issue', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS cards (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL UNIQUE,
+                card_number VARCHAR(16) NOT NULL,
+                expiry_month INT NOT NULL,
+                expiry_year INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        const [existing] = await connection.execute(
+            'SELECT id FROM cards WHERE user_id = ?', [userId]
+        );
+        if (existing.length > 0) {
+            const [rows] = await connection.execute(
+                'SELECT card_number, expiry_month, expiry_year FROM cards WHERE user_id = ?', [userId]
+            );
+            const c = rows[0];
+            const expiry = `${String(c.expiry_month).padStart(2,'0')}/${String(c.expiry_year).slice(-2)}`;
+            return res.json({ success: true, card: { cardNumber: c.card_number, expiry } });
+        }
+        // Generate card number: 4279 + 12 random digits
+        const suffix = Math.floor(Math.random() * 1e12).toString().padStart(12, '0');
+        const cardNumber = '4279' + suffix;
+        const now = new Date();
+        const expiryMonth = now.getMonth() + 1;
+        const expiryYear = now.getFullYear() + 5;
+        await connection.execute(
+            'INSERT INTO cards (user_id, card_number, expiry_month, expiry_year) VALUES (?, ?, ?, ?)',
+            [userId, cardNumber, expiryMonth, expiryYear]
+        );
+        const expiry = `${String(expiryMonth).padStart(2,'0')}/${String(expiryYear).slice(-2)}`;
+        res.json({ success: true, card: { cardNumber, expiry } });
+    } catch (err) {
+        console.error('Issue card error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {
