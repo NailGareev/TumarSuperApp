@@ -50,12 +50,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="28dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="24dp"
             android:paddingBottom="40dp">
 
-            <!-- Transfer method tabs -->
+            <!-- ── Transfer method tabs ── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -64,24 +64,27 @@
                 android:textColor="@color/text_secondary"
                 android:textStyle="bold"
                 android:letterSpacing="0.1"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="10dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="22dp">
 
-                <!-- Tab: by phone -->
+                <!-- Tab: phone -->
                 <LinearLayout
                     android:id="@+id/tab_phone"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="6dp"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="14dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:background="@drawable/bg_tab_active"
                     android:clickable="true"
                     android:focusable="true">
@@ -90,40 +93,43 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📱"
-                        android:textSize="22sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/tab_phone_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="По номеру\nтелефона"
-                        android:textSize="12sp"
+                        android:layout_marginTop="5dp"
+                        android:text="Телефон"
+                        android:textSize="11sp"
                         android:textColor="@color/white"
                         android:textStyle="bold"
-                        android:gravity="center"
-                        android:lineSpacingMultiplier="1.2" />
+                        android:gravity="center" />
 
                     <TextView
                         android:id="@+id/tab_phone_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="Клиентам Tumar"
-                        android:textSize="10sp"
+                        android:layout_marginTop="2dp"
+                        android:text="Tumar"
+                        android:textSize="9sp"
                         android:textColor="#CCFFFFFF"
                         android:gravity="center" />
                 </LinearLayout>
 
-                <!-- Tab: by card -->
+                <!-- Tab: card -->
                 <LinearLayout
                     android:id="@+id/tab_card"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="14dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:background="@drawable/bg_tab_inactive"
                     android:clickable="true"
                     android:focusable="true">
@@ -132,33 +138,78 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="💳"
-                        android:textSize="22sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/tab_card_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="По номеру\nкарты"
-                        android:textSize="12sp"
+                        android:layout_marginTop="5dp"
+                        android:text="Карта"
+                        android:textSize="11sp"
                         android:textColor="@color/colorPrimary"
                         android:textStyle="bold"
-                        android:gravity="center"
-                        android:lineSpacingMultiplier="1.2" />
+                        android:gravity="center" />
 
                     <TextView
                         android:id="@+id/tab_card_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
+                        android:layout_marginTop="2dp"
                         android:text="Банки РК"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
+                        android:textColor="@color/text_secondary"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Tab: international -->
+                <LinearLayout
+                    android:id="@+id/tab_international"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:background="@drawable/bg_tab_inactive"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌍"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/tab_intl_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="Межд."
+                        android:textSize="11sp"
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:id="@+id/tab_intl_sub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="За рубеж"
+                        android:textSize="9sp"
                         android:textColor="@color/text_secondary"
                         android:gravity="center" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ===== Phone section ===== -->
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section: Phone ── -->
+            <!-- ══════════════════════════════════════════ -->
             <LinearLayout
                 android:id="@+id/section_phone"
                 android:layout_width="match_parent"
@@ -192,7 +243,7 @@
                         android:maxLength="12" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Recipient info card (shown after lookup) -->
+                <!-- Found -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_recipient_info"
                     android:layout_width="match_parent"
@@ -250,7 +301,7 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Lookup loading indicator -->
+                <!-- Loading -->
                 <LinearLayout
                     android:id="@+id/card_lookup_loading"
                     android:layout_width="match_parent"
@@ -274,7 +325,7 @@
                         android:textColor="@color/text_secondary" />
                 </LinearLayout>
 
-                <!-- Not found hint -->
+                <!-- Not found -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_recipient_not_found"
                     android:layout_width="match_parent"
@@ -313,13 +364,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="💡 Переводы на номер телефона — мгновенно и без комиссии"
+                    android:text="💡 Переводы по номеру телефона — мгновенно и без комиссии"
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:lineSpacingMultiplier="1.3" />
             </LinearLayout>
 
-            <!-- ===== Card section ===== -->
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section: Card ── -->
+            <!-- ══════════════════════════════════════════ -->
             <LinearLayout
                 android:id="@+id/section_card"
                 android:layout_width="match_parent"
@@ -414,11 +467,281 @@
                     android:lineSpacingMultiplier="1.3" />
             </LinearLayout>
 
-            <!-- Amount -->
+            <!-- ══════════════════════════════════════════ -->
+            <!-- ── Section: International ── -->
+            <!-- ══════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/section_international"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Info banner -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#EDE7F6">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🌍"
+                            android:textSize="26sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SWIFT / SEPA перевод"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorPrimary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="3dp"
+                                android:text="Срок: 1–5 рабочих дней · Комиссия от 1%"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Country -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="СТРАНА НАЗНАЧЕНИЯ"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_intl_country"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Россия, Германия, США...">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_intl_country"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapWords" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Recipient name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="ФИО ПОЛУЧАТЕЛЯ (ЛАТИНИЦЕЙ)"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_intl_recipient"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="IVAN IVANOV">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_intl_recipient"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- IBAN -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="IBAN / НОМЕР СЧЁТА"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_intl_iban"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="DE89 3704 0044 0532 0130 00">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_intl_iban"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters"
+                        android:fontFamily="monospace" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- SWIFT -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="SWIFT / BIC КОД БАНКА"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_intl_swift"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="DEUTDEDB">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_intl_swift"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters"
+                        android:maxLength="11"
+                        android:fontFamily="monospace" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Currency -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="ВАЛЮТА ПЕРЕВОДА"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_usd"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:gravity="center"
+                        android:text="🇺🇸 USD"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:background="@drawable/bg_tab_active"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chip_eur"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:gravity="center"
+                        android:text="🇪🇺 EUR"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorPrimary"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chip_rub"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:gravity="center"
+                        android:text="🇷🇺 RUB"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorPrimary"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/chip_gbp"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="🇬🇧 GBP"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorPrimary"
+                        android:background="@drawable/bg_tab_inactive"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <!-- Purpose -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="НАЗНАЧЕНИЕ ПЛАТЕЖА"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_intl_purpose"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Например: оплата услуг">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_intl_purpose"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine"
+                        android:maxLines="2" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+            <!-- ── Shared: Amount ── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="22dp"
                 android:text="СУММА ПЕРЕВОДА"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -503,7 +826,7 @@
                 android:id="@+id/btn_confirm_transfer"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="24dp"
                 android:text="Перевести"
                 android:textSize="17sp"
                 android:textStyle="bold"
