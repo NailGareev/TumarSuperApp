@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Добавить товар — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/add-product.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <div style="flex:1"></div>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/seller/dashboard">Кабинет продавца</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Добавить товар</span>
+      </div>
+
+      <div class="add-product-layout">
+        <!-- Main Form -->
+        <div class="add-product-main">
+          <div class="card" style="padding:24px;margin-bottom:16px">
+            <h2 class="section-title" style="margin-bottom:20px">Основная информация</h2>
+            <form id="add-product-form">
+              <div class="form-group">
+                <label class="form-label">Название товара *</label>
+                <input type="text" id="product-name" class="form-control" placeholder="Введите полное название товара" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Категория *</label>
+                <select id="product-category" class="form-control" required>
+                  <option value="">Выберите категорию</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Бренд / Производитель</label>
+                <input type="text" id="product-brand" class="form-control" placeholder="Apple, Samsung, Nike...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Описание товара</label>
+                <textarea id="product-description" class="form-control" rows="5" placeholder="Подробное описание товара..."></textarea>
+              </div>
+            </form>
+          </div>
+
+          <!-- Attributes -->
+          <div class="card" style="padding:24px;margin-bottom:16px">
+            <div class="section-header" style="margin-bottom:16px">
+              <h2 class="section-title">Характеристики</h2>
+              <button class="btn btn-secondary btn-sm" onclick="addAttrRow()">+ Добавить</button>
+            </div>
+            <div id="attributes-list">
+              <div class="attr-row">
+                <input type="text" class="form-control attr-name" placeholder="Название (напр. Цвет)">
+                <input type="text" class="form-control attr-value" placeholder="Значение (напр. Чёрный)">
+                <button class="btn btn-sm" style="background:#ffebee;color:var(--red)" onclick="removeAttrRow(this)">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Images -->
+          <div class="card" style="padding:24px;margin-bottom:16px">
+            <h2 class="section-title" style="margin-bottom:16px">Фотографии</h2>
+
+            <!-- Main photo upload zone -->
+            <div class="form-group">
+              <label class="form-label">Главное фото <span style="color:var(--red)">*</span></label>
+              <div class="upload-zone" id="main-upload-zone" onclick="document.getElementById('main-file-input').click()">
+                <input type="file" id="main-file-input" accept="image/*" style="display:none" onchange="handleMainFile(this)">
+                <div class="upload-zone-placeholder" id="main-placeholder">
+                  <div class="upload-icon">📷</div>
+                  <div class="upload-text">Нажмите или перетащите фото</div>
+                  <div class="upload-hint">JPG, PNG, WEBP до 10 МБ</div>
+                </div>
+                <div class="upload-zone-preview" id="main-preview" style="display:none">
+                  <img id="main-preview-img" src="" alt="Главное фото">
+                  <button class="upload-change-btn" onclick="event.stopPropagation(); document.getElementById('main-file-input').click()">
+                    Изменить фото
+                  </button>
+                </div>
+                <div class="upload-zone-loading" id="main-loading" style="display:none">
+                  <div class="spinner" style="margin:0"></div>
+                  <span>Загрузка...</span>
+                </div>
+              </div>
+              <input type="hidden" id="main-image-url" value="">
+            </div>
+
+            <!-- Extra photos -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <label class="form-label" style="margin:0">Дополнительные фото</label>
+                <button class="btn btn-secondary btn-sm" onclick="addExtraPhoto()">+ Добавить</button>
+              </div>
+              <div id="extra-photos-list" class="extra-photos-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar: Pricing -->
+        <div class="add-product-sidebar">
+          <div class="card" style="padding:24px;margin-bottom:16px">
+            <h2 class="section-title" style="margin-bottom:20px">Цена и наличие</h2>
+            <div class="form-group">
+              <label class="form-label">Цена продажи (₸) *</label>
+              <input type="number" id="product-price" class="form-control" placeholder="0" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Старая цена (₸)</label>
+              <input type="number" id="product-orig-price" class="form-control" placeholder="0" min="0">
+              <p class="form-hint">Будет отображена с зачёркиванием</p>
+            </div>
+            <div class="discount-preview" id="discount-preview" style="display:none">
+              <span>Скидка: </span><strong id="discount-pct"></strong>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Остаток на складе *</label>
+              <input type="number" id="product-stock" class="form-control" placeholder="0" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Срок доставки (дней) *</label>
+              <input type="number" id="product-delivery" class="form-control" value="3" min="1" max="30" required>
+            </div>
+          </div>
+
+          <div id="add-product-error" class="error-msg" style="display:none"></div>
+          <button class="btn btn-primary btn-lg" style="width:100%" onclick="submitProduct()">
+            Опубликовать товар
+          </button>
+          <p class="form-hint" style="text-align:center;margin-top:10px">Товар появится в каталоге сразу после публикации</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/add-product.js"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tumar Market — Интернет-магазин</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск по товарам, брендам...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+    <nav class="header-nav">
+      <ul id="categories-nav"></ul>
+    </nav>
+  </header>
+
+  <!-- HERO BANNER -->
+  <div class="hero-slider">
+    <div class="hero-slide active" style="background: linear-gradient(135deg, #e31e24 0%, #880e4f 100%)">
+      <div class="hero-content">
+        <h1>Новый сезон — новые цены!</h1>
+        <p>Скидки до 50% на электронику и технику</p>
+        <a href="/catalog?category=electronics" class="btn btn-hero">Смотреть товары</a>
+      </div>
+    </div>
+    <div class="hero-slide" style="background: linear-gradient(135deg, #0d47a1 0%, #1b5e20 100%)">
+      <div class="hero-content">
+        <h1>Смартфоны и гаджеты</h1>
+        <p>Лучшие предложения от сотен продавцов</p>
+        <a href="/catalog?category=smartphones" class="btn btn-hero">Выбрать смартфон</a>
+      </div>
+    </div>
+    <div class="hero-dots" id="hero-dots"></div>
+  </div>
+
+  <main class="page-content">
+    <div class="container">
+
+      <!-- CATEGORY ICONS -->
+      <section class="section">
+        <h2 class="section-title">Категории</h2>
+        <div class="category-grid" id="category-grid"></div>
+      </section>
+
+      <!-- FEATURED PRODUCTS -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Популярные товары</h2>
+          <a href="/catalog" class="section-link">Смотреть все →</a>
+        </div>
+        <div class="product-grid" id="featured-products">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+      <!-- PROMO BANNER -->
+      <div class="promo-banner">
+        <div class="promo-item promo-red">
+          <div class="promo-text">
+            <h3>Стань продавцом!</h3>
+            <p>Регистрируй магазин и продавай миллионам покупателей</p>
+            <a href="/seller/store-register" class="btn btn-white">Зарегистрировать магазин</a>
+          </div>
+          <div class="promo-icon">🏪</div>
+        </div>
+        <div class="promo-item promo-blue">
+          <div class="promo-text">
+            <h3>Быстрая доставка</h3>
+            <p>Доставка по всему Казахстану от 1 дня</p>
+            <a href="/catalog" class="btn btn-white">Перейти в каталог</a>
+          </div>
+          <div class="promo-icon">🚚</div>
+        </div>
+      </div>
+
+      <!-- NEW ARRIVALS -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Новинки</h2>
+          <a href="/catalog?sort=newest" class="section-link">Все новинки →</a>
+        </div>
+        <div class="product-grid" id="new-products">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>tumar.market</h4>
+        <ul>
+          <li><a href="/catalog">Каталог товаров</a></li>
+          <li><a href="/seller/store-register">Стать продавцом</a></li>
+          <li><a href="#">О компании</a></li>
+          <li><a href="#">Пресс-центр</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Покупателям</h4>
+        <ul>
+          <li><a href="#">Как сделать заказ</a></li>
+          <li><a href="#">Доставка и оплата</a></li>
+          <li><a href="#">Возврат товара</a></li>
+          <li><a href="#">Гарантия</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Продавцам</h4>
+        <ul>
+          <li><a href="/seller/store-register">Регистрация магазина</a></li>
+          <li><a href="/seller/dashboard">Личный кабинет</a></li>
+          <li><a href="#">Условия сотрудничества</a></li>
+          <li><a href="#">Комиссия</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Поддержка</h4>
+        <ul>
+          <li><a href="#">8 800 080 02 02</a></li>
+          <li><a href="#">support@tumar.kz</a></li>
+          <li><a href="#">Чат с поддержкой</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 Tumar Market. Все права защищены. Демо-проект.</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/index.js"></script>
+</body>
+</html>

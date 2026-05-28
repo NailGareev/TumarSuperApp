@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container" style="max-width:800px">
+      <div id="profile-loading" class="loading-wrapper"><div class="spinner"></div></div>
+
+      <div id="profile-content" style="display:none">
+        <div class="profile-header card">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <div class="profile-info">
+            <h1 class="profile-name" id="profile-name"></h1>
+            <div class="profile-email" id="profile-email"></div>
+            <div class="profile-role" id="profile-role"></div>
+          </div>
+          <div class="profile-actions">
+            <a href="/orders" class="btn btn-secondary">📦 Мои заказы</a>
+            <button class="btn btn-outline" onclick="logout()">Выйти</button>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="profile-stats">
+          <div class="stat-box">
+            <div class="stat-icon">🛍</div>
+            <div id="stat-orders" class="stat-val">—</div>
+            <div class="stat-desc">Заказов</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon">💬</div>
+            <div class="stat-val">—</div>
+            <div class="stat-desc">Отзывов</div>
+          </div>
+          <div class="stat-box" id="seller-stat" style="display:none">
+            <div class="stat-icon">🏪</div>
+            <div class="stat-val">Продавец</div>
+            <div class="stat-desc"><a href="/seller/dashboard" style="color:var(--red)">Кабинет →</a></div>
+          </div>
+        </div>
+
+        <!-- Edit Profile -->
+        <div class="card profile-edit">
+          <h3>Редактировать профиль</h3>
+          <form id="profile-form">
+            <div class="form-group">
+              <label class="form-label">Имя</label>
+              <input type="text" id="edit-name" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Номер телефона</label>
+              <input type="tel" id="edit-phone" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </form>
+        </div>
+
+        <!-- Seller Section -->
+        <div id="seller-promo" class="seller-promo-card" style="display:none">
+          <div class="promo-icon">🏪</div>
+          <div>
+            <h3>Станьте продавцом!</h3>
+            <p>Регистрируйте магазин и начинайте продавать миллионам покупателей</p>
+          </div>
+          <a href="/seller/store-register" class="btn btn-primary">Зарегистрировать магазин</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

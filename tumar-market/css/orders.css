@@ -1,0 +1,94 @@
+/* ===== Orders Page ===== */
+.page-heading {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 22px;
+  letter-spacing: -.3px;
+}
+
+.order-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+.order-card:hover { box-shadow: var(--shadow); border-color: var(--gray-300); }
+
+.order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+}
+.order-header:hover { background: var(--gray-50); }
+.order-header-left { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.order-num { font-size: 15px; font-weight: 800; color: var(--gray-900); }
+.order-date { font-size: 12px; color: var(--gray-400); }
+.order-total-val { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+.order-chevron { font-size: 18px; color: var(--gray-400); transition: transform .2s; }
+.order-card.open .order-chevron { transform: rotate(180deg); }
+
+.order-items-preview {
+  padding: 14px 22px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.order-thumb {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  flex-shrink: 0;
+}
+.order-items-names { font-size: 13px; color: var(--gray-600); flex: 1; line-height: 1.5; }
+.order-items-more {
+  font-size: 12px;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+.order-actions {
+  padding: 12px 22px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--gray-100);
+  background: var(--gray-50);
+}
+
+/* Modal order detail */
+.modal-order-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.modal-order-item:last-child { border-bottom: none; }
+.modal-order-img {
+  width: 60px; height: 60px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--gray-100);
+  flex-shrink: 0;
+  border: 1px solid var(--gray-200);
+}
+.modal-order-info { flex: 1; }
+.modal-order-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+.modal-order-store { font-size: 12px; color: var(--gray-400); }
+.modal-order-qty { font-size: 12px; color: var(--gray-500); margin-top: 3px; }
+.modal-order-price { font-weight: 800; font-size: 15px; white-space: nowrap; color: var(--gray-900); }
+
+.order-detail-total {
+  font-size: 16px;
+  font-weight: 800;
+  padding: 14px 0 4px;
+  border-top: 2px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}

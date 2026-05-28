@@ -1,0 +1,123 @@
+/* ===== Store Register Page ===== */
+.store-reg-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+}
+
+.store-reg-hero {
+  background: linear-gradient(135deg, #e31e24 0%, #7b0006 100%);
+  border-radius: var(--radius-lg);
+  padding: 44px 40px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.store-reg-hero h1 {
+  font-size: 30px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  letter-spacing: -.5px;
+}
+.store-reg-hero p { font-size: 16px; opacity: .88; margin-bottom: 22px; }
+.store-benefits {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.benefit {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: .92;
+}
+
+.store-reg-form-wrap {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-md);
+  padding: 36px;
+}
+
+/* Steps */
+.store-reg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.step-num {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  color: var(--gray-500);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  transition: all .3s;
+}
+.step.active .step-num { background: var(--red); color: #fff; box-shadow: 0 4px 14px rgba(227,30,36,.3); }
+.step.done .step-num { background: var(--green); color: #fff; }
+.step-label { font-size: 12px; font-weight: 600; color: var(--gray-400); }
+.step.active .step-label { color: var(--red); }
+.step.done .step-label { color: var(--green); }
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--gray-200);
+  margin: 0 10px;
+  margin-bottom: 20px;
+  transition: background .3s;
+}
+.step-line.done { background: var(--green); }
+
+/* Step Content */
+.step-content { display: none; }
+.step-content.active { display: block; }
+.step-content h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--gray-900); }
+.step-content > p { color: var(--gray-500); margin-bottom: 22px; font-size: 14px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.success-box {
+  background: var(--green-light);
+  color: var(--green);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  border-left: 4px solid var(--green);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Success Screen */
+.success-screen {
+  text-align: center;
+  padding: 20px;
+}
+.success-icon { font-size: 84px; margin-bottom: 22px; }
+.success-screen h2 { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
+.success-screen p { color: var(--gray-500); margin-bottom: 28px; font-size: 15px; }
+.success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .store-reg-hero { padding: 28px 20px; }
+  .store-reg-form-wrap { padding: 22px 18px; }
+}

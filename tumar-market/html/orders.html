@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои заказы — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/orders.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container" style="max-width:900px">
+      <div class="breadcrumb">
+        <a href="/">Главная</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="/profile">Профиль</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Заказы</span>
+      </div>
+
+      <h1 class="page-heading" style="font-size:26px;font-weight:700;margin-bottom:20px">Мои заказы</h1>
+
+      <div class="tabs">
+        <div class="tab active" onclick="filterOrders('')">Все заказы</div>
+        <div class="tab" onclick="filterOrders('pending')">Ожидают</div>
+        <div class="tab" onclick="filterOrders('processing')">В обработке</div>
+        <div class="tab" onclick="filterOrders('shipped')">В пути</div>
+        <div class="tab" onclick="filterOrders('delivered')">Доставлены</div>
+        <div class="tab" onclick="filterOrders('cancelled')">Отменены</div>
+      </div>
+
+      <div id="orders-loading" class="loading-wrapper"><div class="spinner"></div></div>
+      <div id="orders-list"></div>
+    </div>
+  </main>
+
+  <!-- Order Detail Modal -->
+  <div id="order-modal" class="modal-overlay" style="display:none">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <h3 id="modal-order-title">Заказ</h3>
+        <div class="modal-close" onclick="document.getElementById('order-modal').style.display='none'">✕</div>
+      </div>
+      <div class="modal-body" id="modal-order-body"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2024 Tumar Market</p></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/orders.js"></script>
+</body>
+</html>
