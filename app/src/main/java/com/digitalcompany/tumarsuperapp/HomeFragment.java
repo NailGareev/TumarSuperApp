@@ -83,9 +83,17 @@ public class HomeFragment extends Fragment implements MenuProvider {
         tvPhoneNumber.setText("+7 ...");
         tvBalance.setText("---.-- ???");
 
-        // Карточка Travel — слушатель на внутренний LinearLayout, он перехватывает тапы
+        // Карточка Travel
         view.findViewById(R.id.ll_travel).setOnClickListener(v ->
                 navigateToFragment(new TravelFragment(), "travel"));
+
+        // Карточка Tumar Market
+        view.findViewById(R.id.ll_market).setOnClickListener(v ->
+                navigateToFragment(new TumarMarketFragment(), "market"));
+
+        // Карточка Покупки
+        view.findViewById(R.id.ll_purchases).setOnClickListener(v ->
+                navigateToFragment(new MarketPurchasesFragment(), "market_purchases"));
 
         // Устанавливаем слушатели кликов
         setupActionButtons();

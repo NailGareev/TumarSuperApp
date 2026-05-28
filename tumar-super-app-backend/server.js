@@ -569,6 +569,93 @@ app.post('/api/card/issue', authenticateToken, async (req, res) => {
     }
 });
 
+// Helper: ensure market_purchases table exists
+async function ensureMarketPurchasesTable(connection) {
+    await connection.execute(`
+        CREATE TABLE IF NOT EXISTS market_purchases (
+            id         INT           AUTO_INCREMENT PRIMARY KEY,
+            user_id    INT           NOT NULL,
+            order_ref  VARCHAR(50)   NOT NULL,
+            amount     DECIMAL(10,2) NOT NULL,
+            items_json TEXT          NOT NULL,
+            address    VARCHAR(500)  NOT NULL,
+            status     ENUM('processing','shipping','delivered','cancelled') DEFAULT 'shipping',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    `);
+}
+
+// === POST /api/market/pay - Оплата покупки в Tumar Market через баланс ===
+app.post('/api/market/pay', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { amount, address, items } = req.body;
+
+    const parsedAmount = parseFloat(amount);
+    if (!parsedAmount || parsedAmount <= 0) {
+        return res.status(400).json({ success: false, message: 'Некорректная сумма' });
+    }
+    if (!address || !address.trim()) {
+        return res.status(400).json({ success: false, message: 'Адрес доставки обязателен' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [balRows] = await connection.execute(
+            'SELECT balance, currency FROM balances WHERE user_id = ? FOR UPDATE', [userId]);
+        if (!balRows.length || balRows[0].balance < parsedAmount) {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'Недостаточно средств на счёте Tumar' });
+        }
+
+        await connection.execute(
+            'UPDATE balances SET balance = balance - ?, updated_at = NOW() WHERE user_id = ?',
+            [parsedAmount, userId]);
+
+        await connection.execute(
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
+            [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market']);
+
+        await ensureMarketPurchasesTable(connection);
+        const orderRef = 'TM' + Date.now().toString().slice(-8);
+        await connection.execute(
+            'INSERT INTO market_purchases (user_id, order_ref, amount, items_json, address) VALUES (?, ?, ?, ?, ?)',
+            [userId, orderRef, parsedAmount, items || '[]', address.trim()]);
+
+        await connection.commit();
+        res.json({ success: true, orderRef });
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('Market pay error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка при оплате' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === GET /api/market/orders - История покупок в Tumar Market ===
+app.get('/api/market/orders', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            `SELECT id, order_ref, amount, items_json, address, status, created_at
+             FROM market_purchases WHERE user_id = ? ORDER BY created_at DESC`,
+            [userId]);
+        res.json({ success: true, orders: rows });
+    } catch (err) {
+        console.error('Market orders error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка загрузки заказов' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // GET /api/tours - Список активных туров (публичный)
 app.get('/api/tours', async (req, res) => {
     let connection;

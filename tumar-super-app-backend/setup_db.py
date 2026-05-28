@@ -98,6 +98,24 @@ CREATE TABLE IF NOT EXISTS cards (
   COMMENT='Виртуальные карты пользователей (CVV и срок действия зашифрованы)'
 """
 
+TABLES["market_purchases"] = """
+CREATE TABLE IF NOT EXISTS market_purchases (
+    id         INT            AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT            NOT NULL,
+    order_ref  VARCHAR(50)    NOT NULL    COMMENT 'Номер заказа, напр. TM12345678',
+    amount     DECIMAL(10, 2) NOT NULL    COMMENT 'Сумма заказа (₸)',
+    items_json TEXT           NOT NULL    COMMENT 'JSON-массив товаров из корзины',
+    address    VARCHAR(500)   NOT NULL    COMMENT 'Адрес доставки',
+    status     ENUM('processing','shipping','delivered','cancelled')
+               NOT NULL DEFAULT 'shipping' COMMENT 'Статус заказа',
+    created_at TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_mp_user FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_mp_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Покупки пользователей в Tumar Market, оплаченные через баланс'
+"""
+
 TABLES["tours"] = """
 CREATE TABLE IF NOT EXISTS tours (
     id               INT            AUTO_INCREMENT PRIMARY KEY,

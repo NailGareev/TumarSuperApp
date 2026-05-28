@@ -17,6 +17,9 @@ import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
 import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
 import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -95,6 +98,12 @@ public interface ApiService {
 
     @GET("api/tours")
     Call<TourListResponse> getTours();
+
+    @POST("api/market/pay")
+    Call<MarketPayResponse> marketPay(@Body MarketPayRequest request);
+
+    @GET("api/market/orders")
+    Call<MarketPurchasesResponse> getMarketOrders();
 
     // --- КОНЕЦ: Добавленные методы ---
 
