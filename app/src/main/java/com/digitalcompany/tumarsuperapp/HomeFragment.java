@@ -267,12 +267,6 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-        // ... (код без изменений) ...
-        if (menuItem.getItemId() == R.id.action_notifications) {
-            showToast("Нажаты Уведомления (HomeFragment Listener)");
-            // TODO: Открыть экран уведомлений
-            return true;
-        }
         return false;
     }
 }
