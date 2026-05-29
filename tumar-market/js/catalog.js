@@ -2,20 +2,35 @@
 
 let currentPage = 1;
 const params = new URLSearchParams(window.location.search);
+let _allCategories = [];
 
 async function loadCategories() {
   const res = await apiFetch('/categories');
   if (!res || !res.ok || !Array.isArray(res.data)) return;
+  _allCategories = res.data;
 
   buildNavCategories(res.data);
 
+  if (isAppMode) {
+    renderMobileCatalog();
+    return;
+  }
+
+  renderDesktopSidebar(res.data);
+  updateTitle();
+  updateBreadcrumb();
+  await loadFavIds();
+  loadProducts(1);
+}
+
+function renderDesktopSidebar(data) {
   const list = document.getElementById('filter-categories');
   if (!list) return;
 
   const activeSlug = params.get('category');
-  const parents = res.data.filter(c => !c.parent_id);
+  const parents = data.filter(c => !c.parent_id);
   const childrenMap = {};
-  res.data.forEach(c => {
+  data.forEach(c => {
     if (c.parent_id) {
       if (!childrenMap[c.parent_id]) childrenMap[c.parent_id] = [];
       childrenMap[c.parent_id].push(c);
@@ -47,6 +62,73 @@ async function loadCategories() {
   });
 
   list.innerHTML = html;
+}
+
+function renderMobileCatalog() {
+  const slug = params.get('category');
+  const grid = document.getElementById('products-grid');
+  const controlsEl = document.querySelector('.catalog-controls');
+  const countEl = document.getElementById('products-count');
+  const sidebar = document.querySelector('.catalog-sidebar');
+
+  if (sidebar) sidebar.style.display = 'none';
+
+  if (!slug) {
+    // Step 1: show all parent categories
+    const parents = _allCategories.filter(c => !c.parent_id);
+    document.getElementById('catalog-title').textContent = 'Каталог';
+    document.title = 'Каталог — Tumar Market';
+    if (controlsEl) controlsEl.style.display = 'none';
+    if (countEl) countEl.style.display = 'none';
+    grid.innerHTML = `<div class="mobile-cat-grid">${
+      parents.map(cat => `
+        <a class="mobile-cat-card" href="/catalog?category=${encodeURIComponent(cat.slug)}">
+          <span class="mobile-cat-icon">${cat.icon || '📦'}</span>
+          <span class="mobile-cat-name">${cat.name}</span>
+        </a>
+      `).join('')
+    }</div>`;
+    return;
+  }
+
+  const selectedCat = _allCategories.find(c => c.slug === slug);
+  if (!selectedCat) {
+    // Unknown slug — just load products
+    loadProductsInApp();
+    return;
+  }
+
+  if (!selectedCat.parent_id) {
+    // Step 2: parent category selected — show subcategories
+    const children = _allCategories.filter(c => c.parent_id === selectedCat.id);
+    if (children.length) {
+      document.getElementById('catalog-title').textContent = selectedCat.name;
+      document.title = `${selectedCat.name} — Tumar Market`;
+      if (controlsEl) controlsEl.style.display = 'none';
+      if (countEl) countEl.style.display = 'none';
+      grid.innerHTML = `<div class="mobile-cat-grid">${
+        children.map(sub => `
+          <a class="mobile-cat-card" href="/catalog?category=${encodeURIComponent(sub.slug)}">
+            <span class="mobile-cat-icon">${sub.icon || '📋'}</span>
+            <span class="mobile-cat-name">${sub.name}</span>
+          </a>
+        `).join('')
+      }</div>`;
+      return;
+    }
+  }
+
+  // Step 3: subcategory (or parent with no children) — show products
+  document.getElementById('catalog-title').textContent = selectedCat.name;
+  document.title = `${selectedCat.name} — Tumar Market`;
+  if (controlsEl) controlsEl.style.display = '';
+  if (countEl) countEl.style.display = '';
+  loadProductsInApp();
+}
+
+async function loadProductsInApp() {
+  await loadFavIds();
+  loadProducts(1);
 }
 
 async function loadProducts(page = 1) {
@@ -109,18 +191,14 @@ function renderPagination(page, totalPages) {
 function updateBreadcrumb() {
   const cat = params.get('category');
   if (!cat) return;
-  // Title update happens when categories are loaded — just set breadcrumb text
   const el = document.getElementById('breadcrumb-category');
   if (el) el.textContent = cat;
 }
 
-// Update catalog title from category name
 async function updateTitle() {
   const slug = params.get('category');
   if (!slug) return;
-  const res = await apiFetch('/categories');
-  if (!res?.ok) return;
-  const cat = res.data.find(c => c.slug === slug);
+  const cat = _allCategories.find(c => c.slug === slug);
   if (cat) {
     document.title = `${cat.name} — Tumar Market`;
     const titleEl = document.getElementById('catalog-title');
@@ -132,8 +210,4 @@ async function updateTitle() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   loadCategories();
-  updateTitle();
-  updateBreadcrumb();
-  await loadFavIds();
-  loadProducts(1);
 });

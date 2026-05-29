@@ -775,3 +775,44 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .header-top { padding: 8px 12px; }
 }
+
+/* ===== APP MODE (TumarSuperApp WebView) ===== */
+.app-mode .header { display: none !important; }
+.app-mode .footer { display: none !important; }
+.app-mode .page-content { padding-top: 8px; }
+.app-mode .catalog-layout { grid-template-columns: 1fr; }
+.app-mode .catalog-sidebar { display: none; }
+.app-mode .tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+.app-mode .tabs::-webkit-scrollbar { display: none; }
+
+/* Mobile catalog category/subcategory selection grid */
+.mobile-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+}
+.mobile-cat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 12px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  text-align: center;
+  transition: all var(--transition);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--gray-900);
+}
+.mobile-cat-card:hover, .mobile-cat-card:active { border-color: var(--red); background: var(--red-light); }
+.mobile-cat-icon { font-size: 32px; line-height: 1; }
+.mobile-cat-name { font-size: 13px; font-weight: 600; color: var(--gray-700); line-height: 1.3; }

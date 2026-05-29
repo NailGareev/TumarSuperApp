@@ -3,6 +3,10 @@
 const API = '/api';
 let notificationsOpen = false;
 
+// Detect when running inside TumarSuperApp WebView
+const isAppMode = navigator.userAgent.includes('TumarApp');
+if (isAppMode) document.documentElement.classList.add('app-mode');
+
 // ── Token / Auth ──────────────────────────────────────────────
 function getToken() {
   return localStorage.getItem('token');
