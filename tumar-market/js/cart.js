@@ -34,12 +34,52 @@ async function loadCart() {
 
 function renderCartItems(items) {
   const el = document.getElementById('cart-items-list');
-  el.innerHTML = items.map(item => `
+  el.innerHTML = items.map(item => isAppMode
+    ? renderCartItemMobile(item)
+    : renderCartItemDesktop(item)
+  ).join('');
+}
+
+function cartImg(item, size) {
+  const src = item.product_image || '';
+  return `<img class="cart-item-img" src="${src}" style="width:${size}px;height:${size}px"
+       onerror="this.src='https://placehold.co/${size}x${size}?text=📦'" alt="">`;
+}
+
+function qtyCtrl(item) {
+  return `<div class="qty-ctrl">
+    <div class="qty-ctrl-btn" onclick="changeItemQty(${item.id},${item.product_seller_id},${item.quantity-1})">−</div>
+    <input type="number" class="qty-ctrl-val" value="${item.quantity}" min="1"
+           onchange="changeItemQty(${item.id},${item.product_seller_id},parseInt(this.value))">
+    <div class="qty-ctrl-btn" onclick="changeItemQty(${item.id},${item.product_seller_id},${item.quantity+1})">+</div>
+  </div>`;
+}
+
+function renderCartItemMobile(item) {
+  return `
+    <div class="cart-item cart-item-mobile" id="cart-item-${item.id}">
+      <div class="cart-item-top">
+        ${cartImg(item, 72)}
+        <div class="cart-item-info">
+          <div class="cart-item-name">
+            <a href="/product/${item.product_id}" style="color:inherit">${item.product_name}</a>
+          </div>
+          <div class="cart-item-store">🏪 ${item.store_name}</div>
+          <div class="cart-item-delivery">🚚 Доставка ${item.delivery_days} дн.</div>
+        </div>
+        <div class="cart-item-remove" onclick="removeItem(${item.id})">✕</div>
+      </div>
+      <div class="cart-item-bottom">
+        ${qtyCtrl(item)}
+        <div class="cart-item-price">${formatPrice(item.price * item.quantity)}</div>
+      </div>
+    </div>`;
+}
+
+function renderCartItemDesktop(item) {
+  return `
     <div class="cart-item" id="cart-item-${item.id}">
-      <img class="cart-item-img"
-           src="${item.product_image || 'https://via.placeholder.com/80'}"
-           onerror="this.src='https://via.placeholder.com/80'"
-           alt="${item.product_name}">
+      ${cartImg(item, 84)}
       <div class="cart-item-info">
         <div class="cart-item-name">
           <a href="/product/${item.product_id}" style="color:inherit">${item.product_name}</a>
@@ -47,16 +87,10 @@ function renderCartItems(items) {
         <div class="cart-item-store">🏪 ${item.store_name}</div>
         <div class="cart-item-delivery">🚚 Доставка ${item.delivery_days} дн.</div>
       </div>
-      <div class="qty-ctrl">
-        <div class="qty-ctrl-btn" onclick="changeItemQty(${item.id}, ${item.product_seller_id}, ${item.quantity - 1})">−</div>
-        <input type="number" class="qty-ctrl-val" value="${item.quantity}" min="1"
-               onchange="changeItemQty(${item.id}, ${item.product_seller_id}, parseInt(this.value))">
-        <div class="qty-ctrl-btn" onclick="changeItemQty(${item.id}, ${item.product_seller_id}, ${item.quantity + 1})">+</div>
-      </div>
+      ${qtyCtrl(item)}
       <div class="cart-item-price">${formatPrice(item.price * item.quantity)}</div>
       <div class="cart-item-remove" onclick="removeItem(${item.id})">✕</div>
-    </div>
-  `).join('');
+    </div>`;
 }
 
 function renderSummary(items, total) {

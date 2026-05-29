@@ -702,6 +702,23 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--gray-600); font-weight: 700; }
 .empty-state p { font-size: 14px; }
 
+/* In app mode, center empty states vertically in the product grid */
+.app-mode .product-grid {
+  min-height: 50vh;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+.app-mode .product-grid .empty-state {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 32px 20px;
+}
+
 /* ===== MODAL ===== */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -783,6 +800,8 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .app-mode .page-content { padding-top: 8px; }
 .app-mode .catalog-layout { grid-template-columns: 1fr; }
 .app-mode .catalog-sidebar { display: none; }
+.app-mode .cart-layout { grid-template-columns: 1fr !important; }
+.app-mode .cart-summary { position: static !important; }
 .app-mode .tabs {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

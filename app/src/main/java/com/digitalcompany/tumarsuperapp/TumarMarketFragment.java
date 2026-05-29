@@ -297,6 +297,11 @@ public class TumarMarketFragment extends Fragment {
         String js = "(function(){"
             + "if(window.__tumarPayInjected)return;"
             + "window.__tumarPayInjected=true;"
+            // Hide all payment options except tumar_pay
+            + "document.querySelectorAll('.payment-option').forEach(function(opt){"
+            + "  var i=opt.querySelector('input[name=\"payment\"]');"
+            + "  if(i&&i.value!=='tumar_pay')opt.style.display='none';"
+            + "});"
             + "var inp=document.querySelector('input[value=\"tumar_pay\"]');"
             + "if(inp){inp.checked=true;"
             + "var card=inp.closest('.payment-option');"

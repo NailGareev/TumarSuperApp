@@ -142,12 +142,14 @@ async function loadProducts(page = 1) {
   const { products, total, pages } = res.data;
   if (!products.length) {
     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><h3>Товары не найдены</h3><p>Попробуйте изменить фильтры</p></div>';
+    if (isAppMode) setMobileCatalogHeader(false);
   } else {
     grid.innerHTML = products.map(productCardHTML).join('');
+    if (isAppMode) setMobileCatalogHeader(true);
   }
 
   const countEl = document.getElementById('products-count');
-  if (countEl) countEl.textContent = `${total} товаров`;
+  if (countEl) countEl.textContent = total ? `${total} товаров` : '';
 
   renderPagination(page, pages);
 }
