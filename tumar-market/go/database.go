@@ -362,112 +362,112 @@ func seedCategories() {
 		{"", "Одежда и обувь", "clothing-shoes", "👔"},
 
 		// ── Телефоны и гаджеты ────────────────────────────────────
-		{"phones-gadgets", "Смартфоны", "smartphones", ""},
-		{"phones-gadgets", "Мобильные телефоны", "mobile-phones", ""},
-		{"phones-gadgets", "Планшеты", "tablets", ""},
-		{"phones-gadgets", "Умные часы", "smart-watches", ""},
-		{"phones-gadgets", "Наушники", "headphones", ""},
-		{"phones-gadgets", "Чехлы для телефонов", "phone-cases", ""},
-		{"phones-gadgets", "Зарядные устройства", "chargers", ""},
-		{"phones-gadgets", "Портативные аккумуляторы", "power-banks", ""},
-		{"phones-gadgets", "Фотоаппараты", "cameras", ""},
+		{"phones-gadgets", "Смартфоны", "smartphones", "📱"},
+		{"phones-gadgets", "Мобильные телефоны", "mobile-phones", "📞"},
+		{"phones-gadgets", "Планшеты", "tablets", "📟"},
+		{"phones-gadgets", "Умные часы", "smart-watches", "⌚"},
+		{"phones-gadgets", "Наушники", "headphones", "🎧"},
+		{"phones-gadgets", "Чехлы для телефонов", "phone-cases", "🛡️"},
+		{"phones-gadgets", "Зарядные устройства", "chargers", "🔌"},
+		{"phones-gadgets", "Портативные аккумуляторы", "power-banks", "🔋"},
+		{"phones-gadgets", "Фотоаппараты", "cameras", "📷"},
 
 		// ── Бытовая техника ───────────────────────────────────────
-		{"home-appliances", "Холодильники", "refrigerators", ""},
-		{"home-appliances", "Стиральные машины", "washing-machines", ""},
-		{"home-appliances", "Пылесосы", "vacuums", ""},
-		{"home-appliances", "Микроволновые печи", "microwaves", ""},
-		{"home-appliances", "Электрические плиты", "stoves", ""},
-		{"home-appliances", "Утюги", "irons", ""},
-		{"home-appliances", "Кондиционеры", "air-conditioners", ""},
-		{"home-appliances", "Водонагреватели", "water-heaters", ""},
-		{"home-appliances", "Посудомоечные машины", "dishwashers", ""},
+		{"home-appliances", "Холодильники", "refrigerators", "❄️"},
+		{"home-appliances", "Стиральные машины", "washing-machines", "🫧"},
+		{"home-appliances", "Пылесосы", "vacuums", "🌀"},
+		{"home-appliances", "Микроволновые печи", "microwaves", "♨️"},
+		{"home-appliances", "Электрические плиты", "stoves", "🍳"},
+		{"home-appliances", "Утюги", "irons", "👕"},
+		{"home-appliances", "Кондиционеры", "air-conditioners", "💨"},
+		{"home-appliances", "Водонагреватели", "water-heaters", "🚿"},
+		{"home-appliances", "Посудомоечные машины", "dishwashers", "🍽️"},
 
 		// ── ТВ, Аудио, Видео ──────────────────────────────────────
-		{"tv-audio-video", "Телевизоры", "tvs", ""},
-		{"tv-audio-video", "Проекторы", "projectors", ""},
-		{"tv-audio-video", "Аудиосистемы", "audio-systems", ""},
-		{"tv-audio-video", "Саундбары", "soundbars", ""},
-		{"tv-audio-video", "Игровые приставки", "gaming-consoles", ""},
+		{"tv-audio-video", "Телевизоры", "tvs", "📺"},
+		{"tv-audio-video", "Проекторы", "projectors", "🎥"},
+		{"tv-audio-video", "Аудиосистемы", "audio-systems", "🔊"},
+		{"tv-audio-video", "Саундбары", "soundbars", "📻"},
+		{"tv-audio-video", "Игровые приставки", "gaming-consoles", "🎮"},
 
 		// ── Компьютеры ────────────────────────────────────────────
-		{"computers", "Ноутбуки", "laptops", ""},
-		{"computers", "Настольные компьютеры", "desktops", ""},
-		{"computers", "Мониторы", "monitors", ""},
-		{"computers", "Принтеры", "printers", ""},
-		{"computers", "Клавиатуры", "keyboards", ""},
-		{"computers", "Мышки", "mice", ""},
-		{"computers", "Роутеры", "routers", ""},
+		{"computers", "Ноутбуки", "laptops", "💻"},
+		{"computers", "Настольные компьютеры", "desktops", "🖥️"},
+		{"computers", "Мониторы", "monitors", "🖥️"},
+		{"computers", "Принтеры", "printers", "🖨️"},
+		{"computers", "Клавиатуры", "keyboards", "⌨️"},
+		{"computers", "Мышки", "mice", "🖱️"},
+		{"computers", "Роутеры", "routers", "📡"},
 
 		// ── Мебель и интерьер ─────────────────────────────────────
-		{"furniture", "Диваны и кресла", "sofas", ""},
-		{"furniture", "Кровати", "beds", ""},
-		{"furniture", "Шкафы", "wardrobes", ""},
-		{"furniture", "Столы", "tables", ""},
-		{"furniture", "Матрасы", "mattresses", ""},
-		{"furniture", "Освещение", "lighting", ""},
-		{"furniture", "Ковры", "carpets", ""},
+		{"furniture", "Диваны и кресла", "sofas", "🛋️"},
+		{"furniture", "Кровати", "beds", "🛏️"},
+		{"furniture", "Шкафы", "wardrobes", "🗄️"},
+		{"furniture", "Столы", "tables", "🪑"},
+		{"furniture", "Матрасы", "mattresses", "🛏️"},
+		{"furniture", "Освещение", "lighting", "💡"},
+		{"furniture", "Ковры", "carpets", "🔲"},
 
 		// ── Красота и здоровье ────────────────────────────────────
-		{"beauty-health", "Уход за лицом", "face-care", ""},
-		{"beauty-health", "Уход за телом", "body-care", ""},
-		{"beauty-health", "Парфюмерия", "perfume", ""},
-		{"beauty-health", "Декоративная косметика", "makeup", ""},
-		{"beauty-health", "Фены и стайлеры", "hair-dryers", ""},
-		{"beauty-health", "Электробритвы", "shavers", ""},
+		{"beauty-health", "Уход за лицом", "face-care", "🧴"},
+		{"beauty-health", "Уход за телом", "body-care", "🧼"},
+		{"beauty-health", "Парфюмерия", "perfume", "🌸"},
+		{"beauty-health", "Декоративная косметика", "makeup", "💄"},
+		{"beauty-health", "Фены и стайлеры", "hair-dryers", "💇"},
+		{"beauty-health", "Электробритвы", "shavers", "🪒"},
 
 		// ── Детские товары ────────────────────────────────────────
-		{"kids", "Игрушки", "toys", ""},
-		{"kids", "Коляски", "strollers", ""},
-		{"kids", "Детская одежда", "kids-clothing", ""},
-		{"kids", "Питание для детей", "baby-food", ""},
-		{"kids", "Школьные товары", "school-supplies", ""},
-		{"kids", "Детские велосипеды", "kids-bikes", ""},
+		{"kids", "Игрушки", "toys", "🪀"},
+		{"kids", "Коляски", "strollers", "👶"},
+		{"kids", "Детская одежда", "kids-clothing", "🧒"},
+		{"kids", "Питание для детей", "baby-food", "🍼"},
+		{"kids", "Школьные товары", "school-supplies", "📝"},
+		{"kids", "Детские велосипеды", "kids-bikes", "🚲"},
 
 		// ── Аптека ────────────────────────────────────────────────
-		{"pharmacy", "Витамины и БАД", "vitamins", ""},
-		{"pharmacy", "Медицинские приборы", "medical-devices", ""},
-		{"pharmacy", "Гигиена и уход", "hygiene", ""},
+		{"pharmacy", "Витамины и БАД", "vitamins", "💊"},
+		{"pharmacy", "Медицинские приборы", "medical-devices", "🩺"},
+		{"pharmacy", "Гигиена и уход", "hygiene", "🪥"},
 
 		// ── Строительство, ремонт ─────────────────────────────────
-		{"construction", "Строительные материалы", "building-materials", ""},
-		{"construction", "Инструменты", "tools", ""},
-		{"construction", "Сантехника", "plumbing", ""},
-		{"construction", "Электрика", "electrical", ""},
-		{"construction", "Краски и лаки", "paints", ""},
+		{"construction", "Строительные материалы", "building-materials", "🧱"},
+		{"construction", "Инструменты", "tools", "🔧"},
+		{"construction", "Сантехника", "plumbing", "🚿"},
+		{"construction", "Электрика", "electrical", "⚡"},
+		{"construction", "Краски и лаки", "paints", "🎨"},
 
 		// ── Спорт, туризм ─────────────────────────────────────────
-		{"sport-tourism", "Тренажёры", "fitness-equipment", ""},
-		{"sport-tourism", "Велосипеды", "bikes", ""},
-		{"sport-tourism", "Туристическое снаряжение", "camping", ""},
-		{"sport-tourism", "Спортивная одежда", "sportswear", ""},
-		{"sport-tourism", "Рыбалка", "fishing", ""},
+		{"sport-tourism", "Тренажёры", "fitness-equipment", "🏋️"},
+		{"sport-tourism", "Велосипеды", "bikes", "🚴"},
+		{"sport-tourism", "Туристическое снаряжение", "camping", "⛺"},
+		{"sport-tourism", "Спортивная одежда", "sportswear", "👟"},
+		{"sport-tourism", "Рыбалка", "fishing", "🎣"},
 
 		// ── Досуг, книги ──────────────────────────────────────────
-		{"leisure-books", "Книги", "books", ""},
-		{"leisure-books", "Настольные игры", "board-games", ""},
-		{"leisure-books", "Музыкальные инструменты", "musical-instruments", ""},
-		{"leisure-books", "Хобби и творчество", "hobbies", ""},
+		{"leisure-books", "Книги", "books", "📖"},
+		{"leisure-books", "Настольные игры", "board-games", "🎲"},
+		{"leisure-books", "Музыкальные инструменты", "musical-instruments", "🎵"},
+		{"leisure-books", "Хобби и творчество", "hobbies", "🧩"},
 
 		// ── Автотовары ────────────────────────────────────────────
-		{"auto", "Автошины", "tires", ""},
-		{"auto", "Автозапчасти", "car-parts", ""},
-		{"auto", "Автоаксессуары", "car-accessories", ""},
-		{"auto", "Автохимия", "car-chemicals", ""},
-		{"auto", "Видеорегистраторы", "dash-cams", ""},
+		{"auto", "Автошины", "tires", "⚫"},
+		{"auto", "Автозапчасти", "car-parts", "⚙️"},
+		{"auto", "Автоаксессуары", "car-accessories", "🚘"},
+		{"auto", "Автохимия", "car-chemicals", "🧪"},
+		{"auto", "Видеорегистраторы", "dash-cams", "📹"},
 
 		// ── Украшения, аксессуары ─────────────────────────────────
-		{"jewelry-accessories", "Ювелирные украшения", "jewelry", ""},
-		{"jewelry-accessories", "Часы", "watches", ""},
-		{"jewelry-accessories", "Сумки", "bags", ""},
-		{"jewelry-accessories", "Очки", "glasses", ""},
+		{"jewelry-accessories", "Ювелирные украшения", "jewelry", "💎"},
+		{"jewelry-accessories", "Часы", "watches", "⌚"},
+		{"jewelry-accessories", "Сумки", "bags", "👜"},
+		{"jewelry-accessories", "Очки", "glasses", "👓"},
 
 		// ── Одежда и обувь ────────────────────────────────────────
-		{"clothing-shoes", "Мужская одежда", "mens-clothing", ""},
-		{"clothing-shoes", "Женская одежда", "womens-clothing", ""},
-		{"clothing-shoes", "Обувь мужская", "mens-shoes", ""},
-		{"clothing-shoes", "Обувь женская", "womens-shoes", ""},
-		{"clothing-shoes", "Спортивная обувь", "sport-shoes", ""},
+		{"clothing-shoes", "Мужская одежда", "mens-clothing", "👔"},
+		{"clothing-shoes", "Женская одежда", "womens-clothing", "👗"},
+		{"clothing-shoes", "Обувь мужская", "mens-shoes", "👞"},
+		{"clothing-shoes", "Обувь женская", "womens-shoes", "👠"},
+		{"clothing-shoes", "Спортивная обувь", "sport-shoes", "👟"},
 	}
 
 	// Pass 1: insert parent categories
@@ -501,6 +501,13 @@ func seedCategories() {
 		}
 		db.Exec("INSERT IGNORE INTO categories (parent_id, name, slug, icon) VALUES (?, ?, ?, ?)",
 			parentID, c.name, c.slug, c.icon)
+	}
+
+	// Pass 3: update icons for any existing rows that have empty icons
+	for _, c := range all {
+		if c.icon != "" {
+			db.Exec("UPDATE categories SET icon = ? WHERE slug = ? AND (icon = '' OR icon IS NULL)", c.icon, c.slug)
+		}
 	}
 }
 
