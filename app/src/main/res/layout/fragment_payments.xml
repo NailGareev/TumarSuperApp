@@ -5,7 +5,9 @@
     android:orientation="vertical"
     android:background="@color/app_bg">
 
+    <!-- Header -->
     <LinearLayout
+        android:id="@+id/ll_payments_header"
         android:layout_width="match_parent"
         android:layout_height="110dp"
         android:orientation="vertical"
@@ -29,12 +31,72 @@
             android:textSize="13sp" />
     </LinearLayout>
 
+    <!-- Categories grid (shown first) -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_payments"
+        android:id="@+id/rv_categories"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/app_bg"
         android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="24dp" />
+        android:padding="10dp"
+        android:visibility="visible" />
+
+    <!-- Services list (shown after category tap) -->
+    <LinearLayout
+        android:id="@+id/ll_services"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Back bar -->
+        <LinearLayout
+            android:id="@+id/ll_services_back"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/card_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_chevron_right_24dp"
+                android:rotation="180"
+                android:tint="@color/colorPrimary"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/tv_selected_category"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#1A000000" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_payments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/app_bg"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="24dp" />
+
+    </LinearLayout>
+
 </LinearLayout>

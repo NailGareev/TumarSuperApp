@@ -9,10 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.digitalcompany.tumarsuperapp.R;
 import java.util.List;
 
-public class PaymentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private static final int TYPE_CATEGORY = 0;
-    private static final int TYPE_SERVICE  = 1;
+public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.ServiceVH> {
 
     public static class Category {
         public final String name;
@@ -39,48 +36,33 @@ public class PaymentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onServiceClick(Service service);
     }
 
-    private final List<Object> items;
+    private final List<Service> items;
     private final OnServiceClickListener listener;
 
-    public PaymentsAdapter(List<Object> items, OnServiceClickListener listener) {
+    public PaymentsAdapter(List<Service> items, OnServiceClickListener listener) {
         this.items    = items;
         this.listener = listener;
     }
 
-    @Override public int getItemViewType(int position) {
-        return items.get(position) instanceof Category ? TYPE_CATEGORY : TYPE_SERVICE;
-    }
-
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inf = LayoutInflater.from(parent.getContext());
-        if (viewType == TYPE_CATEGORY)
-            return new CategoryVH(inf.inflate(R.layout.item_payment_category, parent, false));
-        return new ServiceVH(inf.inflate(R.layout.item_payment_service, parent, false));
+    public ServiceVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_payment_service, parent, false);
+        return new ServiceVH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof CategoryVH) {
-            ((CategoryVH) holder).tvName.setText(((Category) items.get(position)).name);
-        } else {
-            Service svc = (Service) items.get(position);
-            ServiceVH svh = (ServiceVH) holder;
-            svh.tvName.setText(svc.name);
-            svh.tvIcon.setText(svc.icon);
-            svh.itemView.setOnClickListener(v -> { if (listener != null) listener.onServiceClick(svc); });
-        }
+    public void onBindViewHolder(@NonNull ServiceVH holder, int position) {
+        Service svc = items.get(position);
+        holder.tvName.setText(svc.name);
+        holder.tvIcon.setText(svc.icon);
+        holder.itemView.setOnClickListener(v -> { if (listener != null) listener.onServiceClick(svc); });
     }
 
     @Override public int getItemCount() { return items.size(); }
 
-    static class CategoryVH extends RecyclerView.ViewHolder {
-        TextView tvName;
-        CategoryVH(View v) { super(v); tvName = v.findViewById(R.id.tv_category_name); }
-    }
-
-    static class ServiceVH extends RecyclerView.ViewHolder {
+    public static class ServiceVH extends RecyclerView.ViewHolder {
         TextView tvName, tvIcon;
         ServiceVH(View v) {
             super(v);
