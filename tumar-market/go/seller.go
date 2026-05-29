@@ -363,6 +363,73 @@ func issueOrderCodeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Код отправлен клиенту"})
 }
 
+func confirmOrderIssueHandler(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	orderID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID"})
+		return
+	}
+
+	var storeID int64
+	if err := db.QueryRow("SELECT id FROM stores WHERE owner_id = ?", userID).Scan(&storeID); err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Магазин не найден"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки магазина"})
+		return
+	}
+
+	var body struct {
+		Code string `json:"code" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Код обязателен"})
+		return
+	}
+
+	var customerID int64
+	var issueCode sql.NullString
+	var status string
+	err = db.QueryRow(`
+		SELECT o.user_id, o.issue_code, o.status
+		FROM orders o
+		JOIN order_items oi ON oi.order_id = o.id
+		JOIN product_sellers ps ON ps.id = oi.product_seller_id
+		WHERE o.id = ? AND ps.store_id = ?
+		LIMIT 1`, orderID, storeID).Scan(&customerID, &issueCode, &status)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Заказ не найден"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки заказа"})
+		return
+	}
+	if status == "delivered" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Заказ уже выдан"})
+		return
+	}
+	if !issueCode.Valid || issueCode.String == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Код ещё не был отправлен клиенту"})
+		return
+	}
+	if issueCode.String != body.Code {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный код выдачи"})
+		return
+	}
+
+	_, err = db.Exec("UPDATE orders SET status='delivered', issue_code=NULL, updated_at=NOW() WHERE id=?", orderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления заказа"})
+		return
+	}
+
+	db.Exec("DELETE FROM notifications WHERE user_id=? AND title='Код выдачи заказа'", customerID)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Заказ успешно выдан"})
+}
+
 func generateIssueCode() (string, error) {
 	n, err := rand.Int(rand.Reader, big.NewInt(10000))
 	if err != nil {

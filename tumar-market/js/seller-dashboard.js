@@ -242,13 +242,76 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function issueOrderCode(orderId) {
-  if (!confirm('Отправить код клиенту?')) return;
-  const res = await apiFetch(`/seller/orders/${orderId}/issue-code`, { method: 'POST' });
+  if (!confirm('Отправить код выдачи клиенту?')) return;
+
+  const sendRes = await apiFetch(`/seller/orders/${orderId}/issue-code`, { method: 'POST' });
+  if (!sendRes?.ok) {
+    showToast(sendRes?.data?.error || 'Ошибка отправки кода', 'error');
+    return;
+  }
+  showToast('Код отправлен клиенту');
+
+  showIssueCodeModal(orderId);
+}
+
+function showIssueCodeModal(orderId) {
+  let modal = document.getElementById('issue-code-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'issue-code-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-box" style="max-width:360px">
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px">Подтверждение выдачи</h3>
+        <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px">Попросите клиента назвать код из уведомления и введите его ниже.</p>
+        <input id="issue-code-input" type="text" class="form-control" placeholder="Код (4 цифры)" maxlength="4"
+               style="font-size:22px;text-align:center;letter-spacing:8px;font-weight:700;margin-bottom:16px">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" style="flex:1" onclick="closeModal('issue-code-modal')">Отмена</button>
+          <button id="issue-code-confirm-btn" class="btn btn-primary" style="flex:1">Подтвердить</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal('issue-code-modal'); });
+  }
+
+  document.getElementById('issue-code-input').value = '';
+  modal.style.display = 'flex';
+  document.getElementById('issue-code-input').focus();
+
+  const btn = document.getElementById('issue-code-confirm-btn');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', () => confirmIssueCode(orderId));
+
+  document.getElementById('issue-code-input').onkeydown = e => {
+    if (e.key === 'Enter') confirmIssueCode(orderId);
+  };
+}
+
+async function confirmIssueCode(orderId) {
+  const code = document.getElementById('issue-code-input').value.trim();
+  if (!code) { showToast('Введите код', 'error'); return; }
+
+  const btn = document.getElementById('issue-code-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const res = await apiFetch(`/seller/orders/${orderId}/confirm-issue`, {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Подтвердить';
+
   if (res?.ok) {
-    showToast('Код отправлен клиенту');
+    closeModal('issue-code-modal');
+    showToast('Заказ выдан клиенту ✓');
     loadSellerOrders();
   } else {
-    showToast(res?.data?.error || 'Ошибка', 'error');
+    showToast(res?.data?.error || 'Неверный код', 'error');
+    document.getElementById('issue-code-input').select();
   }
 }
 

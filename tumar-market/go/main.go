@@ -106,6 +106,7 @@ func main() {
 	seller.GET("/orders", getSellerOrdersHandler)
 	seller.PUT("/orders/:id/status", updateOrderStatusHandler)
 	seller.POST("/orders/:id/issue-code", issueOrderCodeHandler)
+	seller.POST("/orders/:id/confirm-issue", confirmOrderIssueHandler)
 	seller.POST("/products/:id/offer", addOfferToProductHandler)
 
 	// Reviews
