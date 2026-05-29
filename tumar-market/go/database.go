@@ -287,8 +287,9 @@ func runMigrations() {
 	}
 
 	ensureOrderColumns()
-	recalculateProductRatings()
 	seedCategories()
+	seedDemoData()
+	recalculateProductRatings()
 	log.Println("Миграции выполнены")
 }
 
