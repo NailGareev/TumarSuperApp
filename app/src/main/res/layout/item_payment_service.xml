@@ -22,16 +22,39 @@
         android:paddingTop="14dp"
         android:paddingBottom="14dp">
 
+        <!-- Icon container: shows logo OR emoji -->
         <FrameLayout
+            android:id="@+id/fl_service_icon"
             android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_icon_circle_purple">
-            <TextView
-                android:id="@+id/tv_service_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            android:layout_height="44dp">
+
+            <!-- Real logo (Glide) -->
+            <ImageView
+                android:id="@+id/iv_service_logo"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:layout_gravity="center"
-                android:textSize="20sp" />
+                android:scaleType="centerInside"
+                android:padding="5dp"
+                android:background="@drawable/bg_icon_service_logo"
+                android:visibility="gone"
+                android:contentDescription="@null" />
+
+            <!-- Emoji fallback -->
+            <FrameLayout
+                android:id="@+id/fl_emoji_bg"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_icon_circle_purple"
+                android:visibility="visible">
+                <TextView
+                    android:id="@+id/tv_service_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="20sp" />
+            </FrameLayout>
+
         </FrameLayout>
 
         <TextView

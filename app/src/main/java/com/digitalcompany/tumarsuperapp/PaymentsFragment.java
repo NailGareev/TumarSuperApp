@@ -112,52 +112,53 @@ public class PaymentsFragment extends Fragment {
         Map<String, List<PaymentsAdapter.Service>> map = new LinkedHashMap<>();
 
         map.put("Мобильная связь", Arrays.asList(
-                svc("Activ / Kcell",  "Номер телефона", "+7XXXXXXXXXX",    "📶", "Мобильная связь"),
-                svc("Beeline / IZI",  "Номер телефона", "+7XXXXXXXXXX",    "🟡", "Мобильная связь"),
-                svc("Tele2 / Altel",  "Номер телефона", "+7XXXXXXXXXX",    "🔵", "Мобильная связь"),
-                svc("Beeline KG",     "Номер телефона", "+996XXXXXXXXX",   "📡", "Мобильная связь"),
-                svc("O! KG",          "Номер телефона", "+996XXXXXXXXX",   "📱", "Мобильная связь"),
-                svc("MegaCom KG",     "Номер телефона", "+996XXXXXXXXX",   "📲", "Мобильная связь")
+                svc("Activ / Kcell",  "Номер телефона", "+7XXXXXXXXXX",  "📶", "Мобильная связь", "https://logo.clearbit.com/kcell.kz"),
+                svc("Beeline / IZI",  "Номер телефона", "+7XXXXXXXXXX",  "🟡", "Мобильная связь", "https://logo.clearbit.com/beeline.kz"),
+                svc("Tele2 / Altel",  "Номер телефона", "+7XXXXXXXXXX",  "🔵", "Мобильная связь", "https://logo.clearbit.com/tele2.kz"),
+                svc("Beeline KG",     "Номер телефона", "+996XXXXXXXXX", "📡", "Мобильная связь", "https://logo.clearbit.com/beeline.kg"),
+                svc("O! KG",          "Номер телефона", "+996XXXXXXXXX", "📱", "Мобильная связь", "https://logo.clearbit.com/o.kg"),
+                svc("MegaCom KG",     "Номер телефона", "+996XXXXXXXXX", "📲", "Мобильная связь", "https://logo.clearbit.com/megacom.kg")
         ));
 
         map.put("ЖКХ", Arrays.asList(
-                svc("АЛСЕКО",        "Лицевой счёт", "123456789", "💡", "ЖКХ"),
-                svc("YURTA DOM",     "Лицевой счёт", "123456789", "🏘", "ЖКХ"),
-                svc("Водоканал",     "Лицевой счёт", "123456789", "🚰", "ЖКХ"),
-                svc("Теплоснабжение","Лицевой счёт", "123456789", "🔥", "ЖКХ")
+                svc("АЛСЕКО",         "Лицевой счёт", "123456789", "💡", "ЖКХ", "https://logo.clearbit.com/alseco.kz"),
+                svc("YURTA DOM",      "Лицевой счёт", "123456789", "🏘", "ЖКХ", null),
+                svc("Водоканал",      "Лицевой счёт", "123456789", "🚰", "ЖКХ", null),
+                svc("Теплоснабжение", "Лицевой счёт", "123456789", "🔥", "ЖКХ", null)
         ));
 
         map.put("Интернет", Arrays.asList(
-                svc("Beeline Internet", "Номер договора", "123456789", "🌐", "Интернет"),
-                svc("ALMA PLUS",        "Номер договора", "123456789", "📺", "Интернет"),
-                svc("MEGANET",          "Номер договора", "123456789", "🔗", "Интернет"),
-                svc("Kazakhtelecom",    "Номер договора", "123456789", "☎️", "Интернет")
+                svc("Beeline Internet", "Номер договора", "123456789", "🌐", "Интернет", "https://logo.clearbit.com/beeline.kz"),
+                svc("ALMA PLUS",        "Номер договора", "123456789", "📺", "Интернет", "https://logo.clearbit.com/almaplus.kz"),
+                svc("MEGANET",          "Номер договора", "123456789", "🔗", "Интернет", "https://logo.clearbit.com/meganet.kz"),
+                svc("Kazakhtelecom",    "Номер договора", "123456789", "☎️", "Интернет", "https://logo.clearbit.com/telecom.kz")
         ));
 
         map.put("Кошельки", Arrays.asList(
-                svc("YURTA WALLET", "Номер телефона / счёта", "+7XXXXXXXXXX", "👛", "Кошельки"),
-                svc("QPLUS",        "Номер счёта",             "123456789",    "💰", "Кошельки"),
-                svc("Kaspi Gold",   "Номер телефона",           "+7XXXXXXXXXX", "🏦", "Кошельки")
+                svc("YURTA WALLET", "Номер телефона / счёта", "+7XXXXXXXXXX", "👛", "Кошельки", "https://logo.clearbit.com/yurta.kz"),
+                svc("QPLUS",        "Номер счёта",             "123456789",    "💰", "Кошельки", null),
+                svc("Kaspi Gold",   "Номер телефона",           "+7XXXXXXXXXX", "🏦", "Кошельки", "https://logo.clearbit.com/kaspi.kz")
         ));
 
         map.put("Игры", Arrays.asList(
-                svc("STEAM",       "Логин Steam",       "steam_username", "🎮", "Игры"),
-                svc("PlayStation", "PSN аккаунт",       "psn_id",         "🕹️", "Игры"),
-                svc("Xbox",        "Microsoft аккаунт", "xbox@email.com", "🎯", "Игры"),
-                svc("Netflix",     "Email аккаунта",    "email@mail.com", "🎬", "Игры")
+                svc("STEAM",       "Логин Steam",       "steam_username", "🎮", "Игры", "https://logo.clearbit.com/steampowered.com"),
+                svc("PlayStation", "PSN аккаунт",       "psn_id",         "🕹️", "Игры", "https://logo.clearbit.com/playstation.com"),
+                svc("Xbox",        "Microsoft аккаунт", "xbox@email.com", "🎯", "Игры", "https://logo.clearbit.com/xbox.com"),
+                svc("Netflix",     "Email аккаунта",    "email@mail.com", "🎬", "Игры", "https://logo.clearbit.com/netflix.com")
         ));
 
         map.put("Транспорт", Arrays.asList(
-                svc("Air Astana",   "Номер бронирования", "XXXXXX",       "✈️", "Транспорт"),
-                svc("FlyArystan",   "Номер бронирования", "XXXXXX",       "🛫", "Транспорт"),
-                svc("Яндекс Такси", "Номер телефона",     "+7XXXXXXXXXX", "🚕", "Транспорт")
+                svc("Air Astana",   "Номер бронирования", "XXXXXX",       "✈️", "Транспорт", "https://logo.clearbit.com/airastana.com"),
+                svc("FlyArystan",   "Номер бронирования", "XXXXXX",       "🛫", "Транспорт", "https://logo.clearbit.com/flyarystan.com"),
+                svc("Яндекс Такси", "Номер телефона",     "+7XXXXXXXXXX", "🚕", "Транспорт", "https://logo.clearbit.com/yandex.com")
         ));
 
         return map;
     }
 
-    private PaymentsAdapter.Service svc(String name, String label, String hint, String icon, String cat) {
-        return new PaymentsAdapter.Service(name, label, hint, icon, cat);
+    private PaymentsAdapter.Service svc(String name, String label, String hint,
+                                        String icon, String cat, String logoUrl) {
+        return new PaymentsAdapter.Service(name, label, hint, icon, cat, logoUrl);
     }
 
     // ── CategoryItem model ────────────────────────────────────
