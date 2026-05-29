@@ -287,8 +287,20 @@ func runMigrations() {
 	}
 
 	ensureOrderColumns()
+	recalculateProductRatings()
 	seedCategories()
 	log.Println("Миграции выполнены")
+}
+
+func recalculateProductRatings() {
+	_, err := db.Exec(`
+		UPDATE products p SET
+			rating = COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id), 0),
+			review_count = COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id), 0)
+	`)
+	if err != nil {
+		log.Printf("Ошибка пересчёта рейтингов: %v", err)
+	}
 }
 
 func ensureOrderColumns() {

@@ -290,6 +290,24 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .fav-btn:hover { transform: scale(1.2); }
 .fav-btn.fav-active { background: rgba(255,255,255,0.95); }
 
+.fav-btn-detail {
+  flex-shrink: 0;
+  background: var(--gray-100);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.18s, background 0.15s;
+  margin-top: 4px;
+}
+.fav-btn-detail:hover { transform: scale(1.15); background: var(--gray-200); }
+.fav-btn-detail.fav-active { background: #fff0f0; border-color: #fca5a5; }
+
 .product-card-body {
   padding: 13px 14px 14px;
   display: flex;

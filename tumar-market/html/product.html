@@ -45,7 +45,10 @@
           <!-- CENTER: Info -->
           <div class="product-info">
             <div class="product-brand" id="product-brand"></div>
-            <h1 class="product-title" id="product-title"></h1>
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <h1 class="product-title" id="product-title" style="flex:1;margin:0"></h1>
+              <button id="product-fav-btn" class="fav-btn-detail" onclick="toggleProductFav()" title="В избранное">🤍</button>
+            </div>
             <div class="product-meta">
               <div class="rating-block" id="product-rating"></div>
               <span class="meta-sep">•</span>

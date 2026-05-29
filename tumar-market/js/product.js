@@ -245,13 +245,57 @@ async function submitReview() {
     closeModal('review-modal');
     showToast('Отзыв добавлен!');
     loadReviews();
+    refreshProductRating();
   } else {
     showToast(res?.data?.error || 'Ошибка', 'error');
   }
 }
 
+async function refreshProductRating() {
+  const res = await apiFetch(`/products/${productId}`);
+  if (!res?.ok) return;
+  const p = res.data;
+  const ratingEl = document.getElementById('product-rating');
+  if (ratingEl) ratingEl.innerHTML = `${renderStars(p.rating || 0)} <span class="rating-score">${(p.rating || 0).toFixed(1)}</span>`;
+  const rcEl = document.getElementById('product-reviews-count');
+  if (rcEl) rcEl.textContent = `${p.review_count || 0} отзывов`;
+}
+
+// ── Product page favorites ────────────────────────────────────
+async function loadProductFav() {
+  const btn = document.getElementById('product-fav-btn');
+  if (!btn) return;
+  if (!isLoggedIn()) { btn.style.display = 'none'; return; }
+
+  const res = await apiFetch('/favorites/ids');
+  if (!res?.ok) return;
+  const ids = new Set(res.data || []);
+  const pid = parseInt(productId);
+  btn.textContent = ids.has(pid) ? '❤️' : '🤍';
+  btn.classList.toggle('fav-active', ids.has(pid));
+}
+
+async function toggleProductFav() {
+  if (!isLoggedIn()) {
+    showToast('Войдите для добавления в избранное', 'error');
+    return;
+  }
+  const btn = document.getElementById('product-fav-btn');
+  const res = await apiFetch('/favorites/toggle', {
+    method: 'POST',
+    body: JSON.stringify({ product_id: parseInt(productId) }),
+  });
+  if (res?.ok) {
+    const isFav = res.data.favorited;
+    btn.textContent = isFav ? '❤️' : '🤍';
+    btn.classList.toggle('fav-active', isFav);
+    showToast(isFav ? 'Добавлено в избранное' : 'Убрано из избранного');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadProduct();
+  loadProductFav();
   // Close modal on overlay click
   document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
