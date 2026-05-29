@@ -2,14 +2,15 @@ package com.digitalcompany.tumarsuperapp.adapter; // Создайте пакет
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color; // Пример использования стандартных цветов
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat; // Для получения цветов из ресурсов
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -98,7 +99,24 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
             String amountPrefix;
             int amountColor;
 
-            if ("PAYMENT".equals(type)) {
+            // Reset card background
+            if (itemView instanceof CardView) {
+                ((CardView) itemView).setCardBackgroundColor(
+                    ContextCompat.getColor(context, R.color.card_bg));
+            }
+
+            if ("MARKET_REFUND".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_payment);
+                description = "Возврат — Tumar Market";
+                amountPrefix = "+";
+                amountColor = ContextCompat.getColor(context, R.color.red_error);
+                // Highlight the whole card red
+                if (itemView instanceof CardView) {
+                    ((CardView) itemView).setCardBackgroundColor(Color.parseColor("#FFEBEE"));
+                }
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.red_error));
+
+            } else if ("PAYMENT".equals(type)) {
                 ivIcon.setImageResource(R.drawable.ic_payment);
                 String raw = transaction.getDescription();
                 description = (raw != null && !raw.isEmpty()) ? raw : "Оплата услуг";
@@ -155,13 +173,20 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
 
             // 3. Форматируем и устанавливаем дату/время
-            if (transaction.getTimestamp() != null) {
-                // Пример форматирования: 5 мая 2025, 08:15
+            if ("MARKET_REFUND".equals(type)) {
+                String timeStr = "";
+                if (transaction.getTimestamp() != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("d MMM, HH:mm", new Locale("ru"));
+                    timeStr = sdf.format(transaction.getTimestamp());
+                }
+                tvTimestamp.setText("Возвращено" + (timeStr.isEmpty() ? "" : " • " + timeStr));
+            } else if (transaction.getTimestamp() != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
-                // sdf.setTimeZone(TimeZone.getDefault()); // Можно установить часовой пояс
                 tvTimestamp.setText(sdf.format(transaction.getTimestamp()));
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             } else {
-                tvTimestamp.setText(""); // Пусто, если даты нет
+                tvTimestamp.setText("");
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             }
         }
 

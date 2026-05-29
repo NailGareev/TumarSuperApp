@@ -101,6 +101,7 @@ type Order struct {
 	Status          string      `json:"status"`
 	DeliveryAddress string      `json:"delivery_address"`
 	PaymentMethod   string      `json:"payment_method"`
+	TumarRef        string      `json:"tumar_ref,omitempty"`
 	CreatedAt       time.Time   `json:"created_at"`
 	Items           []OrderItem `json:"items,omitempty"`
 }
@@ -180,6 +181,7 @@ type AddToCartRequest struct {
 type CreateOrderRequest struct {
 	DeliveryAddress string `json:"delivery_address" binding:"required"`
 	PaymentMethod   string `json:"payment_method" binding:"required"`
+	TumarRef        string `json:"tumar_ref"`
 }
 
 type CreateReviewRequest struct {

@@ -661,6 +661,62 @@ app.get('/api/market/orders', authenticateToken, async (req, res) => {
     }
 });
 
+// === POST /api/market/cancel - Отмена покупки в Tumar Market и возврат средств ===
+app.post('/api/market/cancel', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { order_ref } = req.body;
+
+    if (!order_ref) {
+        return res.status(400).json({ success: false, message: 'Укажите order_ref' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            'SELECT id, amount, status FROM market_purchases WHERE user_id = ? AND order_ref = ? FOR UPDATE',
+            [userId, order_ref]);
+
+        if (!rows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Заказ не найден' });
+        }
+        if (rows[0].status === 'cancelled') {
+            await connection.rollback();
+            return res.status(400).json({ success: false, message: 'Заказ уже отменён' });
+        }
+
+        const amount = parseFloat(rows[0].amount);
+
+        await connection.execute(
+            'UPDATE market_purchases SET status = "cancelled" WHERE id = ?', [rows[0].id]);
+
+        const [balRows] = await connection.execute(
+            'SELECT currency FROM balances WHERE user_id = ?', [userId]);
+        const currency = balRows.length ? (balRows[0].currency || 'KZT') : 'KZT';
+
+        await connection.execute(
+            'UPDATE balances SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?',
+            [amount, userId]);
+
+        await connection.execute(
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
+            [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market']);
+
+        await connection.commit();
+        res.json({ success: true, refunded: amount });
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('Market cancel error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка при отмене' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // GET /api/tours - Список активных туров (публичный)
 app.get('/api/tours', async (req, res) => {
     let connection;

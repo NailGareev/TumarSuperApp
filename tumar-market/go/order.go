@@ -66,9 +66,9 @@ func createOrderHandler(c *gin.Context) {
 	defer tx.Rollback()
 
 	result, err := tx.Exec(`
-		INSERT INTO orders (user_id, total, delivery_address, payment_method)
-		VALUES (?, ?, ?, ?)`,
-		userID, total, req.DeliveryAddress, req.PaymentMethod)
+		INSERT INTO orders (user_id, total, delivery_address, payment_method, tumar_ref)
+		VALUES (?, ?, ?, ?, ?)`,
+		userID, total, req.DeliveryAddress, req.PaymentMethod, req.TumarRef)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка создания заказа"})
 		return
@@ -107,7 +107,7 @@ func getOrdersHandler(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 
 	rows, err := db.Query(`
-		SELECT id, total, status, delivery_address, payment_method, created_at
+		SELECT id, total, status, delivery_address, payment_method, COALESCE(tumar_ref,''), created_at
 		FROM orders WHERE user_id = ? ORDER BY created_at DESC`, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки заказов"})
@@ -118,7 +118,7 @@ func getOrdersHandler(c *gin.Context) {
 	var orders []Order
 	for rows.Next() {
 		var o Order
-		rows.Scan(&o.ID, &o.Total, &o.Status, &o.DeliveryAddress, &o.PaymentMethod, &o.CreatedAt)
+		rows.Scan(&o.ID, &o.Total, &o.Status, &o.DeliveryAddress, &o.PaymentMethod, &o.TumarRef, &o.CreatedAt)
 		o.UserID = userID
 		orders = append(orders, o)
 	}
@@ -138,9 +138,9 @@ func getOrderHandler(c *gin.Context) {
 
 	var o Order
 	err = db.QueryRow(`
-		SELECT id, user_id, total, status, delivery_address, payment_method, created_at
+		SELECT id, user_id, total, status, delivery_address, payment_method, COALESCE(tumar_ref,''), created_at
 		FROM orders WHERE id = ? AND user_id = ?`, orderID, userID).
-		Scan(&o.ID, &o.UserID, &o.Total, &o.Status, &o.DeliveryAddress, &o.PaymentMethod, &o.CreatedAt)
+		Scan(&o.ID, &o.UserID, &o.Total, &o.Status, &o.DeliveryAddress, &o.PaymentMethod, &o.TumarRef, &o.CreatedAt)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Заказ не найден"})
 		return

@@ -294,11 +294,12 @@ func runMigrations() {
 func ensureOrderColumns() {
 	addOrderColumnIfMissing("issue_code", "ALTER TABLE orders ADD COLUMN issue_code CHAR(4) DEFAULT NULL")
 	addOrderColumnIfMissing("issue_code_sent_at", "ALTER TABLE orders ADD COLUMN issue_code_sent_at TIMESTAMP NULL DEFAULT NULL")
+	addOrderColumnIfMissing("tumar_ref", "ALTER TABLE orders ADD COLUMN tumar_ref VARCHAR(50) DEFAULT NULL")
 }
 
 func addOrderColumnIfMissing(column, ddl string) {
 	switch column {
-	case "issue_code", "issue_code_sent_at":
+	case "issue_code", "issue_code_sent_at", "tumar_ref":
 	default:
 		log.Printf("Неподдерживаемый столбец orders.%s", column)
 		return
