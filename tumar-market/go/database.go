@@ -282,27 +282,33 @@ func runMigrations() {
 }
 
 func ensureOrderColumns() {
-	addColumnIfMissing("orders", "issue_code", "VARCHAR(4) DEFAULT NULL")
-	addColumnIfMissing("orders", "issue_code_sent_at", "TIMESTAMP NULL DEFAULT NULL")
+	addOrderColumnIfMissing("issue_code", "VARCHAR(4) DEFAULT NULL")
+	addOrderColumnIfMissing("issue_code_sent_at", "TIMESTAMP NULL DEFAULT NULL")
 }
 
-func addColumnIfMissing(table, column, definition string) {
+func addOrderColumnIfMissing(column, definition string) {
+	switch column {
+	case "issue_code", "issue_code_sent_at":
+	default:
+		log.Printf("Неподдерживаемый столбец orders.%s", column)
+		return
+	}
 	var count int
 	err := db.QueryRow(`
 		SELECT COUNT(*)
 		FROM information_schema.COLUMNS
 		WHERE TABLE_SCHEMA = DATABASE()
-			AND TABLE_NAME = ?
-			AND COLUMN_NAME = ?`, table, column).Scan(&count)
+			AND TABLE_NAME = 'orders'
+			AND COLUMN_NAME = ?`, column).Scan(&count)
 	if err != nil {
-		log.Printf("Ошибка проверки столбца %s.%s: %v", table, column, err)
+		log.Printf("Ошибка проверки столбца orders.%s: %v", column, err)
 		return
 	}
 	if count > 0 {
 		return
 	}
-	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, definition)); err != nil {
-		log.Printf("Ошибка добавления столбца %s.%s: %v", table, column, err)
+	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE orders ADD COLUMN %s %s", column, definition)); err != nil {
+		log.Printf("Ошибка добавления столбца orders.%s: %v", column, err)
 	}
 }
 

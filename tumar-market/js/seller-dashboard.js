@@ -171,10 +171,12 @@ async function loadSellerOrders() {
   renderSellerOrders();
 }
 
-function filterSellerOrders(filter) {
+function filterSellerOrders(filter, evt) {
   sellerOrdersFilter = filter;
   document.querySelectorAll('.seller-orders-tabs .tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  if (evt?.target) {
+    evt.target.classList.add('active');
+  }
   renderSellerOrders();
 }
 

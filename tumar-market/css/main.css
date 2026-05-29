@@ -504,7 +504,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   font-weight: 800;
   border-radius: 12px;
   padding: 1px 6px;
-  border: 2px solid var(--red);
+  border: none;
   display: none;
 }
 .notification-badge.visible {
