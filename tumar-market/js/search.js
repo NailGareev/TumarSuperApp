@@ -67,7 +67,8 @@ async function doSearch(page = 1) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadCategories();
+  await loadFavIds();
   doSearch(1);
 });

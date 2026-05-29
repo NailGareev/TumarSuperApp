@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Избранное — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .page-header { padding: 24px 0 8px; }
+    .page-title { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+    .fav-count { color: var(--gray-400); font-size: 14px; margin-top: 4px; }
+    .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <header class="header">
+    <div class="container header-inner">
+      <a class="logo" href="/">Tumar<span>Market</span></a>
+      <form class="header-search" action="/search" method="get">
+        <input name="q" type="search" placeholder="Поиск товаров..." class="search-input">
+        <button type="submit" class="search-btn">🔍</button>
+      </form>
+      <nav class="header-nav" id="header-nav"></nav>
+    </div>
+  </header>
+
+  <main class="container" style="min-height:70vh;padding-top:24px;padding-bottom:48px">
+    <div class="page-header">
+      <div class="page-title">❤️ Избранное</div>
+      <div class="fav-count" id="fav-count"></div>
+    </div>
+
+    <div id="fav-loading" style="text-align:center;padding:48px 0">
+      <div style="font-size:32px">⏳</div>
+      <p style="color:var(--gray-400);margin-top:8px">Загрузка...</p>
+    </div>
+
+    <div id="fav-empty" style="display:none;text-align:center;padding:64px 0">
+      <div style="font-size:64px">🤍</div>
+      <h3 style="margin-top:16px;color:var(--gray-700)">Избранное пусто</h3>
+      <p style="color:var(--gray-400);margin-top:8px">Добавляйте товары нажав на сердечко</p>
+      <a href="/catalog" class="btn btn-primary" style="margin-top:24px;display:inline-block">Перейти в каталог</a>
+    </div>
+
+    <div class="fav-grid" id="fav-grid"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p style="color:var(--gray-400);font-size:13px;text-align:center">© 2024 Tumar Market</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/favorites.js"></script>
+</body>
+</html>

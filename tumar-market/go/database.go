@@ -268,6 +268,16 @@ func runMigrations() {
 			FOREIGN KEY (order_id) REFERENCES orders(id),
 			INDEX idx_notifications_user (user_id, is_read, created_at)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+		`CREATE TABLE IF NOT EXISTS favorites (
+			id BIGINT AUTO_INCREMENT PRIMARY KEY,
+			user_id BIGINT NOT NULL,
+			product_id BIGINT NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE KEY unique_fav (user_id, product_id),
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (product_id) REFERENCES products(id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 	}
 
 	for _, m := range migrations {

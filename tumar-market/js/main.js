@@ -271,8 +271,39 @@ function initSearch() {
   if (q) input.value = q;
 }
 
+// ── Favorites ──────────────────────────────────────────────────
+let _favIds = new Set();
+
+async function loadFavIds() {
+  if (!isLoggedIn()) return;
+  const res = await apiFetch('/favorites/ids');
+  if (res?.ok) _favIds = new Set(res.data || []);
+}
+
+async function toggleFav(e, productId) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (!isLoggedIn()) {
+    showToast('Войдите для добавления в избранное', 'error');
+    return;
+  }
+  const btn = e.currentTarget;
+  const res = await apiFetch('/favorites/toggle', {
+    method: 'POST',
+    body: JSON.stringify({ product_id: productId })
+  });
+  if (res?.ok) {
+    const isFav = res.data.favorited;
+    if (isFav) { _favIds.add(productId); } else { _favIds.delete(productId); }
+    btn.textContent = isFav ? '❤️' : '🤍';
+    btn.classList.toggle('fav-active', isFav);
+    showToast(isFav ? 'Добавлено в избранное' : 'Убрано из избранного');
+  }
+}
+
 // ── Product card ──────────────────────────────────────────────
 function productCardHTML(p) {
+  const isFav = _favIds.has(p.id);
   const discount = p.min_price && p.original_price && p.original_price > p.min_price
     ? Math.round((1 - p.min_price / p.original_price) * 100) : 0;
   return `
@@ -282,13 +313,14 @@ function productCardHTML(p) {
              alt="${p.name}" loading="lazy"
              onerror="this.src='https://placehold.co/300x300/f3f4f6/9ca3af?text=Фото'">
         ${discount > 0 ? `<span class="product-card-badge">-${discount}%</span>` : ''}
+        <button class="fav-btn${isFav ? ' fav-active' : ''}" onclick="toggleFav(event, ${p.id})">${isFav ? '❤️' : '🤍'}</button>
       </div>
       <div class="product-card-body">
         <div class="product-card-rating">
           ${renderStars(p.rating || 0)} <span>${p.review_count || 0}</span>
         </div>
         <div class="product-card-name">${p.name}</div>
-        <div class="product-card-price">${p.min_price ? formatPrice(p.min_price) : 'Нет в наличии'}</div>
+        <div class="product-card-price">${p.min_price ? formatPrice(p.min_price) : 'Нет в наячии'}</div>
         ${p.original_price && p.original_price > p.min_price ? `<div class="product-card-price-old">${formatPrice(p.original_price)}</div>` : ''}
         <button class="btn-add-cart" onclick="addToCart(event, ${p.id})">В корзину</button>
       </div>

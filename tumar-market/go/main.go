@@ -62,6 +62,7 @@ func main() {
 	r.GET("/cart", func(c *gin.Context) { c.File(htmlFile("cart.html")) })
 	r.GET("/checkout", func(c *gin.Context) { c.File(htmlFile("checkout.html")) })
 	r.GET("/orders", func(c *gin.Context) { c.File(htmlFile("orders.html")) })
+	r.GET("/favorites", func(c *gin.Context) { c.File(htmlFile("favorites.html")) })
 	r.GET("/seller/dashboard", func(c *gin.Context) { c.File(htmlFile("seller-dashboard.html")) })
 	r.GET("/seller/store-register", func(c *gin.Context) { c.File(htmlFile("store-register.html")) })
 	r.GET("/seller/add-product", func(c *gin.Context) { c.File(htmlFile("add-product.html")) })
@@ -76,6 +77,7 @@ func main() {
 	auth.POST("/logout", logoutHandler)
 	auth.GET("/me", authMiddleware(), getMeHandler)
 	auth.PUT("/profile", authMiddleware(), updateProfileHandler)
+	auth.POST("/app-auto-login", appAutoLoginHandler)
 
 	// Catalog
 	api.GET("/categories", getCategoriesHandler)
@@ -114,6 +116,14 @@ func main() {
 	notifications.Use(authMiddleware())
 	notifications.GET("", getNotificationsHandler)
 	notifications.PUT("/read", markNotificationsReadHandler)
+
+	// Favorites
+	favGroup := api.Group("/favorites")
+	favGroup.Use(authMiddleware())
+	favGroup.GET("", getFavoritesHandler)
+	favGroup.GET("/ids", getFavoriteIDsHandler)
+	favGroup.POST("/toggle", toggleFavoriteHandler)
+	favGroup.DELETE("/:product_id", removeFavoriteHandler)
 
 	// Cart
 	cart := api.Group("/cart")

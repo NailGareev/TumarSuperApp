@@ -60,9 +60,10 @@ function initHeroSlider() {
   setInterval(() => goToSlide((current + 1) % slides.length), 4000);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initHeroSlider();
   loadCategories();
+  await loadFavIds();
   loadFeaturedProducts();
   loadNewProducts();
 });

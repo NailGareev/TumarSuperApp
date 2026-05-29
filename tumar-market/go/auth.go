@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -136,6 +138,74 @@ func updateProfileHandler(c *gin.Context) {
 func logoutHandler(c *gin.Context) {
 	c.SetCookie("token", "", -1, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"message": "Выход выполнен"})
+}
+
+const appAutoLoginSecret = "tumar_app_secret_2024"
+
+func appAutoLoginHandler(c *gin.Context) {
+	var req struct {
+		Phone     string `json:"phone"`
+		AppSecret string `json:"app_secret"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	if req.AppSecret != appAutoLoginSecret {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	if req.Phone == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Phone required"})
+		return
+	}
+
+	phone := strings.ReplaceAll(strings.ReplaceAll(req.Phone, " ", ""), "-", "")
+	email := phone + "@tumar.app"
+
+	var user User
+	err := db.QueryRow(
+		"SELECT id, email, name, phone, role FROM users WHERE phone = ? OR email = ?",
+		phone, email,
+	).Scan(&user.ID, &user.Email, &user.Name, &user.Phone, &user.Role)
+
+	if err == sql.ErrNoRows {
+		hash, _ := bcrypt.GenerateFromPassword([]byte("tumar_auto_"+phone), bcrypt.DefaultCost)
+		result, dbErr := db.Exec(
+			"INSERT INTO users (email, password_hash, name, phone) VALUES (?, ?, ?, ?)",
+			email, string(hash), "Пользователь Tumar", phone,
+		)
+		if dbErr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			return
+		}
+		user.ID, _ = result.LastInsertId()
+		user.Email = email
+		user.Name = "Пользователь Tumar"
+		user.Phone = phone
+		user.Role = "user"
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	token, err := generateToken(user.ID, user.Email, user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token generation failed"})
+		return
+	}
+
+	c.SetCookie("token", token, 7*24*3600, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user": gin.H{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.Name,
+			"phone": user.Phone,
+			"role":  user.Role,
+		},
+	})
 }
 
 func generateToken(userID int64, email, role string) (string, error) {

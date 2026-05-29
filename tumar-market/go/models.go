@@ -126,6 +126,16 @@ type Notification struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type FavProduct struct {
+	ID          int64   `json:"id"`
+	ProductID   int64   `json:"product_id"`
+	Name        string  `json:"name"`
+	MainImage   string  `json:"main_image"`
+	Rating      float64 `json:"rating"`
+	ReviewCount int     `json:"review_count"`
+	MinPrice    float64 `json:"min_price"`
+}
+
 type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`

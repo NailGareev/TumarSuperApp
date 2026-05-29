@@ -130,9 +130,10 @@ async function updateTitle() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadCategories();
   updateTitle();
   updateBreadcrumb();
+  await loadFavIds();
   loadProducts(1);
 });
