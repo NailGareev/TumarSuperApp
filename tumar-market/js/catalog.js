@@ -64,65 +64,52 @@ function renderDesktopSidebar(data) {
   list.innerHTML = html;
 }
 
+function mobileCatGrid(cats) {
+  return `<div class="category-grid">${cats.map(cat => `
+    <a class="category-card" href="/catalog?category=${encodeURIComponent(cat.slug)}">
+      <div class="category-icon-wrap"><span class="category-icon">${cat.icon || '📦'}</span></div>
+      <div class="category-name">${cat.name}</div>
+    </a>`).join('')}</div>`;
+}
+
+function setMobileCatalogHeader(show) {
+  const h = document.querySelector('.catalog-header');
+  if (h) h.style.display = show ? '' : 'none';
+}
+
 function renderMobileCatalog() {
   const slug = params.get('category');
   const grid = document.getElementById('products-grid');
-  const controlsEl = document.querySelector('.catalog-controls');
-  const countEl = document.getElementById('products-count');
   const sidebar = document.querySelector('.catalog-sidebar');
-
   if (sidebar) sidebar.style.display = 'none';
 
   if (!slug) {
-    // Step 1: show all parent categories
-    const parents = _allCategories.filter(c => !c.parent_id);
-    document.getElementById('catalog-title').textContent = 'Каталог';
+    // Step 1: show parent categories
     document.title = 'Каталог — Tumar Market';
-    if (controlsEl) controlsEl.style.display = 'none';
-    if (countEl) countEl.style.display = 'none';
-    grid.innerHTML = `<div class="mobile-cat-grid">${
-      parents.map(cat => `
-        <a class="mobile-cat-card" href="/catalog?category=${encodeURIComponent(cat.slug)}">
-          <span class="mobile-cat-icon">${cat.icon || '📦'}</span>
-          <span class="mobile-cat-name">${cat.name}</span>
-        </a>
-      `).join('')
-    }</div>`;
+    setMobileCatalogHeader(false);
+    grid.innerHTML = mobileCatGrid(_allCategories.filter(c => !c.parent_id));
     return;
   }
 
   const selectedCat = _allCategories.find(c => c.slug === slug);
-  if (!selectedCat) {
-    // Unknown slug — just load products
-    loadProductsInApp();
-    return;
-  }
+  if (!selectedCat) { loadProductsInApp(); return; }
 
   if (!selectedCat.parent_id) {
-    // Step 2: parent category selected — show subcategories
+    // Step 2: show subcategories of selected parent
     const children = _allCategories.filter(c => c.parent_id === selectedCat.id);
     if (children.length) {
-      document.getElementById('catalog-title').textContent = selectedCat.name;
       document.title = `${selectedCat.name} — Tumar Market`;
-      if (controlsEl) controlsEl.style.display = 'none';
-      if (countEl) countEl.style.display = 'none';
-      grid.innerHTML = `<div class="mobile-cat-grid">${
-        children.map(sub => `
-          <a class="mobile-cat-card" href="/catalog?category=${encodeURIComponent(sub.slug)}">
-            <span class="mobile-cat-icon">${sub.icon || '📋'}</span>
-            <span class="mobile-cat-name">${sub.name}</span>
-          </a>
-        `).join('')
-      }</div>`;
+      setMobileCatalogHeader(false);
+      grid.innerHTML = mobileCatGrid(children);
       return;
     }
   }
 
-  // Step 3: subcategory (or parent with no children) — show products
-  document.getElementById('catalog-title').textContent = selectedCat.name;
+  // Step 3: subcategory selected — show products
   document.title = `${selectedCat.name} — Tumar Market`;
-  if (controlsEl) controlsEl.style.display = '';
-  if (countEl) countEl.style.display = '';
+  const titleEl = document.getElementById('catalog-title');
+  if (titleEl) titleEl.textContent = selectedCat.name;
+  setMobileCatalogHeader(true);
   loadProductsInApp();
 }
 

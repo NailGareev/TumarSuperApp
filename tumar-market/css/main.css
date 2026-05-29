@@ -779,6 +779,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 /* ===== APP MODE (TumarSuperApp WebView) ===== */
 .app-mode .header { display: none !important; }
 .app-mode .footer { display: none !important; }
+.app-mode .breadcrumb { display: none !important; }
 .app-mode .page-content { padding-top: 8px; }
 .app-mode .catalog-layout { grid-template-columns: 1fr; }
 .app-mode .catalog-sidebar { display: none; }
@@ -790,29 +791,41 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 }
 .app-mode .tabs::-webkit-scrollbar { display: none; }
 
-/* Mobile catalog category/subcategory selection grid */
-.mobile-cat-grid {
+/* ===== CATEGORY CARD (shared between home and catalog) ===== */
+.category-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
   gap: 12px;
-  padding: 8px 0;
 }
-.mobile-cat-card {
+.category-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  padding: 18px 10px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  color: var(--gray-700);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 18px 12px;
-  background: var(--white);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  text-align: center;
-  transition: all var(--transition);
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--gray-900);
 }
-.mobile-cat-card:hover, .mobile-cat-card:active { border-color: var(--red); background: var(--red-light); }
-.mobile-cat-icon { font-size: 32px; line-height: 1; }
-.mobile-cat-name { font-size: 13px; font-weight: 600; color: var(--gray-700); line-height: 1.3; }
+.category-card:hover, .category-card:active {
+  border-color: var(--red-mid);
+  box-shadow: var(--shadow-md);
+  color: var(--red);
+}
+.category-icon-wrap {
+  width: 54px; height: 54px;
+  background: var(--gray-50);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+  font-size: 28px;
+  transition: background var(--transition);
+}
+.category-card:hover .category-icon-wrap,
+.category-card:active .category-icon-wrap { background: var(--red-light); }
+.category-icon { font-size: 28px; }
+.category-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
