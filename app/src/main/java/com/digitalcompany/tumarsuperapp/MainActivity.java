@@ -226,6 +226,12 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     // --- Конец обработки стека возврата ---
 
 
+    public void setSystemNavVisible(boolean visible) {
+        int vis = visible ? View.VISIBLE : View.GONE;
+        if (appBarLayout != null) appBarLayout.setVisibility(vis);
+        if (navView != null) navView.setVisibility(vis);
+    }
+
     // Внутренний статический класс PlaceholderFragment (оставлен без изменений)
     public static class PlaceholderFragment extends Fragment {
         private static final String ARG_TEXT = "fragment_text";
