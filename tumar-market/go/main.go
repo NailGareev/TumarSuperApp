@@ -103,10 +103,17 @@ func main() {
 	seller.DELETE("/products/:id", deleteSellerProductHandler)
 	seller.GET("/orders", getSellerOrdersHandler)
 	seller.PUT("/orders/:id/status", updateOrderStatusHandler)
+	seller.POST("/orders/:id/issue-code", issueOrderCodeHandler)
 	seller.POST("/products/:id/offer", addOfferToProductHandler)
 
 	// Reviews
 	api.POST("/reviews", authMiddleware(), createReviewHandler)
+
+	// Notifications
+	notifications := api.Group("/notifications")
+	notifications.Use(authMiddleware())
+	notifications.GET("", getNotificationsHandler)
+	notifications.PUT("/read", markNotificationsReadHandler)
 
 	// Cart
 	cart := api.Group("/cart")

@@ -234,6 +234,8 @@ func runMigrations() {
 			user_id BIGINT NOT NULL,
 			total DECIMAL(10,2) NOT NULL,
 			status ENUM('pending','confirmed','processing','shipped','delivered','cancelled') DEFAULT 'pending',
+			issue_code CHAR(4) DEFAULT NULL,
+			issue_code_sent_at TIMESTAMP NULL DEFAULT NULL,
 			delivery_address TEXT,
 			payment_method VARCHAR(50) DEFAULT '',
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -253,6 +255,19 @@ func runMigrations() {
 			FOREIGN KEY (order_id) REFERENCES orders(id),
 			FOREIGN KEY (product_seller_id) REFERENCES product_sellers(id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+		`CREATE TABLE IF NOT EXISTS notifications (
+			id BIGINT AUTO_INCREMENT PRIMARY KEY,
+			user_id BIGINT NOT NULL,
+			order_id BIGINT DEFAULT NULL,
+			title VARCHAR(255) NOT NULL,
+			message TEXT NOT NULL,
+			is_read TINYINT(1) DEFAULT 0,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users(id),
+			FOREIGN KEY (order_id) REFERENCES orders(id),
+			INDEX idx_notifications_user (user_id, is_read, created_at)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 	}
 
 	for _, m := range migrations {
@@ -261,8 +276,40 @@ func runMigrations() {
 		}
 	}
 
+	ensureOrderColumns()
 	seedCategories()
 	log.Println("Миграции выполнены")
+}
+
+func ensureOrderColumns() {
+	addOrderColumnIfMissing("issue_code", "ALTER TABLE orders ADD COLUMN issue_code CHAR(4) DEFAULT NULL")
+	addOrderColumnIfMissing("issue_code_sent_at", "ALTER TABLE orders ADD COLUMN issue_code_sent_at TIMESTAMP NULL DEFAULT NULL")
+}
+
+func addOrderColumnIfMissing(column, ddl string) {
+	switch column {
+	case "issue_code", "issue_code_sent_at":
+	default:
+		log.Printf("Неподдерживаемый столбец orders.%s", column)
+		return
+	}
+	var count int
+	err := db.QueryRow(`
+		SELECT COUNT(*)
+		FROM information_schema.COLUMNS
+		WHERE TABLE_SCHEMA = DATABASE()
+			AND TABLE_NAME = 'orders'
+			AND COLUMN_NAME = ?`, column).Scan(&count)
+	if err != nil {
+		log.Printf("Ошибка проверки столбца orders.%s: %v", column, err)
+		return
+	}
+	if count > 0 {
+		return
+	}
+	if _, err := db.Exec(ddl); err != nil {
+		log.Printf("Ошибка добавления столбца orders.%s: %v", column, err)
+	}
 }
 
 func seedCategories() {

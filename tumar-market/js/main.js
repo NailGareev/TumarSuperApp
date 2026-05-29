@@ -1,6 +1,7 @@
 /* ===== Tumar Market — Shared JS ===== */
 
 const API = '/api';
+let notificationsOpen = false;
 
 // ── Token / Auth ──────────────────────────────────────────────
 function getToken() {
@@ -61,6 +62,121 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// ── Notifications ─────────────────────────────────────────────
+function notificationItemHTML(n) {
+  const createdAt = n.created_at ? new Date(n.created_at) : null;
+  const timeLabel = createdAt
+    ? createdAt.toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : '';
+  return `
+    <div class="notification-item ${n.is_read ? '' : 'unread'}">
+      <span class="notification-unread-dot" aria-hidden="true"></span>
+      <div class="notification-icon">🔔</div>
+      <div class="notification-content">
+        <div class="notification-title">${n.title}</div>
+        <div class="notification-message">${n.message}</div>
+        <div class="notification-meta">
+          ${n.order_id ? `<span class="notification-order">Заказ #${n.order_id}</span>` : ''}
+          ${timeLabel ? `<span>${timeLabel}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderNotifications(list) {
+  const panelList = document.getElementById('notification-panel-list');
+  const homeList = document.getElementById('home-notifications');
+  const notifications = list || [];
+  const emptyHTML = '<div class="notification-empty">Пока нет уведомлений</div>';
+  const html = notifications.length ? notifications.map(notificationItemHTML).join('') : emptyHTML;
+
+  if (panelList) panelList.innerHTML = html;
+  if (homeList) homeList.innerHTML = html;
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+  updateNotificationBadge(unreadCount);
+}
+
+function updateNotificationBadge(count) {
+  const badge = document.getElementById('notification-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : String(count);
+    badge.classList.add('visible');
+  } else {
+    badge.textContent = '';
+    badge.classList.remove('visible');
+  }
+}
+
+function ensureNotificationPanel() {
+  let panel = document.getElementById('notification-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'notification-panel';
+    panel.className = 'notification-panel';
+    panel.innerHTML = `
+      <div class="notification-panel-header">
+        <div>
+          <div class="notification-panel-title">Уведомления</div>
+          <div class="notification-panel-subtitle">Последние обновления</div>
+        </div>
+        <button class="notification-panel-close" type="button" onclick="closeNotifications()">✕</button>
+      </div>
+      <div id="notification-panel-list" class="notification-list"></div>
+    `;
+    document.body.appendChild(panel);
+  }
+  return panel;
+}
+
+function toggleNotifications(event) {
+  event?.stopPropagation();
+  const panel = ensureNotificationPanel();
+  notificationsOpen = !panel.classList.contains('visible');
+  panel.classList.toggle('visible', notificationsOpen);
+  if (notificationsOpen) {
+    markNotificationsRead().then(loadNotifications);
+  }
+}
+
+function closeNotifications() {
+  const panel = document.getElementById('notification-panel');
+  if (!panel) return;
+  panel.classList.remove('visible');
+  notificationsOpen = false;
+}
+
+async function loadNotifications() {
+  if (!isLoggedIn()) return;
+  const res = await apiFetch('/notifications');
+  if (res?.ok) renderNotifications(res.data || []);
+}
+
+async function markNotificationsRead() {
+  if (!isLoggedIn()) return;
+  await apiFetch('/notifications/read', { method: 'PUT' });
+}
+
+function initNotifications() {
+  const homeList = document.getElementById('home-notifications');
+  if (!isLoggedIn()) {
+    if (homeList) homeList.innerHTML = '<div class="notification-empty">Войдите, чтобы видеть уведомления</div>';
+    return;
+  }
+  ensureNotificationPanel();
+  loadNotifications();
+  document.addEventListener('click', e => {
+    if (!notificationsOpen) return;
+    const panel = document.getElementById('notification-panel');
+    const button = document.getElementById('notification-button');
+    if (panel && !panel.contains(e.target) && button && !button.contains(e.target)) {
+      closeNotifications();
+    }
+  });
+}
+
 // ── Price format ──────────────────────────────────────────────
 function formatPrice(price) {
   if (!price && price !== 0) return '—';
@@ -102,6 +218,16 @@ function renderHeader() {
         <span class="icon">👤</span>
         <span>${user.name.split(' ')[0]}</span>
       </a>
+      <button type="button" class="header-btn header-btn-notifications" id="notification-button" onclick="toggleNotifications(event)">
+        <span class="icon notification-icon-bell">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 17H7a3 3 0 0 1-3-3v-1.5a7.5 7.5 0 0 1 6-7.3V4a2 2 0 1 1 4 0v1.2a7.5 7.5 0 0 1 6 7.3V14a3 3 0 0 1-3 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9.5 17a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notification-badge" id="notification-badge"></span>
+        </span>
+        <span>Уведомления</span>
+      </button>
       <a href="/cart" class="header-btn">
         <span class="cart-badge">
           <span class="icon">🛒</span>
@@ -276,5 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     renderHeader();
     initSearch();
+    initNotifications();
   })();
 });

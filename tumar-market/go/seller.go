@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"fmt"
+	"math/big"
 	"net/http"
 	"strconv"
 
@@ -19,10 +22,10 @@ func getSellerDashboardHandler(c *gin.Context) {
 	}
 
 	var stats struct {
-		TotalProducts  int     `json:"total_products"`
-		TotalOrders    int     `json:"total_orders"`
-		TotalRevenue   float64 `json:"total_revenue"`
-		PendingOrders  int     `json:"pending_orders"`
+		TotalProducts int     `json:"total_products"`
+		TotalOrders   int     `json:"total_orders"`
+		TotalRevenue  float64 `json:"total_revenue"`
+		PendingOrders int     `json:"pending_orders"`
 	}
 
 	db.QueryRow("SELECT COUNT(*) FROM product_sellers WHERE store_id = ? AND is_active = 1", storeID).Scan(&stats.TotalProducts)
@@ -170,11 +173,11 @@ func updateSellerProductHandler(c *gin.Context) {
 	db.QueryRow("SELECT id FROM stores WHERE owner_id = ?", userID).Scan(&storeID)
 
 	var body struct {
-		Price        float64 `json:"price"`
+		Price         float64 `json:"price"`
 		OriginalPrice float64 `json:"original_price"`
-		Stock        int     `json:"stock"`
-		DeliveryDays int     `json:"delivery_days"`
-		IsActive     bool    `json:"is_active"`
+		Stock         int     `json:"stock"`
+		DeliveryDays  int     `json:"delivery_days"`
+		IsActive      bool    `json:"is_active"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -285,6 +288,87 @@ func updateOrderStatusHandler(c *gin.Context) {
 
 	db.Exec("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?", body.Status, orderID)
 	c.JSON(http.StatusOK, gin.H{"message": "Статус заказа обновлён"})
+}
+
+func issueOrderCodeHandler(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	orderID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID"})
+		return
+	}
+
+	var storeID int64
+	if err := db.QueryRow("SELECT id FROM stores WHERE owner_id = ?", userID).Scan(&storeID); err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Магазин не найден"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки магазина"})
+		return
+	}
+
+	var customerID int64
+	var status string
+	var issueCode sql.NullString
+	err = db.QueryRow(`
+		SELECT o.user_id, o.status, o.issue_code
+		FROM orders o
+		JOIN order_items oi ON oi.order_id = o.id
+		JOIN product_sellers ps ON ps.id = oi.product_seller_id
+		WHERE o.id = ? AND ps.store_id = ?
+		LIMIT 1`, orderID, storeID).Scan(&customerID, &status, &issueCode)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Заказ не найден"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка загрузки заказа"})
+		return
+	}
+	if status == "cancelled" || status == "delivered" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Нельзя выдать отменённый или доставленный заказ"})
+		return
+	}
+
+	code := issueCode.String
+	if !issueCode.Valid {
+		code, err = generateIssueCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка генерации кода"})
+			return
+		}
+		_, err = db.Exec("UPDATE orders SET issue_code = ?, issue_code_sent_at = NOW(), updated_at = NOW() WHERE id = ?", code, orderID)
+	} else if issueCode.String == "" {
+		code, err = generateIssueCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка генерации кода"})
+			return
+		}
+		_, err = db.Exec("UPDATE orders SET issue_code = ?, issue_code_sent_at = NOW(), updated_at = NOW() WHERE id = ?", code, orderID)
+	} else {
+		_, err = db.Exec("UPDATE orders SET issue_code_sent_at = NOW(), updated_at = NOW() WHERE id = ?", orderID)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сохранения кода"})
+		return
+	}
+
+	title := "Код выдачи заказа"
+	message := fmt.Sprintf("Ваш заказ #%d готов к выдаче. Код: %s", orderID, code)
+	if err := createNotification(customerID, &orderID, title, message); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка отправки уведомления"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Код отправлен клиенту"})
+}
+
+func generateIssueCode() (string, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(10000))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%04d", n.Int64()), nil
 }
 
 // Seller can add their offer to existing product
