@@ -229,32 +229,40 @@ function renderHeader() {
   if (!navEl) return;
 
   if (user) {
-    navEl.innerHTML = `
-      <a href="/profile" class="header-btn">
-        <span class="icon">👤</span>
-        <span>${user.name.split(' ')[0]}</span>
-      </a>
-      <button type="button" class="header-btn header-btn-notifications" id="notification-button" onclick="toggleNotifications(event)">
-        <span class="icon notification-icon-bell">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 17H7a3 3 0 0 1-3-3v-1.5a7.5 7.5 0 0 1 6-7.3V4a2 2 0 1 1 4 0v1.2a7.5 7.5 0 0 1 6 7.3V14a3 3 0 0 1-3 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M9.5 17a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="notification-badge" id="notification-badge"></span>
-        </span>
-        <span>Уведомления</span>
-      </button>
-      <a href="/cart" class="header-btn">
-        <span class="cart-badge">
-          <span class="icon">🛒</span>
-          <span class="badge" id="cart-badge"></span>
-        </span>
-        <span>Корзина</span>
-      </a>
-      ${user.role === 'seller' || user.role === 'admin' ? `<a href="/seller/dashboard" class="header-btn"><span class="icon">🏪</span><span>Магазин</span></a>` : ''}
-      <button onclick="logout()" class="header-btn"><span class="icon">🚪</span><span>Выйти</span></button>
-    `;
-    updateCartBadge();
+    if (user.role === 'seller') {
+      navEl.innerHTML = `
+        <span class="header-btn" style="pointer-events:none;opacity:.7"><span class="icon">🏪</span><span>${user.name.split(' ')[0]}</span></span>
+        <a href="/seller/dashboard" class="header-btn"><span class="icon">📊</span><span>Панель продавца</span></a>
+        <button onclick="logout()" class="header-btn"><span class="icon">🚪</span><span>Выйти</span></button>
+      `;
+    } else {
+      navEl.innerHTML = `
+        <a href="/profile" class="header-btn">
+          <span class="icon">👤</span>
+          <span>${user.name.split(' ')[0]}</span>
+        </a>
+        <button type="button" class="header-btn header-btn-notifications" id="notification-button" onclick="toggleNotifications(event)">
+          <span class="icon notification-icon-bell">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 17H7a3 3 0 0 1-3-3v-1.5a7.5 7.5 0 0 1 6-7.3V4a2 2 0 1 1 4 0v1.2a7.5 7.5 0 0 1 6 7.3V14a3 3 0 0 1-3 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9.5 17a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="notification-badge" id="notification-badge"></span>
+          </span>
+          <span>Уведомления</span>
+        </button>
+        <a href="/cart" class="header-btn">
+          <span class="cart-badge">
+            <span class="icon">🛒</span>
+            <span class="badge" id="cart-badge"></span>
+          </span>
+          <span>Корзина</span>
+        </a>
+        ${user.role === 'admin' ? `<a href="/seller/dashboard" class="header-btn"><span class="icon">🏪</span><span>Магазин</span></a>` : ''}
+        <button onclick="logout()" class="header-btn"><span class="icon">🚪</span><span>Выйти</span></button>
+      `;
+      updateCartBadge();
+    }
   } else {
     navEl.innerHTML = `
       <a href="/login" class="header-btn"><span class="icon">👤</span><span>Войти</span></a>
@@ -439,6 +447,15 @@ function buildNavCategories(categories) {
   });
 }
 
+// ── Seller access control ─────────────────────────────────────
+function enforceSellerRedirect() {
+  const user = getUser();
+  if (!user || user.role !== 'seller') return;
+  const path = window.location.pathname;
+  const allowed = path.startsWith('/seller') || path === '/login';
+  if (!allowed) window.location.replace('/seller/dashboard');
+}
+
 // ── On DOM ready ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Try to restore user from API if token exists
@@ -448,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res?.ok) setUser(res.data);
       else clearToken();
     }
+    enforceSellerRedirect();
     renderHeader();
     initSearch();
     initNotifications();

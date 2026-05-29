@@ -5,6 +5,15 @@ let cartData = null;
 async function loadCheckout() {
   if (!isLoggedIn()) { window.location.href = '/login?redirect=/checkout'; return; }
 
+  const tumarPayOption = document.getElementById('tumar-pay-option');
+  if (tumarPayOption) {
+    if (isAppMode) {
+      tumarPayOption.querySelector('input').checked = true;
+    } else {
+      tumarPayOption.style.display = 'none';
+    }
+  }
+
   const res = await apiFetch('/cart');
   document.getElementById('checkout-loading').style.display = 'none';
 
