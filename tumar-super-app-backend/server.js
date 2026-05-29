@@ -74,8 +74,13 @@ const authenticateToken = (req, res, next) => {
     }
     jwt.verify(token, JWT_SECRET, (err, userPayload) => {
         if (err) {
-            console.warn('Auth middleware: Invalid or expired token', err.message);
-            return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+            const isExpired = err.name === 'TokenExpiredError';
+            console.warn(isExpired ? 'Auth middleware: Token expired - user must log in again' : `Auth middleware: Invalid token - ${err.message}`);
+            return res.status(403).json({
+                success: false,
+                message: isExpired ? 'Session expired. Please log in again.' : 'Invalid or expired token',
+                code: isExpired ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN'
+            });
         }
         req.user = userPayload;
         console.log('Auth middleware: Token verified for user ID:', req.user.userId);
@@ -148,7 +153,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid email or password' });
         }
         const payload = { userId: user.id, email: user.email };
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
         console.log(`User ID ${user.id} logged in successfully.`);
         res.status(200).json({ success: true, message: 'Login successful', token: token, userId: user.id });
     } catch (error) {

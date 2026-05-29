@@ -194,8 +194,9 @@ public class HomeFragment extends Fragment implements MenuProvider {
                     Log.e(TAG, "Ошибка ответа сервера при загрузке профиля: " + response.code());
                     if (getContext() != null) Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_SHORT).show();
                     if (response.code() == 401 || response.code() == 403) {
-                        Log.w(TAG, "Ошибка авторизации (401/403), возможно, токен истек.");
-                        // LoginActivity.logout(requireActivity());
+                        Log.w(TAG, "Ошибка авторизации (401/403), возможно, токен истек. Выполняем выход.");
+                        Toast.makeText(requireContext(), "Сессия истекла. Войдите снова", Toast.LENGTH_SHORT).show();
+                        LoginActivity.logout(requireActivity());
                     }
                 }
             }

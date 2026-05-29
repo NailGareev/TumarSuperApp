@@ -289,85 +289,134 @@
                 android:contentDescription="@string/banner_content_description" />
         </androidx.cardview.widget.CardView>
 
-        <!-- Section label: Market -->
+        <!-- Section label: Services -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="8dp"
-            android:text="МАГАЗИН"
+            android:text="СЕРВИСЫ"
             android:textColor="@color/colorPrimary"
             android:textSize="11sp"
             android:textStyle="bold"
             android:letterSpacing="0.1" />
 
-        <!-- Tumar Market card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_market"
+        <!-- Tumar Market and Travel cards -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="#FF6200EE">
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-            <LinearLayout
-                android:id="@+id/ll_market"
-                android:layout_width="match_parent"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_market"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="20dp"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true">
-
-                <FrameLayout
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="#2AFFFFFF">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="🛒"
-                        android:textSize="26sp" />
-                </FrameLayout>
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="#FF6200EE">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/ll_market"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:padding="16dp"
+                    android:minHeight="150dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="#2AFFFFFF">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="🛒"
+                            android:textSize="24sp" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
                         android:text="Tumar Market"
                         android:textColor="@color/white"
-                        android:textSize="19sp"
+                        android:textSize="17sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Электроника · Одежда · Товары для дома"
+                        android:text="Покупки и товары"
                         android:textColor="#CCFFFFFF"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_chevron_right_24dp"
-                    android:tint="#AAFFFFFF"
-                    android:contentDescription="@null" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_travel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/travel_dark">
+
+                <LinearLayout
+                    android:id="@+id/ll_travel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:padding="16dp"
+                    android:minHeight="150dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="#2AFFFFFF">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="✈"
+                            android:textSize="24sp" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Travel"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Авиа · ЖД · Отели"
+                        android:textColor="@color/travel_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
         <!-- Purchases card -->
         <androidx.cardview.widget.CardView
@@ -423,85 +472,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Section label: Travel -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp"
-            android:text="ПУТЕШЕСТВИЯ"
-            android:textColor="@color/colorPrimary"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1" />
 
-        <!-- Travel card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_travel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="@color/travel_dark">
-
-            <LinearLayout
-                android:id="@+id/ll_travel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="20dp"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true">
-
-                <FrameLayout
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="#2AFFFFFF">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="✈"
-                        android:textSize="26sp" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Travel"
-                        android:textColor="@color/white"
-                        android:textSize="19sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Авиа · ЖД · Туры · Отели"
-                        android:textColor="@color/travel_text_secondary"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_chevron_right_24dp"
-                    android:tint="#AAFFFFFF"
-                    android:contentDescription="@null" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
