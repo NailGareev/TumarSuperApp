@@ -702,20 +702,32 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--gray-600); font-weight: 700; }
 .empty-state p { font-size: 14px; }
 
-/* In app mode, center empty states vertically in the product grid */
+/* In app mode: force 2-column product grid */
 .app-mode .product-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px;
   min-height: 50vh;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  align-content: start;
 }
-.app-mode .product-grid .empty-state {
+/* Category / subcategory grid spans the full width of the product grid */
+.app-mode .product-grid .category-grid {
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, 1fr);
   width: 100%;
+}
+/* Spinner inside product grid spans both columns */
+.app-mode .product-grid .loading-wrapper {
+  grid-column: 1 / -1;
+}
+/* Empty state spans both columns and centers vertically */
+.app-mode .product-grid .empty-state {
+  grid-column: 1 / -1;
+  min-height: 50vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 50vh;
   padding: 32px 20px;
 }
 
