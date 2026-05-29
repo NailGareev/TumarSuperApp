@@ -105,7 +105,7 @@ func initDB() {
 	}
 	tmpDB.Close()
 
-	dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FAlmaty",
 		user, password, host, port, dbname)
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {

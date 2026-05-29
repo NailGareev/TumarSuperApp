@@ -203,7 +203,7 @@ async function loadReviews() {
           <span class="review-author">${r.user_name}</span>
           <span style="margin-left:10px">${renderStars(r.rating)}</span>
         </div>
-        <span class="review-date">${new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
+        <span class="review-date">${formatDate(r.created_at)}</span>
       </div>
       ${r.comment ? `<p class="review-text">${r.comment}</p>` : ''}
     </div>

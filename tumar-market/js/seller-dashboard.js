@@ -204,7 +204,7 @@ function renderSellerOrders() {
         <div>
           <div class="order-id">#${o.id}</div>
           <div class="order-customer">👤 ${o.customer_name} ${o.customer_phone ? '| ' + o.customer_phone : ''}</div>
-          <div class="order-date">${new Date(o.created_at).toLocaleDateString('ru-RU')}</div>
+          <div class="order-date">${formatDate(o.created_at)}</div>
         </div>
         <div>
           <span class="badge-status badge-${o.status}">${statusLabels[o.status] || o.status}</span>

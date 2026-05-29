@@ -173,15 +173,18 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
 
             // 3. Форматируем и устанавливаем дату/время
+            TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
             if ("MARKET_REFUND".equals(type)) {
                 String timeStr = "";
                 if (transaction.getTimestamp() != null) {
                     SimpleDateFormat sdf = new SimpleDateFormat("d MMM, HH:mm", new Locale("ru"));
+                    sdf.setTimeZone(tz);
                     timeStr = sdf.format(transaction.getTimestamp());
                 }
                 tvTimestamp.setText("Возвращено" + (timeStr.isEmpty() ? "" : " • " + timeStr));
             } else if (transaction.getTimestamp() != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
+                sdf.setTimeZone(tz);
                 tvTimestamp.setText(sdf.format(transaction.getTimestamp()));
                 tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             } else {

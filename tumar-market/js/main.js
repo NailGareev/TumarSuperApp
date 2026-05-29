@@ -68,10 +68,7 @@ function showToast(message, type = 'success') {
 
 // ── Notifications ─────────────────────────────────────────────
 function notificationItemHTML(n) {
-  const createdAt = n.created_at ? new Date(n.created_at) : null;
-  const timeLabel = createdAt
-    ? createdAt.toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-    : '';
+  const timeLabel = formatDateTime(n.created_at);
   return `
     <div class="notification-item ${n.is_read ? '' : 'unread'}">
       <span class="notification-unread-dot" aria-hidden="true"></span>
@@ -185,6 +182,21 @@ function initNotifications() {
 function formatPrice(price) {
   if (!price && price !== 0) return '—';
   return Number(price).toLocaleString('ru-KZ') + ' ₸';
+}
+
+// ── Date/time formatting (always in Kazakhstan time UTC+5) ────
+const _tz = 'Asia/Almaty';
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('ru-RU', { timeZone: _tz, day: 'numeric', month: 'long', year: 'numeric' });
+}
+function formatDateShort(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('ru-RU', { timeZone: _tz, day: 'numeric', month: 'short' });
+}
+function formatDateTime(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleString('ru-RU', { timeZone: _tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 // ── Stars ─────────────────────────────────────────────────────

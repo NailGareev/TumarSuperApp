@@ -1,4 +1,5 @@
 // server.js (ПОЛНАЯ ВЕРСИЯ с переводами и историей)
+process.env.TZ = 'Asia/Almaty';
 
 // Загружаем переменные окружения из файла .env в корне проекта
 require('dotenv').config();

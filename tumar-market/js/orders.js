@@ -51,7 +51,7 @@ function renderOrders(orders) {
         <div class="order-header" onclick="openOrderDetail(${o.id})">
           <div class="order-header-left">
             <span class="order-num">#${o.id}</span>
-            <span class="order-date">${new Date(o.created_at).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</span>
+            <span class="order-date">${formatDate(o.created_at)}</span>
             <span class="badge-status ${st.cls}">${st.label}</span>
           </div>
           <span class="order-total-val">${formatPrice(o.total)}</span>
@@ -77,7 +77,7 @@ async function openOrderDetail(orderId) {
   document.getElementById('modal-order-body').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <span class="badge-status ${st.cls}">${st.label}</span>
-      <span style="font-size:13px;color:var(--gray-400)">${new Date(o.created_at).toLocaleDateString('ru-RU')}</span>
+      <span style="font-size:13px;color:var(--gray-400)">${formatDate(o.created_at)}</span>
     </div>
     <div style="background:var(--gray-50);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px">
       <div><strong>📍 Адрес:</strong> ${o.delivery_address}</div>

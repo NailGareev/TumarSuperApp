@@ -218,6 +218,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     @Override
+    public void onBackPressed() {
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (f instanceof TumarMarketFragment && ((TumarMarketFragment) f).onBackPressed()) {
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
         Log.d(TAG, "Вызван onSupportNavigateUp, извлечение из стека возврата");
         getSupportFragmentManager().popBackStack();
