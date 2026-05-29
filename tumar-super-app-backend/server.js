@@ -682,6 +682,36 @@ app.get('/api/tours', async (req, res) => {
     }
 });
 
+// GET /api/tours/search - Поиск туров по направлению и параметрам (публичный)
+app.get('/api/tours/search', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const { destination, adults, children } = req.query;
+
+        let query = `SELECT id, location, hotel_name, stars, price, months,
+                            discount_percent, original_price, image_url, is_hot
+                     FROM tours
+                     WHERE is_active = 1`;
+        const params = [];
+
+        if (destination && destination.trim()) {
+            query += ` AND location LIKE ?`;
+            params.push(`%${destination.trim()}%`);
+        }
+
+        query += ` ORDER BY created_at DESC`;
+
+        const [rows] = await connection.execute(query, params);
+        res.json({ success: true, tours: rows });
+    } catch (err) {
+        console.error('Search tours error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {

@@ -78,9 +78,11 @@ public class TravelFragment extends Fragment {
         root.findViewById(R.id.cat_avia).setOnClickListener(v ->
                 navigateTo(new AviationFragment(), "aviation"));
 
+        root.findViewById(R.id.cat_tours).setOnClickListener(v ->
+                navigateTo(new TourSearchFragment(), "tour_search"));
+
         View[] stubs = {
                 root.findViewById(R.id.cat_railway),
-                root.findViewById(R.id.cat_tours),
                 root.findViewById(R.id.cat_kazakhstan)
         };
         for (View stub : stubs) {

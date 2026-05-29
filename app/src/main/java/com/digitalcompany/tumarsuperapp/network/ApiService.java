@@ -99,6 +99,13 @@ public interface ApiService {
     @GET("api/tours")
     Call<TourListResponse> getTours();
 
+    @GET("api/tours/search")
+    Call<TourListResponse> searchTours(
+            @Query("destination") String destination,
+            @Query("adults") int adults,
+            @Query("children") int children
+    );
+
     @POST("api/market/pay")
     Call<MarketPayResponse> marketPay(@Body MarketPayRequest request);
 
