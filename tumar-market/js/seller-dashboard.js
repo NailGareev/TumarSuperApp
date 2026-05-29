@@ -1,5 +1,8 @@
 /* ===== Seller Dashboard JS ===== */
 
+let sellerOrders = [];
+let sellerOrdersFilter = 'active';
+
 // ── Tab Switching ─────────────────────────────────────────────
 function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -159,38 +162,67 @@ async function loadSellerOrders() {
   el.innerHTML = '<div class="loading-wrapper"><div class="spinner"></div></div>';
 
   const res = await apiFetch('/seller/orders');
-  if (!res?.ok || !res.data.length) {
+  if (!res?.ok) {
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">🛍</div><h3>Нет заказов</h3></div>';
     return;
   }
 
+  sellerOrders = res.data || [];
+  renderSellerOrders();
+}
+
+function filterSellerOrders(filter) {
+  sellerOrdersFilter = filter;
+  document.querySelectorAll('.seller-orders-tabs .tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderSellerOrders();
+}
+
+function renderSellerOrders() {
+  const el = document.getElementById('seller-orders-list');
   const statusLabels = {
     pending: '⏳ Ожидает', confirmed: '✅ Подтверждён', processing: '🔧 В работе',
     shipped: '🚚 Отправлен', delivered: '✓ Доставлен', cancelled: '✕ Отменён',
   };
+  const filtered = sellerOrders.filter(o => {
+    const archived = o.status === 'cancelled';
+    return sellerOrdersFilter === 'archive' ? archived : !archived;
+  });
+  if (!filtered.length) {
+    const title = sellerOrdersFilter === 'archive' ? 'Архив пуст' : 'Нет заказов';
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🛍</div><h3>${title}</h3></div>`;
+    return;
+  }
 
-  el.innerHTML = res.data.map(o => `
-    <div class="order-card">
-      <div>
-        <div class="order-id">#${o.id}</div>
-        <div class="order-customer">👤 ${o.customer_name} ${o.customer_phone ? '| ' + o.customer_phone : ''}</div>
-        <div class="order-date">${new Date(o.created_at).toLocaleDateString('ru-RU')}</div>
+  el.innerHTML = filtered.map(o => {
+    const isArchived = o.status === 'cancelled';
+    const canIssue = !isArchived && o.status !== 'delivered';
+    return `
+      <div class="order-card">
+        <div>
+          <div class="order-id">#${o.id}</div>
+          <div class="order-customer">👤 ${o.customer_name} ${o.customer_phone ? '| ' + o.customer_phone : ''}</div>
+          <div class="order-date">${new Date(o.created_at).toLocaleDateString('ru-RU')}</div>
+        </div>
+        <div>
+          <span class="badge-status badge-${o.status}">${statusLabels[o.status] || o.status}</span>
+        </div>
+        <div class="order-total">${formatPrice(o.total)}</div>
+        <div class="order-actions">
+          ${canIssue ? `<button class="btn btn-primary btn-sm" onclick="issueOrderCode(${o.id})">Выдать заказ</button>` : ''}
+          ${!isArchived ? `
+            <select class="form-control order-status-select" onchange="updateOrderStatus(${o.id}, this.value)">
+              <option value="">Изменить статус</option>
+              <option value="confirmed">Подтвердить</option>
+              <option value="processing">В обработке</option>
+              <option value="shipped">Отправить</option>
+              <option value="delivered">Доставлен</option>
+            </select>
+          ` : `<span class="order-archive-label">В архиве</span>`}
+        </div>
       </div>
-      <div>
-        <span class="badge-status badge-${o.status}">${statusLabels[o.status] || o.status}</span>
-      </div>
-      <div class="order-total">${formatPrice(o.total)}</div>
-      <div>
-        <select class="form-control" style="font-size:12px;padding:6px" onchange="updateOrderStatus(${o.id}, this.value)">
-          <option value="">Изменить статус</option>
-          <option value="confirmed">Подтвердить</option>
-          <option value="processing">В обработке</option>
-          <option value="shipped">Отправить</option>
-          <option value="delivered">Доставлен</option>
-        </select>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function updateOrderStatus(orderId, status) {
@@ -201,6 +233,17 @@ async function updateOrderStatus(orderId, status) {
   });
   if (res?.ok) { showToast('Статус обновлён'); loadSellerOrders(); }
   else showToast(res?.data?.error || 'Ошибка', 'error');
+}
+
+async function issueOrderCode(orderId) {
+  if (!confirm('Отправить код клиенту?')) return;
+  const res = await apiFetch(`/seller/orders/${orderId}/issue-code`, { method: 'POST' });
+  if (res?.ok) {
+    showToast('Код отправлен клиенту');
+    loadSellerOrders();
+  } else {
+    showToast(res?.data?.error || 'Ошибка', 'error');
+  }
 }
 
 // ── Store Settings ────────────────────────────────────────────

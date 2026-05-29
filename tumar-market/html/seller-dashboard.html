@@ -84,6 +84,10 @@
       <!-- ORDERS TAB -->
       <div id="tab-orders" class="tab-content">
         <h1 class="page-title">Заказы магазина</h1>
+        <div class="tabs seller-orders-tabs">
+          <div class="tab active" onclick="filterSellerOrders('active')">Активные</div>
+          <div class="tab" onclick="filterSellerOrders('archive')">Архив</div>
+        </div>
         <div id="seller-orders-list">
           <div class="loading-wrapper"><div class="spinner"></div></div>
         </div>

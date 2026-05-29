@@ -38,20 +38,20 @@ type Category struct {
 }
 
 type Product struct {
-	ID          int64      `json:"id"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	CategoryID  int64      `json:"category_id"`
-	Brand       string     `json:"brand"`
-	MainImage   string     `json:"main_image"`
-	Rating      float64    `json:"rating"`
-	ReviewCount int        `json:"review_count"`
-	CreatedAt   time.Time  `json:"created_at"`
-	Category    *Category  `json:"category,omitempty"`
-	Images      []string   `json:"images,omitempty"`
-	Attributes  []Attribute `json:"attributes,omitempty"`
+	ID          int64           `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	CategoryID  int64           `json:"category_id"`
+	Brand       string          `json:"brand"`
+	MainImage   string          `json:"main_image"`
+	Rating      float64         `json:"rating"`
+	ReviewCount int             `json:"review_count"`
+	CreatedAt   time.Time       `json:"created_at"`
+	Category    *Category       `json:"category,omitempty"`
+	Images      []string        `json:"images,omitempty"`
+	Attributes  []Attribute     `json:"attributes,omitempty"`
 	Sellers     []ProductSeller `json:"sellers,omitempty"`
-	MinPrice    float64    `json:"min_price,omitempty"`
+	MinPrice    float64         `json:"min_price,omitempty"`
 }
 
 type ProductSeller struct {
@@ -114,6 +114,16 @@ type OrderItem struct {
 	Quantity        int     `json:"quantity"`
 	Price           float64 `json:"price"`
 	ProductImage    string  `json:"product_image,omitempty"`
+}
+
+type Notification struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	OrderID   *int64    `json:"order_id,omitempty"`
+	Title     string    `json:"title"`
+	Message   string    `json:"message"`
+	IsRead    bool      `json:"is_read"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type RegisterRequest struct {
