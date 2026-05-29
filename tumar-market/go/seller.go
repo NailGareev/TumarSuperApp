@@ -331,7 +331,14 @@ func issueOrderCodeHandler(c *gin.Context) {
 	}
 
 	code := issueCode.String
-	if !issueCode.Valid || issueCode.String == "" {
+	if !issueCode.Valid {
+		code, err = generateIssueCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка генерации кода"})
+			return
+		}
+		_, err = db.Exec("UPDATE orders SET issue_code = ?, issue_code_sent_at = NOW(), updated_at = NOW() WHERE id = ?", code, orderID)
+	} else if issueCode.String == "" {
 		code, err = generateIssueCode()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка генерации кода"})

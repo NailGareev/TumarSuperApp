@@ -70,6 +70,7 @@ function notificationItemHTML(n) {
     : '';
   return `
     <div class="notification-item ${n.is_read ? '' : 'unread'}">
+      <span class="notification-unread-dot" aria-hidden="true"></span>
       <div class="notification-icon">🔔</div>
       <div class="notification-content">
         <div class="notification-title">${n.title}</div>

@@ -139,7 +139,7 @@ TABLES = {
             user_id BIGINT NOT NULL,
             total DECIMAL(10,2) NOT NULL,
             status ENUM('pending','confirmed','processing','shipped','delivered','cancelled') DEFAULT 'pending',
-            issue_code VARCHAR(4) DEFAULT NULL,
+            issue_code CHAR(4) DEFAULT NULL,
             issue_code_sent_at TIMESTAMP NULL DEFAULT NULL,
             delivery_address TEXT,
             payment_method VARCHAR(50) DEFAULT '',

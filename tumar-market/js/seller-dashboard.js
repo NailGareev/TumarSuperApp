@@ -187,7 +187,7 @@ function renderSellerOrders() {
     shipped: '🚚 Отправлен', delivered: '✓ Доставлен', cancelled: '✕ Отменён',
   };
   const filtered = sellerOrders.filter(o => {
-    const archived = o.status === 'cancelled';
+    const archived = isArchivedOrder(o);
     return sellerOrdersFilter === 'archive' ? archived : !archived;
   });
   if (!filtered.length) {
@@ -197,7 +197,7 @@ function renderSellerOrders() {
   }
 
   el.innerHTML = filtered.map(o => {
-    const isArchived = o.status === 'cancelled';
+    const isArchived = isArchivedOrder(o);
     const canIssue = !isArchived && o.status !== 'delivered';
     return `
       <div class="order-card">
@@ -211,7 +211,7 @@ function renderSellerOrders() {
         </div>
         <div class="order-total">${formatPrice(o.total)}</div>
         <div class="order-actions">
-          ${canIssue ? `<button class="btn btn-primary btn-sm" onclick="issueOrderCode(${o.id})">Выдать заказ</button>` : ''}
+          ${canIssue ? `<button class="btn btn-primary btn-sm" onclick="issueOrderCode(${o.id})" aria-label="Выдать код для заказа #${o.id}">Выдать заказ</button>` : ''}
           ${!isArchived ? `
             <select class="form-control order-status-select" onchange="updateOrderStatus(${o.id}, this.value)">
               <option value="">Изменить статус</option>
@@ -225,6 +225,10 @@ function renderSellerOrders() {
       </div>
     `;
   }).join('');
+}
+
+function isArchivedOrder(order) {
+  return order.status === 'cancelled';
 }
 
 async function updateOrderStatus(orderId, status) {

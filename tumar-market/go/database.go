@@ -234,7 +234,7 @@ func runMigrations() {
 			user_id BIGINT NOT NULL,
 			total DECIMAL(10,2) NOT NULL,
 			status ENUM('pending','confirmed','processing','shipped','delivered','cancelled') DEFAULT 'pending',
-			issue_code VARCHAR(4) DEFAULT NULL,
+			issue_code CHAR(4) DEFAULT NULL,
 			issue_code_sent_at TIMESTAMP NULL DEFAULT NULL,
 			delivery_address TEXT,
 			payment_method VARCHAR(50) DEFAULT '',
@@ -282,11 +282,11 @@ func runMigrations() {
 }
 
 func ensureOrderColumns() {
-	addOrderColumnIfMissing("issue_code", "VARCHAR(4) DEFAULT NULL")
-	addOrderColumnIfMissing("issue_code_sent_at", "TIMESTAMP NULL DEFAULT NULL")
+	addOrderColumnIfMissing("issue_code", "ALTER TABLE orders ADD COLUMN issue_code CHAR(4) DEFAULT NULL")
+	addOrderColumnIfMissing("issue_code_sent_at", "ALTER TABLE orders ADD COLUMN issue_code_sent_at TIMESTAMP NULL DEFAULT NULL")
 }
 
-func addOrderColumnIfMissing(column, definition string) {
+func addOrderColumnIfMissing(column, ddl string) {
 	switch column {
 	case "issue_code", "issue_code_sent_at":
 	default:
@@ -307,7 +307,7 @@ func addOrderColumnIfMissing(column, definition string) {
 	if count > 0 {
 		return
 	}
-	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE orders ADD COLUMN %s %s", column, definition)); err != nil {
+	if _, err := db.Exec(ddl); err != nil {
 		log.Printf("Ошибка добавления столбца orders.%s: %v", column, err)
 	}
 }
