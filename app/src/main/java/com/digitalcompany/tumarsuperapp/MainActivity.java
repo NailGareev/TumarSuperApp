@@ -190,6 +190,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         topAppBar.setOnMenuItemClickListener(item -> false);
     }
 
+    public void navigateToHome() {
+        loadFragment(new HomeFragment());
+    }
+
     // Метод для загрузки фрагментов в контейнер (без изменений)
     private void loadFragment(Fragment fragment) {
         Log.d(TAG, "Загрузка фрагмента: " + fragment.getClass().getSimpleName());

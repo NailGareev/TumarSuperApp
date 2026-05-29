@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -113,6 +114,18 @@ public class TumarMarketFragment extends Fragment {
         setupBottomNav(rootView);
         fetchProfileAndAutoLogin();
 
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+            new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    if (webView != null && webView.canGoBack()) {
+                        webView.goBack();
+                    } else if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).navigateToHome();
+                    }
+                }
+            });
+
         return rootView;
     }
 
@@ -171,7 +184,9 @@ public class TumarMarketFragment extends Fragment {
 
     private void setupHeader(View root) {
         root.findViewById(R.id.btn_market_close).setOnClickListener(v -> {
-            if (getActivity() != null) getActivity().onBackPressed();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToHome();
+            }
         });
 
         EditText searchBar = root.findViewById(R.id.et_market_search);

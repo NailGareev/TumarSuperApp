@@ -91,10 +91,6 @@ public class HomeFragment extends Fragment implements MenuProvider {
         view.findViewById(R.id.ll_market).setOnClickListener(v ->
                 navigateToFragment(new TumarMarketFragment(), "market"));
 
-        // Карточка Покупки
-        view.findViewById(R.id.ll_purchases).setOnClickListener(v ->
-                navigateToFragment(new MarketPurchasesFragment(), "market_purchases"));
-
         // Устанавливаем слушатели кликов
         setupActionButtons();
 
