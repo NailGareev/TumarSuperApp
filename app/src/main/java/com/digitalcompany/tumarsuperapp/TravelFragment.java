@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -19,14 +18,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.digitalcompany.tumarsuperapp.adapter.TourCardAdapter;
 import com.digitalcompany.tumarsuperapp.adapter.TourCardAdapter.TourCard;
-import com.digitalcompany.tumarsuperapp.network.ApiClient;
-import com.digitalcompany.tumarsuperapp.network.models.Tour;
-import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
 import java.util.ArrayList;
 import java.util.List;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class TravelFragment extends Fragment {
 
@@ -68,7 +61,7 @@ public class TravelFragment extends Fragment {
         setupCategories(view);
         setupTabs();
         setupRecyclerView(view);
-        loadTours();
+        loadHardcodedTours();
 
         handler.postDelayed(rotateBanner, 3000);
         return view;
@@ -81,14 +74,11 @@ public class TravelFragment extends Fragment {
         root.findViewById(R.id.cat_tours).setOnClickListener(v ->
                 navigateTo(new TourSearchFragment(), "tour_search"));
 
-        View[] stubs = {
-                root.findViewById(R.id.cat_railway),
-                root.findViewById(R.id.cat_kazakhstan)
-        };
-        for (View stub : stubs) {
-            stub.setOnClickListener(v ->
-                    Toast.makeText(requireContext(), "Раздел в разработке", Toast.LENGTH_SHORT).show());
-        }
+        root.findViewById(R.id.cat_railway).setOnClickListener(v ->
+                navigateTo(new TrainSearchFragment(), "train_search"));
+
+        root.findViewById(R.id.cat_kazakhstan).setOnClickListener(v ->
+                navigateTo(new KazakhstanFragment(), "kz"));
     }
 
     private void setupTabs() {
@@ -120,38 +110,53 @@ public class TravelFragment extends Fragment {
         rv.setNestedScrollingEnabled(false);
     }
 
-    private void loadTours() {
-        progressTours.setVisibility(View.VISIBLE);
+    private void loadHardcodedTours() {
+        progressTours.setVisibility(View.GONE);
         tvToursEmpty.setVisibility(View.GONE);
 
-        ApiClient.getApiService(requireContext()).getTours().enqueue(new Callback<TourListResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<TourListResponse> call,
-                                   @NonNull Response<TourListResponse> response) {
-                if (!isAdded()) return;
-                progressTours.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null
-                        && response.body().tours != null) {
-                    allTours.clear();
-                    for (Tour t : response.body().tours) {
-                        allTours.add(TourCard.from(t));
-                    }
-                }
-                if (allTours.isEmpty()) {
-                    tvToursEmpty.setVisibility(View.VISIBLE);
-                } else {
-                    adapter.setItems(allTours);
-                }
-            }
+        allTours.clear();
+        allTours.add(new TourCard("Анталья, Турция", "Concorde De Luxe Resort", 5,
+                450000, 37500, 12, 30, 642000,
+                "https://source.unsplash.com/400x300/?antalya,beach", false,
+                "https://www.booking.com/searchresults.ru.html?ss=Antalya%2C+Turkey"));
+        allTours.add(new TourCard("Дубай, ОАЭ", "Atlantis The Palm", 5,
+                850000, 70833, 12, 15, 1000000,
+                "https://source.unsplash.com/400x300/?dubai,palm", false,
+                "https://www.booking.com/searchresults.ru.html?ss=Dubai"));
+        allTours.add(new TourCard("Пхукет, Таиланд", "Sala Phuket Resort", 5,
+                380000, 31666, 12, 40, 633000,
+                "https://source.unsplash.com/400x300/?phuket,beach", true,
+                "https://www.booking.com/searchresults.ru.html?ss=Phuket%2C+Thailand"));
+        allTours.add(new TourCard("Мальдивы", "COMO Cocoa Island", 5,
+                1200000, 100000, 12, 10, 1333000,
+                "https://source.unsplash.com/400x300/?maldives,overwater", false,
+                "https://www.booking.com/searchresults.ru.html?ss=Maldives"));
+        allTours.add(new TourCard("Хургада, Египет", "Steigenberger Al Dau", 5,
+                280000, 23333, 12, 45, 509000,
+                "https://source.unsplash.com/400x300/?hurghada,red+sea", true,
+                "https://www.booking.com/searchresults.ru.html?ss=Hurghada%2C+Egypt"));
+        allTours.add(new TourCard("Бали, Индонезия", "Four Seasons Bali", 5,
+                490000, 40833, 12, 25, 653000,
+                "https://source.unsplash.com/400x300/?bali,temple", true,
+                "https://www.booking.com/searchresults.ru.html?ss=Bali%2C+Indonesia"));
+        allTours.add(new TourCard("Барселона, Испания", "Hotel Arts Barcelona", 5,
+                620000, 51666, 12, 20, 775000,
+                "https://source.unsplash.com/400x300/?barcelona,sagrada", false,
+                "https://www.booking.com/searchresults.ru.html?ss=Barcelona%2C+Spain"));
+        allTours.add(new TourCard("Паттайя, Таиланд", "Dusit Thani Pattaya", 5,
+                270000, 22500, 12, 35, 415000,
+                "https://source.unsplash.com/400x300/?pattaya,thailand", true,
+                "https://www.booking.com/searchresults.ru.html?ss=Pattaya%2C+Thailand"));
+        allTours.add(new TourCard("Рим, Италия", "Rome Cavalieri", 5,
+                580000, 48333, 12, 18, 707000,
+                "https://source.unsplash.com/400x300/?rome,colosseum", false,
+                "https://www.booking.com/searchresults.ru.html?ss=Rome%2C+Italy"));
+        allTours.add(new TourCard("Шарм-эш-Шейх", "Four Seasons Sharm", 5,
+                310000, 25833, 12, 38, 500000,
+                "https://source.unsplash.com/400x300/?sharm,red+sea", true,
+                "https://www.booking.com/searchresults.ru.html?ss=Sharm+El+Sheikh%2C+Egypt"));
 
-            @Override
-            public void onFailure(@NonNull Call<TourListResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                progressTours.setVisibility(View.GONE);
-                tvToursEmpty.setVisibility(View.VISIBLE);
-                tvToursEmpty.setText("Не удалось загрузить туры");
-            }
-        });
+        adapter.setItems(allTours);
     }
 
     private List<TourCard> hotTours() {
@@ -163,8 +168,9 @@ public class TravelFragment extends Fragment {
     }
 
     private void openTourDetail(TourCard card) {
-        if (getChildFragmentManager() == null) return;
-        TourDetailBottomSheet.newInstance(card).show(getChildFragmentManager(), "tour_detail");
+        String url = !card.bookingUrl.isEmpty() ? card.bookingUrl
+                : "https://www.booking.com/searchresults.ru.html?ss=" + android.net.Uri.encode(card.location);
+        navigateTo(FlightWebFragment.newInstance(url, "Booking.com"), "booking_web");
     }
 
     private void navigateTo(Fragment fragment, String tag) {

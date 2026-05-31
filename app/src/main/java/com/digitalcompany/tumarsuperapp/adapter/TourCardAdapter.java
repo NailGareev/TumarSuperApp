@@ -30,11 +30,12 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         public final long originalPrice;
         public final String imageUrl;
         public final boolean isHot;
+        public final String bookingUrl;
 
         public TourCard(String location, String hotelName, int stars,
                         long price, long monthlyPrice, int months,
                         int discountPercent, long originalPrice,
-                        String imageUrl, boolean isHot) {
+                        String imageUrl, boolean isHot, String bookingUrl) {
             this.location = location;
             this.hotelName = hotelName;
             this.stars = stars;
@@ -45,6 +46,7 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
             this.originalPrice = originalPrice;
             this.imageUrl = imageUrl;
             this.isHot = isHot;
+            this.bookingUrl = bookingUrl;
         }
 
         public static TourCard from(Tour t) {
@@ -58,7 +60,8 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
                     t.discountPercent,
                     t.originalPrice,
                     t.imageUrl,
-                    t.isHot == 1
+                    t.isHot == 1,
+                    ""
             );
         }
     }
