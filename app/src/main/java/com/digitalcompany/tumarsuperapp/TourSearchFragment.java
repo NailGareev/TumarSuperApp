@@ -215,7 +215,7 @@ public class TourSearchFragment extends Fragment {
 
     private String fromCity  = "";
     private String toDisplay = "";
-    private String toBooking = "";    // English name for Booking.com
+    private String toSearch  = "";    // Russian destination name for Level.travel
     private Calendar checkInCal  = null;
     private Calendar checkOutCal = null;
     private int adults   = 2;
@@ -261,7 +261,7 @@ public class TourSearchFragment extends Fragment {
     private void showDestinationPicker() {
         showPicker("Куда едем?", DESTINATIONS, (chosen) -> {
             toDisplay = chosen[0];
-            toBooking = chosen[1];
+            toSearch  = chosen[0];   // Russian name → Level.travel
             tvTourTo.setText(chosen[0]);
             tvTourTo.setTextColor(0xFF212121);
         });
@@ -362,9 +362,9 @@ public class TourSearchFragment extends Fragment {
                 cal.get(Calendar.DAY_OF_MONTH), MONTHS[cal.get(Calendar.MONTH)]);
     }
 
-    private String toBookingDate(Calendar cal) {
-        return String.format(Locale.getDefault(), "%04d-%02d-%02d",
-                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+    private String toLevelDate(Calendar cal) {
+        return String.format(Locale.getDefault(), "%02d.%02d.%04d",
+                cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
     }
 
     private static final String[] MONTHS =
@@ -390,10 +390,10 @@ public class TourSearchFragment extends Fragment {
         });
     }
 
-    // ── Search → Booking.com ──────────────────────────────────────────────
+    // ── Search → Level.travel (пакетные туры "все включено") ─────────────
 
     private void searchTours() {
-        if (toBooking.isEmpty()) {
+        if (toSearch.isEmpty()) {
             Toast.makeText(requireContext(), "Выберите направление", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -406,19 +406,25 @@ public class TourSearchFragment extends Fragment {
             return;
         }
 
-        String url = "https://www.booking.com/searchresults.ru.html"
-                + "?ss=" + android.net.Uri.encode(toBooking)
-                + "&checkin=" + toBookingDate(checkInCal)
-                + "&checkout=" + toBookingDate(checkOutCal)
-                + "&group_adults=" + adults
-                + "&group_children=" + children
-                + "&no_rooms=1"
-                + "&lang=ru";
+        // Nights count from check-in to check-out
+        long diffMs = checkOutCal.getTimeInMillis() - checkInCal.getTimeInMillis();
+        int nights = (int) (diffMs / (1000 * 60 * 60 * 24));
+        if (nights < 1) nights = 7;
+
+        String url = "https://level.travel/search"
+                + "#adults=" + adults
+                + "&children_count=" + children
+                + "&nights_from=" + nights
+                + "&nights_to=" + (nights + 3)
+                + "&departure_city_name=" + android.net.Uri.encode(fromCity.isEmpty() ? "Алматы" : fromCity)
+                + "&arrival_country_name=" + android.net.Uri.encode(toSearch)
+                + "&date_from=" + toLevelDate(checkInCal)
+                + "&meal=all_inclusive";
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container,
-                         FlightWebFragment.newInstance(url, "Booking.com"))
+                         FlightWebFragment.newInstance(url, "Level.travel — Туры"))
                 .addToBackStack("tour_web")
                 .commit();
     }
