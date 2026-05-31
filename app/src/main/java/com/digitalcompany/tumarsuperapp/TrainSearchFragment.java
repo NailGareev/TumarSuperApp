@@ -252,15 +252,16 @@ public class TrainSearchFragment extends Fragment {
             return;
         }
 
-        String url = "https://rasp.yandex.ru/search/?fromName=" + Uri.encode(fromCity)
-                + "&toName=" + Uri.encode(toCity)
-                + "&transportTypes=train"
-                + "&when=" + formatYandexDate(departureCal)
-                + "&lang=ru";
+        // KTZ Express — official Kazakhstan Railways e-ticketing
+        String url = "https://online.ktzh.kz/ru/purchase/route"
+                + "?from=" + Uri.encode(fromCity)
+                + "&to=" + Uri.encode(toCity)
+                + "&date=" + formatYandexDate(departureCal)
+                + "&passengers=1";
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, FlightWebFragment.newInstance(url, "ЖД Билеты"))
+                .replace(R.id.fragment_container, FlightWebFragment.newInstance(url, "КТЖ — ЖД Билеты"))
                 .addToBackStack("train_web")
                 .commit();
     }
