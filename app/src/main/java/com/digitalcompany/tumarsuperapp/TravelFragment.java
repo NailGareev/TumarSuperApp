@@ -118,43 +118,43 @@ public class TravelFragment extends Fragment {
         allTours.add(new TourCard("Анталья, Турция", "Concorde De Luxe Resort", 5,
                 450000, 37500, 12, 30, 642000,
                 "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop", false,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=14&arrival_country_name=%D0%A2%D1%83%D1%80%D1%86%D0%B8%D1%8F&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=14&arrival_country_id=19&meal=all_inclusive"));
         allTours.add(new TourCard("Дубай, ОАЭ", "Atlantis The Palm", 5,
                 850000, 70833, 12, 15, 1000000,
                 "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&h=300&fit=crop", false,
-                "https://level.travel/search#adults=2&nights_from=5&nights_to=10&arrival_country_name=%D0%9E%D0%90%D0%AD&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=5&nights_to=10&arrival_country_id=170&meal=all_inclusive"));
         allTours.add(new TourCard("Пхукет, Таиланд", "Sala Phuket Resort", 5,
                 380000, 31666, 12, 40, 633000,
                 "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&h=300&fit=crop", true,
-                "https://level.travel/search#adults=2&nights_from=10&nights_to=14&arrival_country_name=%D0%A2%D0%B0%D0%B8%D0%BB%D0%B0%D0%BD%D0%B4&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=10&nights_to=14&arrival_country_id=17&meal=all_inclusive"));
         allTours.add(new TourCard("Мальдивы", "COMO Cocoa Island", 5,
                 1200000, 100000, 12, 10, 1333000,
                 "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=400&h=300&fit=crop", false,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=14&arrival_country_name=%D0%9C%D0%B0%D0%BB%D1%8C%D0%B4%D0%B8%D0%B2%D1%8B&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=14&arrival_country_id=86&meal=all_inclusive"));
         allTours.add(new TourCard("Хургада, Египет", "Steigenberger Al Dau", 5,
                 280000, 23333, 12, 45, 509000,
                 "https://images.unsplash.com/photo-1573843981267-be1480dde014?w=400&h=300&fit=crop", true,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=14&arrival_country_name=%D0%95%D0%B3%D0%B8%D0%BF%D0%B5%D1%82&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=14&arrival_country_id=39&meal=all_inclusive"));
         allTours.add(new TourCard("Бали, Индонезия", "Four Seasons Bali", 5,
                 490000, 40833, 12, 25, 653000,
                 "https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400&h=300&fit=crop", true,
-                "https://level.travel/search#adults=2&nights_from=10&nights_to=14&arrival_country_name=%D0%91%D0%B0%D0%BB%D0%B8&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=10&nights_to=14&arrival_country_id=54&meal=all_inclusive"));
         allTours.add(new TourCard("Барселона, Испания", "Hotel Arts Barcelona", 5,
                 620000, 51666, 12, 20, 775000,
                 "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop", false,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=10&arrival_country_name=%D0%98%D1%81%D0%BF%D0%B0%D0%BD%D0%B8%D1%8F&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=10&arrival_country_id=70&meal=all_inclusive"));
         allTours.add(new TourCard("Паттайя, Таиланд", "Dusit Thani Pattaya", 5,
                 270000, 22500, 12, 35, 415000,
                 "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop", true,
-                "https://level.travel/search#adults=2&nights_from=10&nights_to=14&arrival_country_name=%D0%A2%D0%B0%D0%B8%D0%BB%D0%B0%D0%BD%D0%B4&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=10&nights_to=14&arrival_country_id=17&meal=all_inclusive"));
         allTours.add(new TourCard("Амальфи, Италия", "Belmond Hotel Caruso", 5,
                 580000, 48333, 12, 18, 707000,
                 "https://images.unsplash.com/photo-1534445867742-43195f401b6c?w=400&h=300&fit=crop", false,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=10&arrival_country_name=%D0%98%D1%82%D0%B0%D0%BB%D0%B8%D1%8F&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=10&arrival_country_id=55&meal=all_inclusive"));
         allTours.add(new TourCard("Шарм-эш-Шейх", "Four Seasons Sharm", 5,
                 310000, 25833, 12, 38, 500000,
                 "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop", true,
-                "https://level.travel/search#adults=2&nights_from=7&nights_to=14&arrival_country_name=%D0%95%D0%B3%D0%B8%D0%BF%D0%B5%D1%82&meal=all_inclusive"));
+                "https://level.travel/search?adults=2&nights_from=7&nights_to=14&arrival_country_id=39&meal=all_inclusive"));
 
         adapter.setItems(allTours);
     }
@@ -168,9 +168,7 @@ public class TravelFragment extends Fragment {
     }
 
     private void openTourDetail(TourCard card) {
-        String url = !card.bookingUrl.isEmpty() ? card.bookingUrl
-                : "https://level.travel/search#adults=2&nights_from=7&nights_to=14&arrival_country_name="
-                  + android.net.Uri.encode(card.location) + "&meal=all_inclusive";
+        String url = !card.bookingUrl.isEmpty() ? card.bookingUrl : "https://level.travel/";
         navigateTo(FlightWebFragment.newInstance(url, "Level.travel — Туры"), "tour_web");
     }
 

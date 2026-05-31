@@ -56,6 +56,10 @@ public class FlightWebFragment extends Fragment {
         ws.setDomStorageEnabled(true);
         ws.setLoadWithOverviewMode(true);
         ws.setUseWideViewPort(true);
+        ws.setUserAgentString(
+            "Mozilla/5.0 (Linux; Android 10; Mobile) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/124.0.0.0 Mobile Safari/537.36");
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
