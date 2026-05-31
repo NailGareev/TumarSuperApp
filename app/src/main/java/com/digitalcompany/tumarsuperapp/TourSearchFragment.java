@@ -215,7 +215,7 @@ public class TourSearchFragment extends Fragment {
 
     private String fromCity  = "";
     private String toDisplay = "";
-    private String toSearch  = "";    // Russian destination name for Level.travel
+    private String toSearch  = "";
     private Calendar checkInCal  = null;
     private Calendar checkOutCal = null;
     private int adults   = 2;
@@ -362,7 +362,7 @@ public class TourSearchFragment extends Fragment {
                 cal.get(Calendar.DAY_OF_MONTH), MONTHS[cal.get(Calendar.MONTH)]);
     }
 
-    private String toLevelDate(Calendar cal) {
+    private String toHtDate(Calendar cal) {
         return String.format(Locale.getDefault(), "%02d.%02d.%04d",
                 cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
     }
@@ -390,7 +390,7 @@ public class TourSearchFragment extends Fragment {
         });
     }
 
-    // ── Search → Level.travel (пакетные туры "все включено") ─────────────
+    // ── Search → ht.kz ───────────────────────────────────────────────────
 
     private void searchTours() {
         if (toSearch.isEmpty()) {
@@ -406,26 +406,148 @@ public class TourSearchFragment extends Fragment {
             return;
         }
 
-        // Nights count from check-in to check-out
         long diffMs = checkOutCal.getTimeInMillis() - checkInCal.getTimeInMillis();
         int nights = (int) (diffMs / (1000 * 60 * 60 * 24));
         if (nights < 1) nights = 7;
 
-        String url = "https://level.travel/search"
-                + "#adults=" + adults
-                + "&children_count=" + children
-                + "&nights_from=" + nights
-                + "&nights_to=" + (nights + 3)
-                + "&departure_city_name=" + android.net.Uri.encode(fromCity.isEmpty() ? "Алматы" : fromCity)
-                + "&arrival_country_name=" + android.net.Uri.encode(toSearch)
-                + "&date_from=" + toLevelDate(checkInCal)
-                + "&meal=all_inclusive";
+        int countryId = getCountryId(toSearch);
+        int regionId  = getRegionId(toSearch);
+        int departId  = getDepartCityId(fromCity);
+        String dateFrom = toHtDate(checkInCal);
+
+        if (countryId == 0) {
+            // Unknown destination — open ht.kz homepage
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,
+                             FlightWebFragment.newInstance("https://ht.kz/", "ht.kz — Туры"))
+                    .addToBackStack("tour_web")
+                    .commit();
+            return;
+        }
+
+        StringBuilder url = new StringBuilder("https://ht.kz/findtours?");
+        url.append("country=").append(countryId);
+        if (regionId > 0) url.append("&region=").append(regionId);
+        url.append("&departCity=").append(departId);
+        url.append("&adult=").append(adults);
+        if (children > 0) url.append("&child=").append(children);
+        url.append("&daysFrom=").append(nights);
+        url.append("&daysTo=").append(nights + 2);
+        url.append("&dateFrom=").append(dateFrom);
+        url.append("&stars=any");
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container,
-                         FlightWebFragment.newInstance(url, "Level.travel — Туры"))
+                         FlightWebFragment.newInstance(url.toString(), "ht.kz — Туры"))
                 .addToBackStack("tour_web")
                 .commit();
+    }
+
+    // Country IDs from ht.kz
+    private static int getCountryId(String dest) {
+        switch (dest) {
+            case "Турция": case "Анталья": case "Кемер": case "Белек":
+            case "Сиде": case "Алания": case "Мармарис": case "Бодрум":
+            case "Стамбул":
+                return 1;
+            case "ОАЭ": case "Дубай": case "Абу-Даби": case "Шарджа":
+                return 2;
+            case "Таиланд": case "Пхукет": case "Паттайя": case "Самуи":
+            case "Бангкок": case "Краби":
+                return 3;
+            case "Мальдивы":
+                return 9;
+            case "Кипр": case "Пафос": case "Лимасол":
+                return 10;
+            case "Италия": case "Рим": case "Милан": case "Венеция":
+            case "Сицилия": case "Флоренция":
+                return 13;
+            case "Испания": case "Барселона": case "Мадрид": case "Тенерифе":
+            case "Малага": case "Ибица": case "Майорка":
+                return 14;
+            case "Греция": case "Крит": case "Родос": case "Корфу":
+            case "Афины": case "Санторини": case "Миконос":
+                return 6;
+            case "Египет": case "Шарм-эш-Шейх": case "Хургада":
+            case "Каир": case "Марса-Алам":
+                return 18;
+            case "Индонезия": case "Бали":
+                return 19;
+            case "Черногория": case "Будва":
+                return 22;
+            case "Хорватия": case "Дубровник": case "Сплит":
+                return 23;
+            case "Португалия": case "Лиссабон": case "Алгарве":
+                return 24;
+            case "Мальта":
+                return 25;
+            case "Вьетнам": case "Нячанг": case "Дананг": case "Фукуок":
+                return 26;
+            case "Шри-Ланка":
+                return 27;
+            case "Индия": case "Гоа":
+                return 28;
+            case "Малайзия": case "Куала-Лумпур":
+                return 29;
+            case "Куба": case "Варадеро":
+                return 30;
+            case "Доминикана": case "Пунта-Кана":
+                return 31;
+            case "Мексика": case "Канкун":
+                return 32;
+            case "Марокко": case "Марракеш":
+                return 33;
+            default:
+                return 0;
+        }
+    }
+
+    // Region IDs from ht.kz
+    private static int getRegionId(String dest) {
+        switch (dest) {
+            case "Анталья":       return 8;
+            case "Кемер":         return 9;
+            case "Белек":         return 10;
+            case "Сиде":          return 11;
+            case "Алания":        return 12;
+            case "Мармарис":      return 13;
+            case "Бодрум":        return 14;
+            case "Пхукет":        return 16;
+            case "Паттайя":       return 15;
+            case "Хургада":       return 197;
+            case "Шарм-эш-Шейх": return 169;
+            case "Дубай":         return 21;
+            case "Крит":          return 50;
+            case "Родос":         return 51;
+            case "Корфу":         return 52;
+            case "Санторини":     return 53;
+            case "Нячанг":        return 80;
+            case "Дананг":        return 81;
+            case "Фукуок":        return 82;
+            case "Гоа":           return 90;
+            case "Будва":         return 100;
+            case "Варадеро":      return 110;
+            case "Пунта-Кана":    return 120;
+            case "Канкун":        return 130;
+            default:              return 0;
+        }
+    }
+
+    // Departure city IDs from ht.kz
+    private static int getDepartCityId(String city) {
+        switch (city) {
+            case "Алматы":           return 1;
+            case "Астана":           return 2;
+            case "Шымкент":          return 3;
+            case "Актобе":           return 4;
+            case "Актау":            return 5;
+            case "Атырау":           return 6;
+            case "Усть-Каменогорск": return 7;
+            case "Уральск":          return 8;
+            case "Павлодар":         return 9;
+            default:                 return 1; // fallback Алматы
+        }
     }
 }
