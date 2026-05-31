@@ -18,14 +18,20 @@ import androidx.fragment.app.Fragment;
 
 public class FlightWebFragment extends Fragment {
 
-    private static final String ARG_URL = "url";
+    private static final String ARG_URL   = "url";
+    private static final String ARG_TITLE = "title";
     private WebView webView;
     private ProgressBar progressBar;
 
     public static FlightWebFragment newInstance(String url) {
+        return newInstance(url, "Aviasales");
+    }
+
+    public static FlightWebFragment newInstance(String url, String title) {
         FlightWebFragment f = new FlightWebFragment();
         Bundle args = new Bundle();
         args.putString(ARG_URL, url);
+        args.putString(ARG_TITLE, title);
         f.setArguments(args);
         return f;
     }
@@ -39,6 +45,9 @@ public class FlightWebFragment extends Fragment {
 
         webView     = root.findViewById(R.id.webview_flights);
         progressBar = root.findViewById(R.id.progress_flights);
+
+        String title = getArguments() != null ? getArguments().getString(ARG_TITLE, "Aviasales") : "Aviasales";
+        ((android.widget.TextView) root.findViewById(R.id.tv_web_title)).setText(title);
 
         root.findViewById(R.id.btn_flight_close).setOnClickListener(v -> goBack());
 

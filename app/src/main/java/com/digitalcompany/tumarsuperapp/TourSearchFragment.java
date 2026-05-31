@@ -2,44 +2,224 @@ package com.digitalcompany.tumarsuperapp;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.ProgressBar;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.digitalcompany.tumarsuperapp.adapter.TourCardAdapter;
-import com.digitalcompany.tumarsuperapp.adapter.TourCardAdapter.TourCard;
-import com.digitalcompany.tumarsuperapp.network.ApiClient;
-import com.digitalcompany.tumarsuperapp.network.models.Tour;
-import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
-import java.text.SimpleDateFormat;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class TourSearchFragment extends Fragment {
 
-    private EditText etFrom, etTo;
-    private TextView tvDateFrom, tvDateTo;
-    private TextView tvAdultsCount, tvChildrenCount;
-    private TextView tvResultsLabel, tvEmpty;
-    private ProgressBar progressBar;
-    private TourCardAdapter adapter;
+    // ── Departure cities ──────────────────────────────────────────────────
+    // {Russian name, IATA (for display), country}
+    private static final String[][] DEPARTURE_CITIES = {
+        {"Алматы",           "ALA", "Казахстан"},
+        {"Астана",           "NQZ", "Казахстан"},
+        {"Шымкент",          "CIT", "Казахстан"},
+        {"Актобе",           "AKX", "Казахстан"},
+        {"Актау",            "SCO", "Казахстан"},
+        {"Атырау",           "GUW", "Казахстан"},
+        {"Усть-Каменогорск", "UKK", "Казахстан"},
+        {"Уральск",          "URA", "Казахстан"},
+        {"Павлодар",         "PWQ", "Казахстан"},
+        {"Бишкек",           "FRU", "Кыргызстан"},
+        {"Ош",               "OSS", "Кыргызстан"},
+        {"Ташкент",          "TAS", "Узбекистан"},
+        {"Самарканд",        "SKD", "Узбекистан"},
+        {"Душанбе",          "DYU", "Таджикистан"},
+        {"Ашхабад",          "ASB", "Туркменистан"},
+        {"Баку",             "GYD", "Азербайджан"},
+        {"Тбилиси",          "TBS", "Грузия"},
+        {"Ереван",           "EVN", "Армения"},
+        {"Минск",            "MSQ", "Беларусь"},
+        {"Москва",           "MOW", "Россия"},
+        {"Санкт-Петербург",  "LED", "Россия"},
+        {"Новосибирск",      "OVB", "Россия"},
+        {"Екатеринбург",     "SVX", "Россия"},
+        {"Казань",           "KZN", "Россия"},
+        {"Краснодар",        "KRR", "Россия"},
+        {"Сочи",             "AER", "Россия"},
+        {"Стамбул",          "IST", "Турция"},
+        {"Дубай",            "DXB", "ОАЭ"},
+    };
 
-    private int adults = 2;
+    // ── Destinations: {Russian name, English Booking.com term, category} ─
+    private static final String[][] DESTINATIONS = {
+        // Turkey
+        {"Турция",           "Turkey",            "Страна"},
+        {"Анталья",          "Antalya, Turkey",   "Курорт · Турция"},
+        {"Кемер",            "Kemer, Turkey",     "Курорт · Турция"},
+        {"Белек",            "Belek, Turkey",     "Курорт · Турция"},
+        {"Сиде",             "Side, Turkey",      "Курорт · Турция"},
+        {"Алания",           "Alanya, Turkey",    "Курорт · Турция"},
+        {"Мармарис",         "Marmaris, Turkey",  "Курорт · Турция"},
+        {"Бодрум",           "Bodrum, Turkey",    "Курорт · Турция"},
+        {"Стамбул",          "Istanbul, Turkey",  "Город · Турция"},
+        // UAE
+        {"ОАЭ",              "United Arab Emirates", "Страна"},
+        {"Дубай",            "Dubai",             "Город · ОАЭ"},
+        {"Абу-Даби",         "Abu Dhabi",         "Город · ОАЭ"},
+        {"Шарджа",           "Sharjah",           "Город · ОАЭ"},
+        // Egypt
+        {"Египет",           "Egypt",             "Страна"},
+        {"Шарм-эш-Шейх",     "Sharm El Sheikh",   "Курорт · Египет"},
+        {"Хургада",          "Hurghada",          "Курорт · Египет"},
+        {"Каир",             "Cairo, Egypt",      "Город · Египет"},
+        {"Марса-Алам",       "Marsa Alam, Egypt", "Курорт · Египет"},
+        // Greece
+        {"Греция",           "Greece",            "Страна"},
+        {"Крит",             "Crete, Greece",     "Остров · Греция"},
+        {"Родос",            "Rhodes, Greece",    "Остров · Греция"},
+        {"Корфу",            "Corfu, Greece",     "Остров · Греция"},
+        {"Афины",            "Athens, Greece",    "Город · Греция"},
+        {"Санторини",        "Santorini, Greece", "Остров · Греция"},
+        {"Миконос",          "Mykonos, Greece",   "Остров · Греция"},
+        // Spain
+        {"Испания",          "Spain",             "Страна"},
+        {"Барселона",        "Barcelona, Spain",  "Город · Испания"},
+        {"Мадрид",           "Madrid, Spain",     "Город · Испания"},
+        {"Тенерифе",         "Tenerife, Spain",   "Остров · Испания"},
+        {"Малага",           "Malaga, Spain",     "Курорт · Испания"},
+        {"Ибица",            "Ibiza, Spain",      "Остров · Испания"},
+        {"Майорка",          "Mallorca, Spain",   "Остров · Испания"},
+        // Italy
+        {"Италия",           "Italy",             "Страна"},
+        {"Рим",              "Rome, Italy",       "Город · Италия"},
+        {"Милан",            "Milan, Italy",      "Город · Италия"},
+        {"Венеция",          "Venice, Italy",     "Город · Италия"},
+        {"Сицилия",          "Sicily, Italy",     "Остров · Италия"},
+        {"Флоренция",        "Florence, Italy",   "Город · Италия"},
+        // France
+        {"Франция",          "France",            "Страна"},
+        {"Париж",            "Paris, France",     "Город · Франция"},
+        {"Ницца",            "Nice, France",      "Курорт · Франция"},
+        {"Канны",            "Cannes, France",    "Курорт · Франция"},
+        // Thailand
+        {"Таиланд",          "Thailand",          "Страна"},
+        {"Пхукет",           "Phuket, Thailand",  "Курорт · Таиланд"},
+        {"Паттайя",          "Pattaya, Thailand", "Курорт · Таиланд"},
+        {"Самуи",            "Koh Samui, Thailand","Остров · Таиланд"},
+        {"Бангкок",          "Bangkok, Thailand", "Город · Таиланд"},
+        {"Краби",            "Krabi, Thailand",   "Курорт · Таиланд"},
+        // Bali / Indonesia
+        {"Бали",             "Bali, Indonesia",   "Остров · Индонезия"},
+        {"Индонезия",        "Indonesia",         "Страна"},
+        // Malaysia
+        {"Малайзия",         "Malaysia",          "Страна"},
+        {"Куала-Лумпур",     "Kuala Lumpur",      "Город · Малайзия"},
+        // Singapore
+        {"Сингапур",         "Singapore",         "Страна"},
+        // Vietnam
+        {"Вьетнам",          "Vietnam",           "Страна"},
+        {"Нячанг",           "Nha Trang, Vietnam","Курорт · Вьетнам"},
+        {"Дананг",           "Da Nang, Vietnam",  "Курорт · Вьетнам"},
+        {"Фукуок",           "Phu Quoc, Vietnam", "Остров · Вьетнам"},
+        // Maldives
+        {"Мальдивы",         "Maldives",          "Страна"},
+        // Sri Lanka
+        {"Шри-Ланка",        "Sri Lanka",         "Страна"},
+        // India
+        {"Индия",            "India",             "Страна"},
+        {"Гоа",              "Goa, India",        "Курорт · Индия"},
+        // Cyprus
+        {"Кипр",             "Cyprus",            "Страна"},
+        {"Пафос",            "Paphos, Cyprus",    "Курорт · Кипр"},
+        {"Лимасол",          "Limassol, Cyprus",  "Курорт · Кипр"},
+        // Montenegro
+        {"Черногория",       "Montenegro",        "Страна"},
+        {"Будва",            "Budva, Montenegro", "Курорт · Черногория"},
+        // Croatia
+        {"Хорватия",         "Croatia",           "Страна"},
+        {"Дубровник",        "Dubrovnik, Croatia","Город · Хорватия"},
+        {"Сплит",            "Split, Croatia",    "Город · Хорватия"},
+        // Malta
+        {"Мальта",           "Malta",             "Страна"},
+        // Portugal
+        {"Португалия",       "Portugal",          "Страна"},
+        {"Лиссабон",         "Lisbon, Portugal",  "Город · Португалия"},
+        {"Алгарве",          "Algarve, Portugal", "Курорт · Португалия"},
+        // Netherlands
+        {"Нидерланды",       "Netherlands",       "Страна"},
+        {"Амстердам",        "Amsterdam",         "Город · Нидерланды"},
+        // Austria
+        {"Австрия",          "Austria",           "Страна"},
+        {"Вена",             "Vienna, Austria",   "Город · Австрия"},
+        // Czech Republic
+        {"Чехия",            "Czech Republic",    "Страна"},
+        {"Прага",            "Prague, Czech Republic","Город · Чехия"},
+        // Hungary
+        {"Венгрия",          "Hungary",           "Страна"},
+        {"Будапешт",         "Budapest, Hungary", "Город · Венгрия"},
+        // Germany
+        {"Германия",         "Germany",           "Страна"},
+        {"Берлин",           "Berlin, Germany",   "Город · Германия"},
+        {"Мюнхен",           "Munich, Germany",   "Город · Германия"},
+        // Switzerland
+        {"Швейцария",        "Switzerland",       "Страна"},
+        {"Женева",           "Geneva, Switzerland","Город · Швейцария"},
+        // Georgia
+        {"Грузия",           "Georgia",           "Страна"},
+        {"Тбилиси",          "Tbilisi, Georgia",  "Город · Грузия"},
+        {"Батуми",           "Batumi, Georgia",   "Курорт · Грузия"},
+        // Mexico
+        {"Мексика",          "Mexico",            "Страна"},
+        {"Канкун",           "Cancun, Mexico",    "Курорт · Мексика"},
+        // Cuba
+        {"Куба",             "Cuba",              "Страна"},
+        {"Варадеро",         "Varadero, Cuba",    "Курорт · Куба"},
+        // Dominican Republic
+        {"Доминикана",       "Dominican Republic","Страна"},
+        {"Пунта-Кана",       "Punta Cana",        "Курорт · Доминикана"},
+        // Morocco
+        {"Марокко",          "Morocco",           "Страна"},
+        {"Марракеш",         "Marrakech, Morocco","Город · Марокко"},
+        // Israel
+        {"Израиль",          "Israel",            "Страна"},
+        {"Тель-Авив",        "Tel Aviv, Israel",  "Город · Израиль"},
+        // Japan
+        {"Япония",           "Japan",             "Страна"},
+        {"Токио",            "Tokyo, Japan",      "Город · Япония"},
+        // South Korea
+        {"Южная Корея",      "South Korea",       "Страна"},
+        {"Сеул",             "Seoul, South Korea","Город · Южная Корея"},
+        // Australia
+        {"Австралия",        "Australia",         "Страна"},
+        {"Сидней",           "Sydney, Australia", "Город · Австралия"},
+        // USA
+        {"США",              "United States",     "Страна"},
+        {"Нью-Йорк",         "New York, USA",     "Город · США"},
+        {"Майами",           "Miami, USA",        "Город · США"},
+        {"Лос-Анджелес",     "Los Angeles, USA",  "Город · США"},
+        {"Лас-Вегас",        "Las Vegas, USA",    "Город · США"},
+    };
+
+    private TextView tvTourFrom, tvTourTo, tvDateFrom, tvDateTo;
+    private TextView tvAdultsCount, tvChildrenCount;
+    private TextView tvEmpty;
+
+    private String fromCity  = "";
+    private String toDisplay = "";
+    private String toBooking = "";    // English name for Booking.com
+    private Calendar checkInCal  = null;
+    private Calendar checkOutCal = null;
+    private int adults   = 2;
     private int children = 0;
-    private final SimpleDateFormat dateFmt = new SimpleDateFormat("dd.MM.yyyy", new Locale("ru"));
 
     @Nullable
     @Override
@@ -47,20 +227,19 @@ public class TourSearchFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tour_search, container, false);
 
-        etFrom          = view.findViewById(R.id.et_from);
-        etTo            = view.findViewById(R.id.et_to);
+        tvTourFrom      = view.findViewById(R.id.tv_tour_from);
+        tvTourTo        = view.findViewById(R.id.tv_tour_to);
         tvDateFrom      = view.findViewById(R.id.tv_date_from);
         tvDateTo        = view.findViewById(R.id.tv_date_to);
         tvAdultsCount   = view.findViewById(R.id.tv_adults_count);
         tvChildrenCount = view.findViewById(R.id.tv_children_count);
-        tvResultsLabel  = view.findViewById(R.id.tv_results_label);
         tvEmpty         = view.findViewById(R.id.tv_search_empty);
-        progressBar     = view.findViewById(R.id.progress_search);
 
-        setupDatePickers();
+        view.findViewById(R.id.ll_tour_from).setOnClickListener(v -> showDeparturePicker());
+        view.findViewById(R.id.ll_tour_to).setOnClickListener(v -> showDestinationPicker());
+        view.findViewById(R.id.tv_date_from).setOnClickListener(v -> showDatePicker(true));
+        view.findViewById(R.id.tv_date_to).setOnClickListener(v -> showDatePicker(false));
         setupPersonsControls(view);
-        setupRecyclerView(view);
-
         view.findViewById(R.id.btn_search_tours).setOnClickListener(v -> searchTours());
         view.findViewById(R.id.btn_back).setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
@@ -69,28 +248,134 @@ public class TourSearchFragment extends Fragment {
         return view;
     }
 
-    private void setupDatePickers() {
-        tvDateFrom.setOnClickListener(v -> showDatePicker(true));
-        tvDateTo.setOnClickListener(v -> showDatePicker(false));
+    // ── City / destination pickers ────────────────────────────────────────
+
+    private void showDeparturePicker() {
+        showPicker("Откуда летим?", DEPARTURE_CITIES, (chosen) -> {
+            fromCity = chosen[0];
+            tvTourFrom.setText(chosen[0] + "  •  " + chosen[1]);
+            tvTourFrom.setTextColor(0xFF212121);
+        });
     }
 
-    private void showDatePicker(boolean isFrom) {
-        Calendar cal = Calendar.getInstance();
-        new DatePickerDialog(requireContext(), (dp, year, month, day) -> {
-            cal.set(year, month, day);
-            String formatted = dateFmt.format(cal.getTime());
-            if (isFrom) {
-                tvDateFrom.setText(formatted);
-            } else {
-                tvDateTo.setText(formatted);
-            }
-        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+    private void showDestinationPicker() {
+        showPicker("Куда едем?", DESTINATIONS, (chosen) -> {
+            toDisplay = chosen[0];
+            toBooking = chosen[1];
+            tvTourTo.setText(chosen[0]);
+            tvTourTo.setTextColor(0xFF212121);
+        });
     }
+
+    private interface OnCityChosen { void onChosen(String[] city); }
+
+    private void showPicker(String title, String[][] data, OnCityChosen callback) {
+        if (getContext() == null) return;
+        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        View sv = LayoutInflater.from(requireContext()).inflate(R.layout.sheet_city_picker, null);
+
+        ((TextView) sv.findViewById(R.id.tv_sheet_title)).setText(title);
+
+        EditText etSearch = sv.findViewById(R.id.et_city_search);
+        ListView lv       = sv.findViewById(R.id.lv_cities);
+
+        List<String[]> filtered = new ArrayList<>();
+        for (String[] row : data) filtered.add(row);
+
+        PickerAdapter adapter = new PickerAdapter(filtered);
+        lv.setAdapter(adapter);
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            public void onTextChanged(CharSequence s, int st, int b, int c) {
+                String q = s.toString().toLowerCase().trim();
+                filtered.clear();
+                for (String[] row : data) {
+                    if (row[0].toLowerCase().contains(q) || row[2].toLowerCase().contains(q)) {
+                        filtered.add(row);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+            public void afterTextChanged(Editable e) {}
+        });
+
+        lv.setOnItemClickListener((parent, v, pos, id) -> {
+            callback.onChosen(filtered.get(pos));
+            sheet.dismiss();
+        });
+
+        sheet.setContentView(sv);
+        sheet.show();
+    }
+
+    private static class PickerAdapter extends BaseAdapter {
+        private final List<String[]> items;
+        PickerAdapter(List<String[]> items) { this.items = items; }
+        @Override public int getCount() { return items.size(); }
+        @Override public Object getItem(int p) { return items.get(p); }
+        @Override public long getItemId(int p) { return p; }
+        @Override
+        public View getView(int pos, View convertView, ViewGroup parent) {
+            if (convertView == null)
+                convertView = LayoutInflater.from(parent.getContext())
+                        .inflate(android.R.layout.simple_list_item_2, parent, false);
+            String[] row = items.get(pos);
+            ((TextView) convertView.findViewById(android.R.id.text1)).setText(row[0]);
+            ((TextView) convertView.findViewById(android.R.id.text2)).setText(row[2]);
+            return convertView;
+        }
+    }
+
+    // ── Date pickers ─────────────────────────────────────────────────────
+
+    private void showDatePicker(boolean isCheckIn) {
+        if (getContext() == null) return;
+        Calendar now = Calendar.getInstance();
+        Calendar minCal = isCheckIn ? now : (checkInCal != null ? checkInCal : now);
+
+        DatePickerDialog dp = new DatePickerDialog(requireContext(), (picker, year, month, day) -> {
+            Calendar cal = Calendar.getInstance();
+            cal.set(year, month, day);
+            if (isCheckIn) {
+                checkInCal = cal;
+                tvDateFrom.setText(formatDate(cal));
+                tvDateFrom.setTextColor(0xFF212121);
+                if (checkOutCal != null && !checkOutCal.after(cal)) {
+                    checkOutCal = null;
+                    tvDateTo.setText("Обратно");
+                    tvDateTo.setTextColor(0xFF9E9E9E);
+                }
+            } else {
+                checkOutCal = cal;
+                tvDateTo.setText(formatDate(cal));
+                tvDateTo.setTextColor(0xFF212121);
+            }
+        }, minCal.get(Calendar.YEAR), minCal.get(Calendar.MONTH), minCal.get(Calendar.DAY_OF_MONTH));
+
+        dp.getDatePicker().setMinDate(minCal.getTimeInMillis());
+        dp.show();
+    }
+
+    private String formatDate(Calendar cal) {
+        return String.format(Locale.getDefault(), "%d %s",
+                cal.get(Calendar.DAY_OF_MONTH), MONTHS[cal.get(Calendar.MONTH)]);
+    }
+
+    private String toBookingDate(Calendar cal) {
+        return String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private static final String[] MONTHS =
+        {"янв", "фев", "мар", "апр", "мая", "июн",
+         "июл", "авг", "сен", "окт", "ноя", "дек"};
+
+    // ── Persons ───────────────────────────────────────────────────────────
 
     private void setupPersonsControls(View root) {
         tvAdultsCount.setText(String.valueOf(adults));
         tvChildrenCount.setText(String.valueOf(children));
-
         root.findViewById(R.id.btn_adults_minus).setOnClickListener(v -> {
             if (adults > 1) { adults--; tvAdultsCount.setText(String.valueOf(adults)); }
         });
@@ -105,58 +390,36 @@ public class TourSearchFragment extends Fragment {
         });
     }
 
-    private void setupRecyclerView(View root) {
-        RecyclerView rv = root.findViewById(R.id.rv_search_results);
-        adapter = new TourCardAdapter();
-        adapter.setOnCardClickListener(card ->
-                TourDetailBottomSheet.newInstance(card)
-                        .show(getChildFragmentManager(), "tour_detail"));
-        rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        rv.setAdapter(adapter);
-        rv.setNestedScrollingEnabled(false);
-    }
+    // ── Search → Booking.com ──────────────────────────────────────────────
 
     private void searchTours() {
-        String destination = etTo.getText().toString().trim();
-        String destParam = destination.isEmpty() ? null : destination;
+        if (toBooking.isEmpty()) {
+            Toast.makeText(requireContext(), "Выберите направление", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (checkInCal == null) {
+            Toast.makeText(requireContext(), "Выберите дату заезда", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (checkOutCal == null) {
+            Toast.makeText(requireContext(), "Выберите дату выезда", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        progressBar.setVisibility(View.VISIBLE);
-        tvEmpty.setVisibility(View.GONE);
-        tvResultsLabel.setVisibility(View.GONE);
-        adapter.setItems(new ArrayList<>());
+        String url = "https://www.booking.com/searchresults.ru.html"
+                + "?ss=" + android.net.Uri.encode(toBooking)
+                + "&checkin=" + toBookingDate(checkInCal)
+                + "&checkout=" + toBookingDate(checkOutCal)
+                + "&group_adults=" + adults
+                + "&group_children=" + children
+                + "&no_rooms=1"
+                + "&lang=ru";
 
-        ApiClient.getApiService(requireContext())
-                .searchTours(destParam, adults, children)
-                .enqueue(new Callback<TourListResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<TourListResponse> call,
-                                           @NonNull Response<TourListResponse> response) {
-                        if (!isAdded()) return;
-                        progressBar.setVisibility(View.GONE);
-                        List<TourCard> results = new ArrayList<>();
-                        if (response.isSuccessful() && response.body() != null
-                                && response.body().tours != null) {
-                            for (Tour t : response.body().tours) {
-                                results.add(TourCard.from(t));
-                            }
-                        }
-                        if (results.isEmpty()) {
-                            tvEmpty.setVisibility(View.VISIBLE);
-                            tvEmpty.setText("Туры не найдены.\nПопробуйте изменить параметры поиска.");
-                        } else {
-                            tvResultsLabel.setVisibility(View.VISIBLE);
-                            tvResultsLabel.setText("НАЙДЕНО ТУРОВ: " + results.size());
-                            adapter.setItems(results);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<TourListResponse> call, @NonNull Throwable t) {
-                        if (!isAdded()) return;
-                        progressBar.setVisibility(View.GONE);
-                        tvEmpty.setVisibility(View.VISIBLE);
-                        tvEmpty.setText("Ошибка подключения.\nПроверьте интернет-соединение.");
-                    }
-                });
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container,
+                         FlightWebFragment.newInstance(url, "Booking.com"))
+                .addToBackStack("tour_web")
+                .commit();
     }
 }
