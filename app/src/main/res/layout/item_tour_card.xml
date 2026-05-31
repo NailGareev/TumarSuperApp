@@ -10,6 +10,7 @@
     app:cardBackgroundColor="@color/card_bg">
 
     <LinearLayout
+        android:id="@+id/ll_tour_card_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

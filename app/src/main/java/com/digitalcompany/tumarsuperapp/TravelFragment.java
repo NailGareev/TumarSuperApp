@@ -117,43 +117,43 @@ public class TravelFragment extends Fragment {
         allTours.clear();
         allTours.add(new TourCard("Анталья, Турция", "Concorde De Luxe Resort", 5,
                 450000, 37500, 12, 30, 642000,
-                "https://source.unsplash.com/400x300/?antalya,beach", false,
+                "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&h=300&fit=crop", false,
                 "https://www.booking.com/searchresults.ru.html?ss=Antalya%2C+Turkey"));
         allTours.add(new TourCard("Дубай, ОАЭ", "Atlantis The Palm", 5,
                 850000, 70833, 12, 15, 1000000,
-                "https://source.unsplash.com/400x300/?dubai,palm", false,
+                "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=400&h=300&fit=crop", false,
                 "https://www.booking.com/searchresults.ru.html?ss=Dubai"));
         allTours.add(new TourCard("Пхукет, Таиланд", "Sala Phuket Resort", 5,
                 380000, 31666, 12, 40, 633000,
-                "https://source.unsplash.com/400x300/?phuket,beach", true,
+                "https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&h=300&fit=crop", true,
                 "https://www.booking.com/searchresults.ru.html?ss=Phuket%2C+Thailand"));
         allTours.add(new TourCard("Мальдивы", "COMO Cocoa Island", 5,
                 1200000, 100000, 12, 10, 1333000,
-                "https://source.unsplash.com/400x300/?maldives,overwater", false,
+                "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=400&h=300&fit=crop", false,
                 "https://www.booking.com/searchresults.ru.html?ss=Maldives"));
         allTours.add(new TourCard("Хургада, Египет", "Steigenberger Al Dau", 5,
                 280000, 23333, 12, 45, 509000,
-                "https://source.unsplash.com/400x300/?hurghada,red+sea", true,
+                "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=400&h=300&fit=crop", true,
                 "https://www.booking.com/searchresults.ru.html?ss=Hurghada%2C+Egypt"));
         allTours.add(new TourCard("Бали, Индонезия", "Four Seasons Bali", 5,
                 490000, 40833, 12, 25, 653000,
-                "https://source.unsplash.com/400x300/?bali,temple", true,
+                "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&h=300&fit=crop", true,
                 "https://www.booking.com/searchresults.ru.html?ss=Bali%2C+Indonesia"));
         allTours.add(new TourCard("Барселона, Испания", "Hotel Arts Barcelona", 5,
                 620000, 51666, 12, 20, 775000,
-                "https://source.unsplash.com/400x300/?barcelona,sagrada", false,
+                "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop", false,
                 "https://www.booking.com/searchresults.ru.html?ss=Barcelona%2C+Spain"));
         allTours.add(new TourCard("Паттайя, Таиланд", "Dusit Thani Pattaya", 5,
                 270000, 22500, 12, 35, 415000,
-                "https://source.unsplash.com/400x300/?pattaya,thailand", true,
+                "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=300&fit=crop", true,
                 "https://www.booking.com/searchresults.ru.html?ss=Pattaya%2C+Thailand"));
         allTours.add(new TourCard("Рим, Италия", "Rome Cavalieri", 5,
                 580000, 48333, 12, 18, 707000,
-                "https://source.unsplash.com/400x300/?rome,colosseum", false,
+                "https://images.unsplash.com/photo-1529260830199-42c24126f198?w=400&h=300&fit=crop", false,
                 "https://www.booking.com/searchresults.ru.html?ss=Rome%2C+Italy"));
         allTours.add(new TourCard("Шарм-эш-Шейх", "Four Seasons Sharm", 5,
                 310000, 25833, 12, 38, 500000,
-                "https://source.unsplash.com/400x300/?sharm,red+sea", true,
+                "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=400&h=300&fit=crop", true,
                 "https://www.booking.com/searchresults.ru.html?ss=Sharm+El+Sheikh%2C+Egypt"));
 
         adapter.setItems(allTours);

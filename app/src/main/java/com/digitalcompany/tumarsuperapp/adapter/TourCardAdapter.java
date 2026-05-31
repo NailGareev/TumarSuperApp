@@ -132,7 +132,7 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         darkBg.setCornerRadius(dp(h, 8));
         h.tvLocation.setBackground(darkBg);
 
-        h.itemView.setOnClickListener(v -> {
+        h.cardRoot.setOnClickListener(v -> {
             if (clickListener != null) clickListener.onCardClick(card);
         });
     }
@@ -154,9 +154,11 @@ public class TourCardAdapter extends RecyclerView.Adapter<TourCardAdapter.VH> {
         ImageView ivTour;
         TextView tvInstallmentBadge, tvLocation, tvHotelName,
                  tvPrice, tvMonthly, tvXMonths, tvDiscount, tvOriginalPrice;
+        View cardRoot;
 
         VH(View v) {
             super(v);
+            cardRoot           = v.findViewById(R.id.ll_tour_card_root);
             ivTour             = v.findViewById(R.id.iv_tour);
             tvInstallmentBadge = v.findViewById(R.id.tv_installment_badge);
             tvLocation         = v.findViewById(R.id.tv_location);
