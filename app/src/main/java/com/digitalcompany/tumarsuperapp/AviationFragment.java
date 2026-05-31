@@ -337,19 +337,31 @@ public class AviationFragment extends Fragment {
     private void showDatePicker(boolean isDepart) {
         if (getContext() == null) return;
         Calendar now = Calendar.getInstance();
-        new DatePickerDialog(requireContext(), (picker, year, month, day) -> {
+        // Minimum date: today for departure, departure date for return
+        Calendar minCal = isDepart ? now : (departureCal != null ? departureCal : now);
+
+        DatePickerDialog dialog = new DatePickerDialog(requireContext(), (picker, year, month, day) -> {
             Calendar cal = Calendar.getInstance();
             cal.set(year, month, day);
             if (isDepart) {
                 departureCal = cal;
                 tvDateDepart.setText(formatDisplay(cal));
                 tvDateDepart.setTextColor(0xFF212121);
+                // If return date is now before departure, clear it
+                if (returnCal != null && !returnCal.after(cal)) {
+                    returnCal = null;
+                    tvDateReturn.setText("Выберите дату");
+                    tvDateReturn.setTextColor(0xFF9E9E9E);
+                }
             } else {
                 returnCal = cal;
                 tvDateReturn.setText(formatDisplay(cal));
                 tvDateReturn.setTextColor(0xFF212121);
             }
-        }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show();
+        }, minCal.get(Calendar.YEAR), minCal.get(Calendar.MONTH), minCal.get(Calendar.DAY_OF_MONTH));
+
+        dialog.getDatePicker().setMinDate(minCal.getTimeInMillis());
+        dialog.show();
     }
 
     private String formatDisplay(Calendar cal) {
