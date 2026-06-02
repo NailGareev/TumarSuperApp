@@ -145,7 +145,28 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         // Устанавливаем слушателей
         Log.d(TAG, "initializeUI: Установка слушателей...");
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        navView.setOnNavigationItemReselectedListener(item -> {}); // Пустой слушатель для повторных нажатий
+        navView.setOnNavigationItemReselectedListener(item -> {
+            int id = item.getItemId();
+            Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            boolean isRoot = (id == R.id.navigation_home && current instanceof HomeFragment)
+                    || (id == R.id.navigation_card && current instanceof CardFragment)
+                    || (id == R.id.navigation_promotions && current instanceof PromotionsFragment)
+                    || (id == R.id.navigation_profile && current instanceof ProfileFragment);
+            if (!isRoot) {
+                Fragment root = null;
+                boolean showAppBar = true;
+                if (id == R.id.navigation_home)        { root = new HomeFragment(); }
+                else if (id == R.id.navigation_card)   { root = new CardFragment(); }
+                else if (id == R.id.navigation_promotions) { root = new PromotionsFragment(); }
+                else if (id == R.id.navigation_profile){ root = new ProfileFragment(); showAppBar = false; }
+                if (root != null) {
+                    getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    loadFragment(root);
+                    updateToolbarTitle();
+                    if (appBarLayout != null) appBarLayout.setVisibility(showAppBar ? View.VISIBLE : View.GONE);
+                }
+            }
+        });
 
         Log.d(TAG, "initializeUI: Настройка Toolbar...");
         setupToolbar();
