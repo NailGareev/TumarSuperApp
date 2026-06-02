@@ -60,7 +60,7 @@
                     android:gravity="center"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:background="@drawable/bg_tab_active"
+                    android:background="@drawable/bg_chip_purple_active"
                     android:clickable="true"
                     android:focusable="true" />
 

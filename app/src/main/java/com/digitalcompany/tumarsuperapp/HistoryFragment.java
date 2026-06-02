@@ -146,7 +146,7 @@ public class HistoryFragment extends Fragment {
 
     private void setChipActive(TextView chip, boolean active) {
         if (active) {
-            chip.setBackgroundResource(R.drawable.bg_tab_active);
+            chip.setBackgroundResource(R.drawable.bg_chip_purple_active);
             chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
         } else {
             chip.setBackgroundResource(R.drawable.bg_chip_purple);
