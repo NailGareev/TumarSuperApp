@@ -62,7 +62,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         } else { Log.e(TAG, "appBarLayout равен null при обработке навигации!"); }
 
         if (selectedFragment != null && loadSuccess) {
-            loadFragment(selectedFragment); return true;
+            loadFragment(selectedFragment);
+            updateToolbarTitle();
+            return true;
         }
         Log.w(TAG, "Фрагмент не выбран или загрузка не предполагалась для itemId: " + itemId);
         return false;
@@ -145,9 +147,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         navView.setOnNavigationItemReselectedListener(item -> {}); // Пустой слушатель для повторных нажатий
 
         Log.d(TAG, "initializeUI: Настройка Toolbar...");
-        setupToolbar(); // Настраиваем Toolbar
+        setupToolbar();
         Log.d(TAG, "initializeUI: Обновление стрелки Назад...");
-        shouldDisplayHomeUp(); // Обновляем состояние стрелки "назад" при инициализации
+        shouldDisplayHomeUp();
 
         // Загружаем начальный фрагмент (HomeFragment)
         try { // Дополнительная обертка для отладки фрагментов
@@ -159,10 +161,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                         .commit(); // Используем commit() для асинхронной загрузки
                 Log.d(TAG, "initializeUI: HomeFragment commit(). Установка элемента навигации через post()...");
                 // Выделяем элемент "Главная" и показываем AppBar после отрисовки
-                navView.post(() -> { // Выполняем после отрисовки
-                    if (navView != null && appBarLayout != null) { // Доп. проверка на null
-                        navView.setSelectedItemId(R.id.navigation_home); // Проверьте ID в menu/bottom_nav_menu.xml
+                navView.post(() -> {
+                    if (navView != null && appBarLayout != null) {
+                        navView.setSelectedItemId(R.id.navigation_home);
                         appBarLayout.setVisibility(View.VISIBLE);
+                        updateToolbarTitle();
                     } else { Log.e(TAG,"Ошибка в navView.post: navView или appBarLayout == null"); }
                 });
             } else {
@@ -186,9 +189,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     private void setupToolbar() {
         setSupportActionBar(topAppBar);
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) ab.setTitle("");
         topAppBar.setOnMenuItemClickListener(item -> false);
+    }
+
+    private void updateToolbarTitle() {
+        ActionBar ab = getSupportActionBar();
+        if (ab == null || navView == null) return;
+        boolean isHome = navView.getSelectedItemId() == R.id.navigation_home
+                && getSupportFragmentManager().getBackStackEntryCount() == 0;
+        ab.setTitle(isHome ? "Tumar SuperApp" : "");
     }
 
     public void navigateToHome() {
@@ -207,9 +216,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         transaction.commit();
     }
 
-    // --- Обработка стека возврата и навигации --- (без изменений)
     @Override
-    public void onBackStackChanged() { shouldDisplayHomeUp(); }
+    public void onBackStackChanged() {
+        shouldDisplayHomeUp();
+        updateToolbarTitle();
+    }
 
     public void shouldDisplayHomeUp() {
         boolean canGoBack = getSupportFragmentManager().getBackStackEntryCount() > 0;

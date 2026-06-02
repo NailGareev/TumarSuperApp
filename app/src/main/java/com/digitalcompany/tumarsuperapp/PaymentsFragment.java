@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -28,7 +29,8 @@ public class PaymentsFragment extends Fragment {
     private RecyclerView rvCategories;
     private LinearLayout llServices;
     private RecyclerView rvPayments;
-    private TextView tvSelectedCategory;
+    private TextView tvPaymentsTitle;
+    private ImageView btnCategoryBack;
 
     private final Map<String, List<PaymentsAdapter.Service>> categoryMap = buildCategoryMap();
 
@@ -40,14 +42,15 @@ public class PaymentsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_payments, container, false);
 
-        rvCategories      = view.findViewById(R.id.rv_categories);
-        llServices        = view.findViewById(R.id.ll_services);
-        rvPayments        = view.findViewById(R.id.rv_payments);
-        tvSelectedCategory = view.findViewById(R.id.tv_selected_category);
+        rvCategories    = view.findViewById(R.id.rv_categories);
+        llServices      = view.findViewById(R.id.ll_services);
+        rvPayments      = view.findViewById(R.id.rv_payments);
+        tvPaymentsTitle = view.findViewById(R.id.tv_payments_title);
+        btnCategoryBack = view.findViewById(R.id.btn_category_back);
+
+        btnCategoryBack.setOnClickListener(v -> showCategories());
 
         setupCategoriesGrid();
-
-        view.findViewById(R.id.ll_services_back).setOnClickListener(v -> showCategories());
 
         backCallback = new OnBackPressedCallback(false) {
             @Override
@@ -79,7 +82,8 @@ public class PaymentsFragment extends Fragment {
         List<PaymentsAdapter.Service> services = categoryMap.get(cat.key);
         if (services == null || services.isEmpty()) return;
 
-        tvSelectedCategory.setText(cat.icon + "  " + cat.displayName.replace("\n", " "));
+        tvPaymentsTitle.setText(cat.displayName.replace("\n", " "));
+        btnCategoryBack.setVisibility(View.VISIBLE);
 
         rvPayments.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvPayments.setAdapter(new PaymentsAdapter(
@@ -91,6 +95,8 @@ public class PaymentsFragment extends Fragment {
     }
 
     private void showCategories() {
+        tvPaymentsTitle.setText("Платежи и услуги");
+        btnCategoryBack.setVisibility(View.GONE);
         llServices.setVisibility(View.GONE);
         rvCategories.setVisibility(View.VISIBLE);
         backCallback.setEnabled(false);
