@@ -38,12 +38,14 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private AppBarLayout appBarLayout;
 
     private boolean uiInitialized = false;
+    private int currentTabId = R.id.navigation_home;
 
     // Слушатель для BottomNavigationView (без изменений)
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = item -> {
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
+        currentTabId = itemId; // update BEFORE popBackStackImmediate fires onBackStackChanged
         boolean shouldShowAppBar = true;
         boolean loadSuccess = false;
 
@@ -147,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navView.setOnNavigationItemReselectedListener(item -> {
             int id = item.getItemId();
+            currentTabId = id;
             Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             boolean isRoot = (id == R.id.navigation_home && current instanceof HomeFragment)
                     || (id == R.id.navigation_card && current instanceof CardFragment)
@@ -216,8 +219,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     private void updateToolbarTitle() {
         ActionBar ab = getSupportActionBar();
-        if (ab == null || navView == null) return;
-        boolean isHome = navView.getSelectedItemId() == R.id.navigation_home
+        if (ab == null) return;
+        boolean isHome = currentTabId == R.id.navigation_home
                 && getSupportFragmentManager().getBackStackEntryCount() == 0;
         ab.setTitle(isHome ? "Tumar SuperApp" : "");
     }
