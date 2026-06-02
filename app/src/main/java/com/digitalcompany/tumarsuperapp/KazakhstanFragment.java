@@ -153,7 +153,7 @@ public class KazakhstanFragment extends Fragment {
                 requireActivity().getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.fragment_container,
-                                FlightWebFragment.newInstance(url, "Booking.com — " + ruName))
+                                FlightWebFragment.newInstance(url, ruName + " — отели и туры"))
                         .addToBackStack("kz_booking")
                         .commit();
             });

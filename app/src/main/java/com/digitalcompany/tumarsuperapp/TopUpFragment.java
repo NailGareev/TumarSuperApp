@@ -204,6 +204,8 @@ public class TopUpFragment extends Fragment {
         layoutNoCard.setVisibility(View.GONE);
     }
 
+    private static final String CARD_PREFS = "CardDataPrefs";
+
     private void issueCard() {
         if (apiService == null) return;
         btnIssueCard.setEnabled(false);
@@ -220,6 +222,7 @@ public class TopUpFragment extends Fragment {
                     if (card != null) {
                         layoutNoCard.setVisibility(View.GONE);
                         showVirtualCard(card);
+                        saveCardToSharedPrefs(card);
                         Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
@@ -236,6 +239,19 @@ public class TopUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void saveCardToSharedPrefs(CardResponse.CardData card) {
+        if (getContext() == null || card.getCardNumber() == null) return;
+        android.content.SharedPreferences.Editor ed = getContext()
+                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE).edit();
+        ed.putBoolean("card_exists", true);
+        ed.putString("card_number", card.getCardNumber());
+        ed.putString("card_expiry", card.getExpiry());
+        ed.putString("card_cvv", card.getCvv() != null ? card.getCvv() : "");
+        ed.putBoolean("card_blocked", false);
+        ed.putString("card_custom_name", "Tumar карта");
+        ed.apply();
     }
 
     private void attemptTopUp() {

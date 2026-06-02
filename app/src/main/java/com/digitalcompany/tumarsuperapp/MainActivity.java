@@ -184,9 +184,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         Log.d(TAG, "initializeUI: Инициализация UI завершена.");
     }
 
-    // Метод для настройки Toolbar (без изменений)
     private void setupToolbar() {
         setSupportActionBar(topAppBar);
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) ab.setTitle("");
         topAppBar.setOnMenuItemClickListener(item -> false);
     }
 

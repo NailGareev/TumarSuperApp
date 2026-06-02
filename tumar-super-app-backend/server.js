@@ -545,17 +545,17 @@ app.post('/api/card/issue', authenticateToken, async (req, res) => {
             });
         }
 
-        // Generate card: 4279 + 12 random digits
-        const suffix = Math.floor(Math.random() * 1e12).toString().padStart(12, '0');
-        const cardNumber = '4279' + suffix;
+        // Generate card: 772233 + 10 random digits
+        const suffix = Math.floor(Math.random() * 1e10).toString().padStart(10, '0');
+        const cardNumber = '772233' + suffix;
 
         // Generate CVV: 3 random digits
         const cvv = String(Math.floor(Math.random() * 900) + 100);
 
-        // Expiry: 5 years from now
+        // Expiry: 2 years from now
         const now = new Date();
         const expiryMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const expiryYear  = String(now.getFullYear() + 5).slice(-2);
+        const expiryYear  = String(now.getFullYear() + 2).slice(-2);
         const expiry = `${expiryMonth}/${expiryYear}`;
 
         const cvvEncrypted    = encryptField(cvv);

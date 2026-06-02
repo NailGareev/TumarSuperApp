@@ -11,7 +11,7 @@
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="110dp"
+        android:layout_height="60dp"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@drawable/bg_auth_header">
@@ -21,16 +21,8 @@
             android:layout_height="wrap_content"
             android:text="История операций"
             android:textColor="#FFFFFF"
-            android:textSize="21sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Все ваши транзакции"
-            android:textColor="#BBFFFFFF"
-            android:textSize="13sp" />
     </LinearLayout>
 
     <FrameLayout
