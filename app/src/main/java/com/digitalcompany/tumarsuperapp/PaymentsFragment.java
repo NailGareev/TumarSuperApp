@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -30,7 +29,6 @@ public class PaymentsFragment extends Fragment {
     private LinearLayout llServices;
     private RecyclerView rvPayments;
     private TextView tvPaymentsTitle;
-    private ImageView btnCategoryBack;
 
     private final Map<String, List<PaymentsAdapter.Service>> categoryMap = buildCategoryMap();
 
@@ -46,9 +44,6 @@ public class PaymentsFragment extends Fragment {
         llServices      = view.findViewById(R.id.ll_services);
         rvPayments      = view.findViewById(R.id.rv_payments);
         tvPaymentsTitle = view.findViewById(R.id.tv_payments_title);
-        btnCategoryBack = view.findViewById(R.id.btn_category_back);
-
-        btnCategoryBack.setOnClickListener(v -> showCategories());
 
         setupCategoriesGrid();
 
@@ -83,7 +78,6 @@ public class PaymentsFragment extends Fragment {
         if (services == null || services.isEmpty()) return;
 
         tvPaymentsTitle.setText(cat.displayName.replace("\n", " "));
-        btnCategoryBack.setVisibility(View.VISIBLE);
 
         rvPayments.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvPayments.setAdapter(new PaymentsAdapter(
@@ -96,10 +90,18 @@ public class PaymentsFragment extends Fragment {
 
     private void showCategories() {
         tvPaymentsTitle.setText("Платежи и услуги");
-        btnCategoryBack.setVisibility(View.GONE);
         llServices.setVisibility(View.GONE);
         rvCategories.setVisibility(View.VISIBLE);
         backCallback.setEnabled(false);
+    }
+
+    /** Called by MainActivity to intercept the AppBar back arrow. */
+    public boolean handleNavigateUp() {
+        if (llServices != null && llServices.getVisibility() == View.VISIBLE) {
+            showCategories();
+            return true;
+        }
+        return false;
     }
 
     // ── Payment bottom sheet ──────────────────────────────────

@@ -244,7 +244,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     @Override
     public boolean onSupportNavigateUp() {
-        Log.d(TAG, "Вызван onSupportNavigateUp, извлечение из стека возврата");
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (f instanceof PaymentsFragment && ((PaymentsFragment) f).handleNavigateUp()) {
+            return true;
+        }
         getSupportFragmentManager().popBackStack();
         return true;
     }
