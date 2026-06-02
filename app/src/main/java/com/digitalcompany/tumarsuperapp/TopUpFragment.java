@@ -63,6 +63,7 @@ public class TopUpFragment extends Fragment {
 
     // Method selector cards
     private CardView methodCard, methodBank;
+    private TextView tvMethodCardTitle, tvMethodCardSub, tvMethodBankTitle, tvMethodBankSub;
 
     private ApiService apiService;
 
@@ -93,6 +94,10 @@ public class TopUpFragment extends Fragment {
 
         methodCard = view.findViewById(R.id.method_card);
         methodBank = view.findViewById(R.id.method_bank);
+        tvMethodCardTitle = view.findViewById(R.id.tv_method_card_title);
+        tvMethodCardSub   = view.findViewById(R.id.tv_method_card_sub);
+        tvMethodBankTitle = view.findViewById(R.id.tv_method_bank_title);
+        tvMethodBankSub   = view.findViewById(R.id.tv_method_bank_sub);
 
         sectionCardInput = view.findViewById(R.id.section_card_input);
         tilCardNumber = view.findViewById(R.id.til_card_number);
@@ -133,11 +138,27 @@ public class TopUpFragment extends Fragment {
         if (method == Method.CARD) {
             methodCard.setCardBackgroundColor(0xFF6200EE);
             methodBank.setCardBackgroundColor(resolveCardBg());
+            if (tvMethodCardTitle != null) {
+                tvMethodCardTitle.setTextColor(0xFFFFFFFF);
+                tvMethodCardSub.setTextColor(0xCCFFFFFF);
+            }
+            if (tvMethodBankTitle != null) {
+                tvMethodBankTitle.setTextColor(0xFF212121);
+                tvMethodBankSub.setTextColor(0xFF757575);
+            }
             sectionCardInput.setVisibility(View.VISIBLE);
             sectionBankTransfer.setVisibility(View.GONE);
         } else {
             methodBank.setCardBackgroundColor(0xFF6200EE);
             methodCard.setCardBackgroundColor(resolveCardBg());
+            if (tvMethodBankTitle != null) {
+                tvMethodBankTitle.setTextColor(0xFFFFFFFF);
+                tvMethodBankSub.setTextColor(0xCCFFFFFF);
+            }
+            if (tvMethodCardTitle != null) {
+                tvMethodCardTitle.setTextColor(0xFF212121);
+                tvMethodCardSub.setTextColor(0xFF757575);
+            }
             sectionCardInput.setVisibility(View.GONE);
             sectionBankTransfer.setVisibility(View.VISIBLE);
             loadUserCard();

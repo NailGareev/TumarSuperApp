@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         } else { Log.e(TAG, "appBarLayout равен null при обработке навигации!"); }
 
         if (selectedFragment != null && loadSuccess) {
+            getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             loadFragment(selectedFragment);
             updateToolbarTitle();
             return true;
