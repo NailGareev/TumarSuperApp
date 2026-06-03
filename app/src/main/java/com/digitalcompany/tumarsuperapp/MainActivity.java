@@ -214,7 +214,19 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     private void setupToolbar() {
         setSupportActionBar(topAppBar);
-        topAppBar.setOnMenuItemClickListener(item -> false);
+        topAppBar.inflateMenu(R.menu.top_app_bar_menu);
+        topAppBar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_notifications) {
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                                R.anim.fade_in, R.anim.fade_out)
+                        .replace(R.id.fragment_container, new NotificationsFragment())
+                        .addToBackStack(null)
+                        .commit();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void updateToolbarTitle() {
@@ -223,6 +235,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         boolean isHome = currentTabId == R.id.navigation_home
                 && getSupportFragmentManager().getBackStackEntryCount() == 0;
         ab.setTitle(isHome ? "Tumar SuperApp" : "");
+        if (topAppBar != null) {
+            MenuItem bellItem = topAppBar.getMenu().findItem(R.id.action_notifications);
+            if (bellItem != null) bellItem.setVisible(isHome);
+        }
     }
 
     public void navigateToHome() {
