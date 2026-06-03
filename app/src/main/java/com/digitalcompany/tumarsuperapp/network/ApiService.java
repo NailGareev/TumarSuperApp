@@ -20,11 +20,6 @@ import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
-import com.digitalcompany.tumarsuperapp.network.models.CreateReturnRequest;
-import com.digitalcompany.tumarsuperapp.network.models.MarketReturnsResponse;
-import com.digitalcompany.tumarsuperapp.network.models.ReturnActionResponse;
-import com.digitalcompany.tumarsuperapp.network.models.ReturnIdRequest;
-import com.digitalcompany.tumarsuperapp.network.models.ReturnStatusUpdateRequest;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -116,24 +111,6 @@ public interface ApiService {
 
     @GET("api/market/orders")
     Call<MarketPurchasesResponse> getMarketOrders();
-
-    @POST("api/market/return/create")
-    Call<ReturnActionResponse> createReturn(@Body CreateReturnRequest request);
-
-    @GET("api/market/return/my")
-    Call<MarketReturnsResponse> getMyReturns();
-
-    @GET("api/market/return/all")
-    Call<MarketReturnsResponse> getAllReturns();
-
-    @POST("api/market/return/accept")
-    Call<ReturnActionResponse> acceptReturn(@Body ReturnIdRequest request);
-
-    @POST("api/market/return/refund")
-    Call<ReturnActionResponse> refundReturn(@Body ReturnIdRequest request);
-
-    @POST("api/market/return/update-status")
-    Call<ReturnActionResponse> updateReturnStatus(@Body ReturnStatusUpdateRequest request);
 
     // --- КОНЕЦ: Добавленные методы ---
 
