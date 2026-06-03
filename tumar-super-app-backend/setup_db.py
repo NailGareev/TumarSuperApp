@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     recipient_id     INT             NULL,
     amount           DECIMAL(15, 2)  NOT NULL,
     currency         VARCHAR(10)     NOT NULL DEFAULT 'KZT',
-    transaction_type ENUM('TRANSFER','TOPUP','PAYMENT') NOT NULL DEFAULT 'TRANSFER',
+    transaction_type ENUM('TRANSFER','TOPUP','PAYMENT','MARKET_REFUND') NOT NULL DEFAULT 'TRANSFER',
     description      VARCHAR(500)    NULL     COMMENT 'Описание платежа (для PAYMENT)',
     timestamp        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_tx_sender    FOREIGN KEY (sender_id)

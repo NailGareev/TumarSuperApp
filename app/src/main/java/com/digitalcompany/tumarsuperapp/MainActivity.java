@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     public void navigateToHome() {
+        getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         loadFragment(new HomeFragment());
     }
 

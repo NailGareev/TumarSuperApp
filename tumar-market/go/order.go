@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -170,8 +174,11 @@ func cancelOrderHandler(c *gin.Context) {
 		return
 	}
 
-	var status string
-	err = db.QueryRow("SELECT status FROM orders WHERE id = ? AND user_id = ?", orderID, userID).Scan(&status)
+	var status, paymentMethod string
+	var total float64
+	err = db.QueryRow(
+		"SELECT status, payment_method, total FROM orders WHERE id = ? AND user_id = ?",
+		orderID, userID).Scan(&status, &paymentMethod, &total)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Заказ не найден"})
 		return
@@ -182,5 +189,32 @@ func cancelOrderHandler(c *gin.Context) {
 	}
 
 	db.Exec("UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = ?", orderID)
+
+	// Refund to Tumar wallet if the order was paid via Tumar Pay
+	if paymentMethod == "tumar_pay" {
+		var phone string
+		db.QueryRow("SELECT phone FROM users WHERE id = ?", userID).Scan(&phone)
+		if phone != "" {
+			go refundToTumarWallet(phone, total)
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Заказ отменён"})
+}
+
+func refundToTumarWallet(phone string, amount float64) {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"buyer_phone": phone,
+		"amount":      fmt.Sprintf("%.2f", amount),
+		"app_secret":  "tumar_app_secret_2024",
+	})
+	resp, err := http.Post(
+		"http://localhost:3000/api/market/return/process-refund",
+		"application/json",
+		bytes.NewReader(payload),
+	)
+	if err == nil {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}
 }

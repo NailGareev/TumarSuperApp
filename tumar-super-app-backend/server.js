@@ -820,6 +820,12 @@ app.listen(port, async () => {
     try {
         const connection = await pool.getConnection();
         console.log('Successfully connected to the database.');
+        // Ensure MARKET_REFUND is a valid transaction_type value
+        try {
+            await connection.execute(
+                `ALTER TABLE transactions MODIFY COLUMN transaction_type ENUM('TRANSFER','TOPUP','PAYMENT','MARKET_REFUND') NOT NULL DEFAULT 'TRANSFER'`
+            );
+        } catch (e) { /* already includes MARKET_REFUND */ }
         connection.release();
         console.log(`Server listening at http://localhost:${port}`);
     } catch (err) {
