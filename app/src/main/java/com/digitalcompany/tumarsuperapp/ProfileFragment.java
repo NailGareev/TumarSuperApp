@@ -19,6 +19,8 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment"; // <<< Тег для логирования
 
     private CardView actionChangePin;
+    private CardView actionMyReturns;
+    private CardView actionSellerCabinet;
     private Button btnLogout; // <<< Добавлена переменная для кнопки выхода
 
     @Nullable
@@ -27,6 +29,8 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         actionChangePin = view.findViewById(R.id.action_change_pin);
+        actionMyReturns = view.findViewById(R.id.action_my_returns);
+        actionSellerCabinet = view.findViewById(R.id.action_seller_cabinet);
         btnLogout = view.findViewById(R.id.btn_logout); // <<< Находим кнопку выхода по ID
 
         actionChangePin.setOnClickListener(v -> {
@@ -34,6 +38,26 @@ public class ProfileFragment extends Fragment {
             Intent intent = new Intent(getActivity(), PinSetupActivity.class);
             intent.putExtra("IS_CHANGE_MODE", true);
             startActivity(intent);
+        });
+
+        actionMyReturns.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new BuyerReturnsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        actionSellerCabinet.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new SellerReturnsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
 
         // --- НАЧАЛО: Обработчик нажатия кнопки Выхода ---

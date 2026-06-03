@@ -764,5 +764,36 @@ public class TumarMarketFragment extends Fragment {
             if (getContext() == null || orderRef == null || orderRef.isEmpty()) return;
             cancelTumarPayOrderAsync(orderRef);
         }
+
+        @JavascriptInterface
+        public void openCreateReturn(String orderRef, String amountStr) {
+            if (getContext() == null) return;
+            double amount = 0;
+            try { amount = Double.parseDouble(amountStr.replaceAll("[^0-9.]", "")); } catch (Exception ignored) {}
+            final double finalAmount = amount;
+            final String finalOrderRef = orderRef != null ? orderRef : "";
+            mainHandler.post(() -> {
+                if (!isAdded() || getActivity() == null) return;
+                CreateReturnFragment fragment = CreateReturnFragment.newInstance(finalOrderRef, finalAmount);
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
+        @JavascriptInterface
+        public void openMyReturns() {
+            if (getContext() == null) return;
+            mainHandler.post(() -> {
+                if (!isAdded() || getActivity() == null) return;
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new BuyerReturnsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
     }
 }
