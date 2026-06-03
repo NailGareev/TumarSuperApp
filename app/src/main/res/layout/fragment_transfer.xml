@@ -362,6 +362,29 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Comment / description -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_phone_comment"
+                    style="@style/AuthInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Комментарий (необязательно)"
+                    app:startIconDrawable="@drawable/ic_comment_24dp"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="200">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_phone_comment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:maxLength="200"
+                        android:maxLines="3"
+                        android:minLines="1"
+                        android:gravity="top" />
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

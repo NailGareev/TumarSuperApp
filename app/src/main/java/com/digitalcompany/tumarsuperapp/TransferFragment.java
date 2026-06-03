@@ -57,6 +57,8 @@ public class TransferFragment extends Fragment {
     // ── Phone inputs ──────────────────────────────────────────────────────────
     private TextInputLayout tilRecipientPhone;
     private TextInputEditText etRecipientPhone;
+    private TextInputLayout tilPhoneComment;
+    private TextInputEditText etPhoneComment;
 
     // ── Recipient lookup ──────────────────────────────────────────────────────
     private CardView cardRecipientInfo, cardRecipientNotFound;
@@ -121,6 +123,8 @@ public class TransferFragment extends Fragment {
         // Phone
         tilRecipientPhone = view.findViewById(R.id.til_recipient_phone);
         etRecipientPhone = view.findViewById(R.id.et_recipient_phone);
+        tilPhoneComment = view.findViewById(R.id.til_phone_comment);
+        etPhoneComment = view.findViewById(R.id.et_phone_comment);
         cardRecipientInfo = view.findViewById(R.id.card_recipient_info);
         cardRecipientNotFound = view.findViewById(R.id.card_recipient_not_found);
         cardLookupLoading = view.findViewById(R.id.card_lookup_loading);
@@ -371,10 +375,11 @@ public class TransferFragment extends Fragment {
 
         if (invalid || amount == null) return;
 
+        String comment = text(etPhoneComment);
         showLoading(true);
         if (apiService == null) { Toast.makeText(getContext(), "Ошибка сети", Toast.LENGTH_SHORT).show(); showLoading(false); return; }
 
-        apiService.transferFunds(new TransferRequest(phone, amount)).enqueue(new Callback<TransferResponse>() {
+        apiService.transferFunds(new TransferRequest(phone, amount, comment)).enqueue(new Callback<TransferResponse>() {
             @Override
             public void onResponse(Call<TransferResponse> call, Response<TransferResponse> response) {
                 showLoading(false);
@@ -383,6 +388,7 @@ public class TransferFragment extends Fragment {
                     Toast.makeText(getContext(), "Перевод выполнен успешно!", Toast.LENGTH_LONG).show();
                     etRecipientPhone.setText("");
                     etTransferAmount.setText("");
+                    etPhoneComment.setText("");
                     hideLookupCards();
                     recipientFound = false;
                 } else {

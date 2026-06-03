@@ -232,7 +232,7 @@ app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
 // === НАЧАЛО: Роут для перевода средств ===
 app.post('/api/transfer', authenticateToken, async (req, res) => {
     const senderId = req.user.userId;
-    const { recipientPhone, amount } = req.body;
+    const { recipientPhone, amount, description } = req.body;
 
     console.log(`Received transfer request from user ID: ${senderId} to phone: ${recipientPhone} for amount: ${amount}`);
 
@@ -309,8 +309,9 @@ app.post('/api/transfer', authenticateToken, async (req, res) => {
         console.log(`Credited ${parsedAmount} to recipient ${recipientId}`);
 
         // 6. Записываем транзакцию в историю
-        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type) VALUES (?, ?, ?, ?, ?)';
-        await connection.execute(transactionSql, [senderId, recipientId, parsedAmount, senderCurrency, 'TRANSFER']);
+        const transferDesc = (description && description.trim()) ? description.trim().substring(0, 200) : null;
+        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, ?, ?, ?, ?, ?)';
+        await connection.execute(transactionSql, [senderId, recipientId, parsedAmount, senderCurrency, 'TRANSFER', transferDesc]);
         console.log(`Transaction recorded: ${senderId} -> ${recipientId}, Amount: ${parsedAmount} ${senderCurrency}`);
 
         // 7. Коммитим транзакцию
