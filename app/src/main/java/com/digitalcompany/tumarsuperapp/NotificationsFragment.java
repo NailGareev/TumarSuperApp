@@ -54,24 +54,38 @@ public class NotificationsFragment extends Fragment {
     private static final String KEY_TOKEN  = "auth_token";
     private static final String KEY_USER_ID = "user_id";
 
+    // Tab buttons
+    private TextView tabTransfers;
+    private TextView tabMarket;
+    private TextView tabCredit;
+
+    // Content panes
+    private View contentTransfers;
+    private View contentMarket;
+    private View contentCredit;
+
     // Transfers tab
     private RecyclerView  rvTransfers;
     private ProgressBar   progressTransfers;
     private View          emptyTransfers;
-    private TextView      tabTransfers;
-    private View          contentTransfers;
 
     // Market tab
     private RecyclerView  rvMarket;
     private ProgressBar   progressMarket;
     private View          emptyMarket;
-    private TextView      tabMarket;
-    private View          contentMarket;
+
+    // Credit tab
+    private RecyclerView  rvCredit;
+    private ProgressBar   progressCredit;
+    private View          emptyCredit;
 
     private ApiService apiService;
     private final OkHttpClient httpClient = new OkHttpClient();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int currentUserId = -1;
+
+    // Which tab is active: 0=transfers, 1=market, 2=credit
+    private int activeTab = 0;
 
     @Nullable
     @Override
@@ -86,16 +100,23 @@ public class NotificationsFragment extends Fragment {
 
         tabTransfers    = view.findViewById(R.id.tab_transfers);
         tabMarket       = view.findViewById(R.id.tab_market);
+        tabCredit       = view.findViewById(R.id.tab_credit);
+
         contentTransfers = view.findViewById(R.id.content_transfers);
-        contentMarket   = view.findViewById(R.id.content_market);
+        contentMarket    = view.findViewById(R.id.content_market);
+        contentCredit    = view.findViewById(R.id.content_credit);
 
-        rvTransfers     = view.findViewById(R.id.rv_transfer_notifs);
+        rvTransfers       = view.findViewById(R.id.rv_transfer_notifs);
         progressTransfers = view.findViewById(R.id.progress_transfers);
-        emptyTransfers  = view.findViewById(R.id.empty_transfers);
+        emptyTransfers    = view.findViewById(R.id.empty_transfers);
 
-        rvMarket        = view.findViewById(R.id.rv_market_notifs);
-        progressMarket  = view.findViewById(R.id.progress_market);
-        emptyMarket     = view.findViewById(R.id.empty_market);
+        rvMarket       = view.findViewById(R.id.rv_market_notifs);
+        progressMarket = view.findViewById(R.id.progress_market);
+        emptyMarket    = view.findViewById(R.id.empty_market);
+
+        rvCredit       = view.findViewById(R.id.rv_credit_notifs);
+        progressCredit = view.findViewById(R.id.progress_credit);
+        emptyCredit    = view.findViewById(R.id.empty_credit);
 
         if (getActivity() != null) {
             apiService = ApiClient.getApiService(getActivity().getApplicationContext());
@@ -105,30 +126,52 @@ public class NotificationsFragment extends Fragment {
 
         rvTransfers.setLayoutManager(new LinearLayoutManager(getContext()));
         rvMarket.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvCredit.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        tabTransfers.setOnClickListener(v -> selectTab(true));
-        tabMarket.setOnClickListener(v -> selectTab(false));
+        tabTransfers.setOnClickListener(v -> selectTab(0));
+        tabMarket.setOnClickListener(v -> selectTab(1));
+        tabCredit.setOnClickListener(v -> selectTab(2));
 
-        loadTransfers();
+        selectTab(0);
     }
 
-    private void selectTab(boolean isTransfers) {
-        if (isTransfers) {
-            tabTransfers.setBackgroundResource(R.drawable.bg_chip_purple_active);
-            tabTransfers.setTextColor(0xFFFFFFFF);
-            tabMarket.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.card_bg));
-            tabMarket.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
-            contentTransfers.setVisibility(View.VISIBLE);
-            contentMarket.setVisibility(View.GONE);
-            loadTransfers();
-        } else {
-            tabMarket.setBackgroundResource(R.drawable.bg_chip_purple_active);
-            tabMarket.setTextColor(0xFFFFFFFF);
-            tabTransfers.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.card_bg));
-            tabTransfers.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
-            contentTransfers.setVisibility(View.GONE);
-            contentMarket.setVisibility(View.VISIBLE);
-            loadMarketNotifications();
+    private void selectTab(int tab) {
+        activeTab = tab;
+
+        // Reset all tabs to inactive style
+        int inactiveColor = ContextCompat.getColor(requireContext(), R.color.card_bg);
+        int inactiveTextColor = ContextCompat.getColor(requireContext(), R.color.colorPrimary);
+        tabTransfers.setBackgroundColor(inactiveColor);
+        tabTransfers.setTextColor(inactiveTextColor);
+        tabMarket.setBackgroundColor(inactiveColor);
+        tabMarket.setTextColor(inactiveTextColor);
+        tabCredit.setBackgroundColor(inactiveColor);
+        tabCredit.setTextColor(inactiveTextColor);
+
+        contentTransfers.setVisibility(View.GONE);
+        contentMarket.setVisibility(View.GONE);
+        contentCredit.setVisibility(View.GONE);
+
+        // Activate selected tab
+        switch (tab) {
+            case 0:
+                tabTransfers.setBackgroundResource(R.drawable.bg_chip_purple_active);
+                tabTransfers.setTextColor(0xFFFFFFFF);
+                contentTransfers.setVisibility(View.VISIBLE);
+                loadTransfers();
+                break;
+            case 1:
+                tabMarket.setBackgroundResource(R.drawable.bg_chip_purple_active);
+                tabMarket.setTextColor(0xFFFFFFFF);
+                contentMarket.setVisibility(View.VISIBLE);
+                loadMarketNotifications();
+                break;
+            case 2:
+                tabCredit.setBackgroundResource(R.drawable.bg_chip_purple_active);
+                tabCredit.setTextColor(0xFFFFFFFF);
+                contentCredit.setVisibility(View.VISIBLE);
+                loadCreditNotifications();
+                break;
         }
     }
 
@@ -190,7 +233,6 @@ public class NotificationsFragment extends Fragment {
         String appToken = prefs.getString(KEY_TOKEN, null);
         if (appToken == null) { showEmptyMarket(); return; }
 
-        // Step 1: get phone from profile
         apiService.getUserProfile().enqueue(new retrofit2.Callback<UserProfileResponse>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<UserProfileResponse> call,
@@ -297,6 +339,15 @@ public class NotificationsFragment extends Fragment {
             progressMarket.setVisibility(View.GONE);
             emptyMarket.setVisibility(View.VISIBLE);
         });
+    }
+
+    // ── Credit Notifications ──────────────────────────────────────────────────
+
+    private void loadCreditNotifications() {
+        if (!isAdded() || getContext() == null) return;
+        progressCredit.setVisibility(View.GONE);
+        rvCredit.setVisibility(View.GONE);
+        emptyCredit.setVisibility(View.VISIBLE);
     }
 
     // ── TransferNotifAdapter ──────────────────────────────────────────────────
