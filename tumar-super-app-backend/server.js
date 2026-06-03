@@ -115,7 +115,8 @@ app.post('/api/register', async (req, res) => {
             const balanceSql = 'INSERT INTO balances (user_id, balance, currency, updated_at) VALUES (?, ?, ?, NOW())';
             await connection.execute(balanceSql, [newUserId, 0.00, 'KZT']);
             await connection.commit();
-            res.status(201).json({ success: true, message: 'User registered successfully', userId: newUserId });
+            const regToken = jwt.sign({ userId: newUserId, email }, JWT_SECRET, { expiresIn: '30d' });
+            res.status(201).json({ success: true, message: 'User registered successfully', userId: newUserId, token: regToken });
         } catch (insertError) {
             await connection.rollback();
             console.error('Error during user/balance insertion:', insertError);

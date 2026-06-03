@@ -167,18 +167,16 @@ public class TransferFragment extends Fragment {
         chipRub.setOnClickListener(v -> selectCurrency("RUB"));
         chipGbp.setOnClickListener(v -> selectCurrency("GBP"));
 
-        // Phone lookup (debounced)
-        etRecipientPhone.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        // Phone auto-format + debounced lookup
+        etRecipientPhone.addTextChangedListener(new PhoneFormatWatcher(etRecipientPhone) {
             @Override
             public void afterTextChanged(Editable s) {
+                super.afterTextChanged(s); // apply formatting first
                 tilRecipientPhone.setError(null);
                 hideLookupCards();
                 recipientFound = false;
-                String phone = s.toString().trim();
-                if (phone.length() == 12 && phone.startsWith("+7")) {
-                    scheduleLookup(phone);
+                if (PhoneFormatWatcher.isComplete(etRecipientPhone)) {
+                    scheduleLookup(PhoneFormatWatcher.raw(etRecipientPhone));
                 } else {
                     cancelPendingLookup();
                 }
@@ -356,7 +354,7 @@ public class TransferFragment extends Fragment {
 
     private void transferByPhone(BigDecimal amount, boolean amountInvalid) {
         tilRecipientPhone.setError(null);
-        String phone = text(etRecipientPhone);
+        String phone = PhoneFormatWatcher.raw(etRecipientPhone);
         boolean invalid = amountInvalid;
 
         if (phone.isEmpty()) {
