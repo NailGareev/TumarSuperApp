@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/card_bg">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="4dp"
+        android:background="#CCCCCC" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tv_sheet_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary" />
+
+    <!-- Search field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_market_search"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔍"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/et_city_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="Введите город или страну"
+            android:textSize="15sp"
+            android:background="@android:color/transparent"
+            android:inputType="textCapSentences"
+            android:imeOptions="actionSearch"
+            android:maxLines="1" />
+
+    </LinearLayout>
+
+    <!-- City list -->
+    <ListView
+        android:id="@+id/lv_cities"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:divider="#F0F0F0"
+        android:dividerHeight="1dp"
+        android:scrollbars="none" />
+
+</LinearLayout>

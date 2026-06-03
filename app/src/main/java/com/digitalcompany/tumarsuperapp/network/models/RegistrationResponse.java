@@ -10,21 +10,16 @@ public class RegistrationResponse {
     @SerializedName("message")
     private String message;
 
-    @SerializedName("userId") // Если бэкенд возвращает ID
-    private Integer userId; // Используем Integer, т.к. поле может отсутствовать при ошибке
+    @SerializedName("userId")
+    private Integer userId;
 
-    // Геттеры
-    public boolean isSuccess() {
-        return success;
-    }
+    @SerializedName("token")
+    private String token;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
+    public Integer getUserId() { return userId; }
+    public String getToken() { return token; }
 
     // toString() для удобства логирования
     @Override

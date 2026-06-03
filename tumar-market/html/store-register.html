@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация магазина — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/store-register.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <div style="flex:1"></div>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="store-reg-main">
+    <div class="store-reg-hero">
+      <h1>Стань продавцом на Tumar Market</h1>
+      <p>Более 10 миллионов покупателей ждут ваши товары</p>
+      <div class="store-benefits">
+        <div class="benefit">✓ Бесплатная регистрация</div>
+        <div class="benefit">✓ Лёгкое управление товарами</div>
+        <div class="benefit">✓ Быстрые выплаты</div>
+        <div class="benefit">✓ Поддержка 24/7</div>
+      </div>
+    </div>
+
+    <div class="store-reg-form-wrap">
+      <div class="store-reg-steps">
+        <div class="step active" id="step-1-btn">
+          <div class="step-num">1</div>
+          <div class="step-label">Аккаунт</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-2-btn">
+          <div class="step-num">2</div>
+          <div class="step-label">Магазин</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-3-btn">
+          <div class="step-num">3</div>
+          <div class="step-label">Готово</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Check login -->
+      <div id="step-1" class="step-content active">
+        <h2>Войдите или зарегистрируйтесь</h2>
+        <p>Для регистрации магазина необходимо иметь аккаунт</p>
+        <div id="step1-logged-in" style="display:none">
+          <div class="success-box">✓ Вы вошли как <strong id="step1-user-name"></strong></div>
+          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:16px" onclick="goStep(2)">Продолжить →</button>
+        </div>
+        <div id="step1-not-logged-in" style="display:none">
+          <div style="display:flex;gap:12px;margin-top:20px">
+            <a href="/login?redirect=/seller/store-register" class="btn btn-primary btn-lg" style="flex:1">Войти</a>
+            <a href="/register" class="btn btn-outline btn-lg" style="flex:1">Регистрация</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Store details -->
+      <div id="step-2" class="step-content">
+        <h2>Информация о магазине</h2>
+        <form id="store-register-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Название магазина *</label>
+              <input type="text" id="store-name" class="form-control" placeholder="Мой магазин" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Юридическое название *</label>
+              <input type="text" id="legal-name" class="form-control" placeholder="ТОО Мой Магазин" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">БИН / ИИН *</label>
+              <input type="text" id="bin-number" class="form-control" placeholder="123456789012" maxlength="12" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email магазина *</label>
+              <input type="email" id="store-email" class="form-control" placeholder="shop@example.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Телефон магазина *</label>
+              <input type="tel" id="store-phone" class="form-control" placeholder="+7 701 000 0000" required>
+            </div>
+            <div class="form-group" style="grid-column: 1/-1">
+              <label class="form-label">Адрес магазина *</label>
+              <input type="text" id="store-address" class="form-control" placeholder="г. Алматы, ул. Примерная, 1" required>
+            </div>
+            <div class="form-group" style="grid-column: 1/-1">
+              <label class="form-label">Описание магазина</label>
+              <textarea id="store-description" class="form-control" rows="3" placeholder="Расскажите о вашем магазине..."></textarea>
+            </div>
+          </div>
+
+          <div id="store-reg-error" class="error-msg" style="display:none"></div>
+          <div id="store-reg-success" class="success-box" style="display:none"></div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:8px">
+            Зарегистрировать магазин
+          </button>
+        </form>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="step-3" class="step-content">
+        <div class="success-screen">
+          <div class="success-icon">🎉</div>
+          <h2>Магазин зарегистрирован!</h2>
+          <p>Ваш магазин успешно создан и уже активен. Начните добавлять товары прямо сейчас!</p>
+          <div class="success-actions">
+            <a href="/seller/add-product" class="btn btn-primary btn-lg">+ Добавить товар</a>
+            <a href="/seller/dashboard" class="btn btn-secondary btn-lg">Перейти в кабинет</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/store-register.js"></script>
+</body>
+</html>

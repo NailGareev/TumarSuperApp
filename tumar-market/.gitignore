@@ -1,0 +1,15 @@
+go/tumar-market
+go/tumar-market-server
+tumar-market-server
+tumar-market
+go/kaspi-market
+go/kaspi-market-server
+kaspi-market-server
+kaspi-market
+static/uploads/*
+!static/uploads/.gitkeep
+images/*
+!images/.gitkeep
+__pycache__/
+*.pyc
+.env

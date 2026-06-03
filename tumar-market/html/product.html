@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Товар — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/product.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+    <nav class="header-nav"><ul id="categories-nav"></ul></nav>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="breadcrumb" id="product-breadcrumb">
+        <a href="/">Главная</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="/catalog">Каталог</a>
+        <span class="breadcrumb-sep">›</span>
+        <span id="product-breadcrumb-name">Загрузка...</span>
+      </div>
+
+      <div id="product-loading" class="loading-wrapper"><div class="spinner"></div></div>
+      <div id="product-content" style="display:none">
+
+        <div class="product-detail">
+          <!-- LEFT: Gallery -->
+          <div class="product-gallery">
+            <div class="main-image-wrap">
+              <img id="main-image" src="" alt="">
+            </div>
+            <div class="thumb-list" id="thumb-list"></div>
+          </div>
+
+          <!-- CENTER: Info -->
+          <div class="product-info">
+            <div class="product-brand" id="product-brand"></div>
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <h1 class="product-title" id="product-title" style="flex:1;margin:0"></h1>
+              <button id="product-fav-btn" class="fav-btn-detail" onclick="toggleProductFav()" title="В избранное">🤍</button>
+            </div>
+            <div class="product-meta">
+              <div class="rating-block" id="product-rating"></div>
+              <span class="meta-sep">•</span>
+              <span id="product-reviews-count"></span>
+            </div>
+
+            <!-- Sellers list -->
+            <div class="sellers-section">
+              <h3 class="sellers-title">Продавцы</h3>
+              <div id="sellers-list" class="sellers-list"></div>
+            </div>
+
+            <!-- Attributes -->
+            <div class="attrs-section" id="attrs-section" style="display:none">
+              <h3 class="attrs-title">Характеристики</h3>
+              <table class="attrs-table" id="attrs-table"></table>
+            </div>
+
+            <!-- Description -->
+            <div class="desc-section" id="desc-section" style="display:none">
+              <h3 class="desc-title">Описание</h3>
+              <p id="product-description" class="product-description"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- REVIEWS -->
+        <div class="reviews-section card" style="margin-top:20px;padding:24px">
+          <div class="section-header" style="margin-bottom:16px">
+            <h2 class="section-title">Отзывы покупателей</h2>
+            <button id="write-review-btn" class="btn btn-outline btn-sm" onclick="openReviewModal()">Написать отзыв</button>
+          </div>
+          <div id="reviews-list">
+            <div class="loading-wrapper"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ADD TO CART MODAL -->
+  <div id="cart-modal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Добавить в корзину</h3>
+        <div class="modal-close" onclick="closeModal('cart-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div id="modal-seller-info"></div>
+        <div class="form-group">
+          <label class="form-label">Количество</label>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input type="number" id="cart-qty" class="form-control qty-input" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%" onclick="confirmAddToCart()">
+          Добавить в корзину
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEW MODAL -->
+  <div id="review-modal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Оставить отзыв</h3>
+        <div class="modal-close" onclick="closeModal('review-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Оценка</label>
+          <div class="star-rating" id="star-rating">
+            <span class="star-btn" data-val="1">★</span>
+            <span class="star-btn" data-val="2">★</span>
+            <span class="star-btn" data-val="3">★</span>
+            <span class="star-btn" data-val="4">★</span>
+            <span class="star-btn" data-val="5">★</span>
+          </div>
+          <input type="hidden" id="review-rating" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Комментарий</label>
+          <textarea class="form-control" id="review-comment" rows="4" placeholder="Поделитесь своими впечатлениями о товаре..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="submitReview()">Отправить отзыв</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2024 Tumar Market</p></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/product.js"></script>
+</body>
+</html>

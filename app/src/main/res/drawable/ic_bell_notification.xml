@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="26dp"
+    android:height="26dp"
+    android:viewportWidth="26"
+    android:viewportHeight="26">
+
+    <!-- Bell body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13,2.5C9.41,2.5 6.5,5.41 6.5,9L6.5,14.5L4,17L4,18L22,18L22,17L19.5,14.5L19.5,9C19.5,5.41 16.59,2.5 13,2.5Z" />
+
+    <!-- Clapper -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13,23.5C14.1,23.5 15,22.6 15,21.5L11,21.5C11,22.6 11.9,23.5 13,23.5Z" />
+
+    <!-- Notification badge dot (circle via arc path, cx=19.5 cy=6 r=3.5) -->
+    <path
+        android:fillColor="#FF4081"
+        android:pathData="M16,6A3.5,3.5 0 1 0 23,6A3.5,3.5 0 1 0 16,6Z" />
+</vector>

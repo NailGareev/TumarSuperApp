@@ -2,14 +2,15 @@ package com.digitalcompany.tumarsuperapp.adapter; // Создайте пакет
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color; // Пример использования стандартных цветов
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat; // Для получения цветов из ресурсов
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -89,33 +90,70 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
         // Метод для заполнения View данными транзакции
         public void bind(Transaction transaction, int currentUserId) {
+            String type = transaction.getTransactionType();
             boolean isIncoming = transaction.getRecipientId() == currentUserId;
             boolean isOutgoing = transaction.getSenderId() == currentUserId;
 
-            // 1. Устанавливаем иконку и описание
+            // 1. Иконка, описание и знак суммы определяются по типу транзакции
             String description;
-            if (isIncoming) {
-                ivIcon.setImageResource(R.drawable.ic_arrow_downward); // Иконка входящего
-                String senderName = formatName(transaction.getSenderFirstName(), transaction.getSenderLastName());
-                description = "Перевод от " + (senderName != null ? senderName : transaction.getSenderPhone());
-            } else if (isOutgoing) {
-                ivIcon.setImageResource(R.drawable.ic_arrow_upward); // Иконка исходящего
-                String recipientName = formatName(transaction.getRecipientFirstName(), transaction.getRecipientLastName());
-                description = "Перевод " + (recipientName != null ? recipientName : transaction.getRecipientPhone());
-            } else {
-                // Другие типы транзакций (пополнение, оплата) - пока просто иконка по умолчанию
-                ivIcon.setImageResource(R.drawable.ic_history); // Пример иконки по умолчанию
-                description = transaction.getTransactionType(); // Отображаем тип
+            String amountPrefix;
+            int amountColor;
+
+            // Reset card background
+            if (itemView instanceof CardView) {
+                ((CardView) itemView).setCardBackgroundColor(
+                    ContextCompat.getColor(context, R.color.card_bg));
             }
+
+            if ("MARKET_REFUND".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_payment);
+                description = "Возврат — Tumar Market";
+                amountPrefix = "+";
+                amountColor = ContextCompat.getColor(context, R.color.red_error);
+                // Highlight the whole card red
+                if (itemView instanceof CardView) {
+                    ((CardView) itemView).setCardBackgroundColor(Color.parseColor("#FFEBEE"));
+                }
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.red_error));
+
+            } else if ("PAYMENT".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_payment);
+                String raw = transaction.getDescription();
+                description = (raw != null && !raw.isEmpty()) ? raw : "Оплата услуг";
+                amountPrefix = "-";
+                amountColor = ContextCompat.getColor(context, R.color.red_error);
+
+            } else if ("TOPUP".equals(type)) {
+                ivIcon.setImageResource(R.drawable.ic_add_circle_outline);
+                description = "Пополнение баланса";
+                amountPrefix = "+";
+                amountColor = ContextCompat.getColor(context, R.color.green_success);
+
+            } else {
+                // TRANSFER — входящий или исходящий
+                if (isIncoming) {
+                    ivIcon.setImageResource(R.drawable.ic_arrow_downward);
+                    String name = formatName(transaction.getSenderFirstName(), transaction.getSenderLastName());
+                    description = "Перевод от " + (name != null ? name : nvl(transaction.getSenderPhone(), "—"));
+                    amountPrefix = "+";
+                    amountColor = ContextCompat.getColor(context, R.color.green_success);
+                } else {
+                    ivIcon.setImageResource(R.drawable.ic_arrow_upward);
+                    String name = formatName(transaction.getRecipientFirstName(), transaction.getRecipientLastName());
+                    description = "Перевод " + (name != null ? name : nvl(transaction.getRecipientPhone(), "—"));
+                    amountPrefix = "-";
+                    amountColor = ContextCompat.getColor(context, R.color.red_error);
+                }
+            }
+
             tvDescription.setText(description);
 
-            // 2. Форматируем и устанавливаем сумму и цвет
+            // 2. Форматируем сумму
             BigDecimal amount = transaction.getAmount() != null ? transaction.getAmount() : BigDecimal.ZERO;
             String currencyCode = transaction.getCurrency() != null ? transaction.getCurrency().toUpperCase() : "KZT";
             String formattedAmount;
-            int amountColor;
 
-            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("ru", "KZ")); // Используем локаль
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("ru", "KZ"));
             try {
                 currencyFormat.setCurrency(Currency.getInstance(currencyCode));
                 if ("KZT".equals(currencyCode)) {
@@ -127,49 +165,47 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
                 }
                 formattedAmount = currencyFormat.format(amount);
             } catch (Exception e) {
-                // Запасной вариант
                 formattedAmount = String.format(Locale.US, "%.2f %s", amount, currencyCode);
             }
 
-
-            if (isIncoming) {
-                formattedAmount = "+" + formattedAmount;
-                // Используем цвет из ресурсов, если определен, иначе стандартный зеленый
-                amountColor = ContextCompat.getColor(context, R.color.green_success); // Замените на ваш цвет
-            } else if (isOutgoing) {
-                formattedAmount = "-" + formattedAmount;
-                // Используем цвет из ресурсов, если определен, иначе стандартный красный/черный
-                amountColor = ContextCompat.getColor(context, R.color.red_error); // Замените на ваш цвет
-            } else {
-                // Для других типов - цвет по умолчанию
-                amountColor = ContextCompat.getColor(context, R.color.grey_text); // Замените на ваш цвет
-            }
-            tvAmount.setText(formattedAmount);
+            tvAmount.setText(amountPrefix + formattedAmount);
             tvAmount.setTextColor(amountColor);
 
 
             // 3. Форматируем и устанавливаем дату/время
-            if (transaction.getTimestamp() != null) {
-                // Пример форматирования: 5 мая 2025, 08:15
+            TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+            if ("MARKET_REFUND".equals(type)) {
+                String timeStr = "";
+                if (transaction.getTimestamp() != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("d MMM, HH:mm", new Locale("ru"));
+                    sdf.setTimeZone(tz);
+                    timeStr = sdf.format(transaction.getTimestamp());
+                }
+                tvTimestamp.setText("Возвращено" + (timeStr.isEmpty() ? "" : " • " + timeStr));
+            } else if (transaction.getTimestamp() != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy, HH:mm", new Locale("ru"));
-                // sdf.setTimeZone(TimeZone.getDefault()); // Можно установить часовой пояс
+                sdf.setTimeZone(tz);
                 tvTimestamp.setText(sdf.format(transaction.getTimestamp()));
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             } else {
-                tvTimestamp.setText(""); // Пусто, если даты нет
+                tvTimestamp.setText("");
+                tvTimestamp.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             }
         }
 
-        // Вспомогательный метод для форматирования имени
         private String formatName(String firstName, String lastName) {
             if (firstName != null && !firstName.isEmpty() && lastName != null && !lastName.isEmpty()) {
-                // Возвращаем "Имя Ф." (первая буква фамилии)
                 return firstName + " " + lastName.substring(0, 1).toUpperCase() + ".";
             } else if (firstName != null && !firstName.isEmpty()) {
                 return firstName;
             } else if (lastName != null && !lastName.isEmpty()) {
                 return lastName;
             }
-            return null; // Возвращаем null, если имени/фамилии нет
+            return null;
+        }
+
+        private String nvl(String value, String fallback) {
+            return (value != null && !value.isEmpty()) ? value : fallback;
         }
     }
 }

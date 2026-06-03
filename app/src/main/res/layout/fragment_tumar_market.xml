@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/app_bg">
+
+    <!-- Custom top header: close button + search bar -->
+    <LinearLayout
+        android:id="@+id/market_header"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp"
+        android:background="@color/colorPrimary">
+
+        <ImageButton
+            android:id="@+id/btn_market_close"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close_market"
+            android:tint="#FFFFFF"
+            android:contentDescription="Закрыть" />
+
+        <EditText
+            android:id="@+id/et_market_search"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_market_search"
+            android:hint="Поиск в Магазине"
+            android:textColorHint="#9E9E9E"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <!-- Loading progress -->
+    <ProgressBar
+        android:id="@+id/progress_market"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:max="100"
+        android:progressTint="@color/colorPrimary"
+        android:visibility="gone" />
+
+    <!-- WebView + Error overlay -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <WebView
+            android:id="@+id/webview_market"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- Error screen -->
+        <LinearLayout
+            android:id="@+id/layout_market_error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛒"
+                android:textSize="64sp" />
+
+            <TextView
+                android:id="@+id/tv_market_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:lineSpacingMultiplier="1.4" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_market_retry"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="24dp"
+                android:text="Повторить"
+                android:textSize="15sp"
+                app:backgroundTint="@color/colorPrimary"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Custom bottom navigation -->
+    <LinearLayout
+        android:id="@+id/market_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="@color/card_bg"
+        android:elevation="8dp">
+
+        <!-- Магазин -->
+        <LinearLayout
+            android:id="@+id/mnav_shop"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="🏪" android:textSize="20sp" />
+            <TextView android:id="@+id/mnav_shop_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Магазин" android:textSize="10sp"
+                android:textColor="@color/colorPrimary" android:textStyle="bold"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Каталог -->
+        <LinearLayout
+            android:id="@+id/mnav_catalog"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="📋" android:textSize="20sp" />
+            <TextView android:id="@+id/mnav_catalog_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Каталог" android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Избранное -->
+        <LinearLayout
+            android:id="@+id/mnav_favorites"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="❤️" android:textSize="20sp" />
+            <TextView android:id="@+id/mnav_favorites_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Избранное" android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Корзина -->
+        <LinearLayout
+            android:id="@+id/mnav_cart"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="🛒" android:textSize="20sp" />
+            <TextView android:id="@+id/mnav_cart_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Корзина" android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Мои заказы -->
+        <LinearLayout
+            android:id="@+id/mnav_orders"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="📦" android:textSize="20sp" />
+            <TextView android:id="@+id/mnav_orders_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Мои заказы" android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

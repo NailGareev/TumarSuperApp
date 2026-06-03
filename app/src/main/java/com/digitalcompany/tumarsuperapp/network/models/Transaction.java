@@ -22,10 +22,13 @@ public class Transaction {
     private String currency;
 
     @SerializedName("transaction_type")
-    private String transactionType; // 'TRANSFER', 'TOPUP', etc.
+    private String transactionType; // 'TRANSFER', 'PAYMENT', 'TOPUP'
+
+    @SerializedName("description")
+    private String description;
 
     @SerializedName("timestamp")
-    private Date timestamp; // Или String, если формат даты сложный/нестандартный
+    private Date timestamp;
 
     // Поля из JOIN с users (имена/телефоны могут быть null, если JOIN не удался или user удален)
     @SerializedName("sender_first_name")
@@ -53,7 +56,8 @@ public class Transaction {
     public BigDecimal getAmount() { return amount; }
     public String getCurrency() { return currency; }
     public String getTransactionType() { return transactionType; }
-    public Date getTimestamp() { return timestamp; } // Или String getTimestamp()
+    public String getDescription() { return description; }
+    public Date getTimestamp() { return timestamp; }
     public String getSenderFirstName() { return senderFirstName; }
     public String getSenderLastName() { return senderLastName; }
     public String getSenderPhone() { return senderPhone; }

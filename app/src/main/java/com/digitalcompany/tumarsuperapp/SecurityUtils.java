@@ -1,59 +1,91 @@
 package com.digitalcompany.tumarsuperapp;
 
 import android.util.Log;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.nio.charset.StandardCharsets;
-import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 public class SecurityUtils {
 
     private static final String TAG = "SecurityUtils";
-
-    // ВАЖНО: В РЕАЛЬНОМ ПРИЛОЖЕНИИ ИСПОЛЬЗУЙТЕ СОЛЬ (SALT)!
-    // Соль - это случайные данные, уникальные для каждого пользователя,
-    // которые добавляются к паролю перед хешированием.
-    // Это значительно усложняет подбор пароля по радужным таблицам.
-    // Соль нужно хранить вместе с хешем.
-    // Пример: String saltedPin = pin + userSpecificSalt;
+    private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
+    private static final int ITERATIONS = 10000;
+    private static final int KEY_LENGTH = 256;
 
     public static String hashPin(String pin) {
         if (pin == null || pin.length() != 4) {
             Log.e(TAG, "Invalid PIN format for hashing.");
-            return null; // Или выбросить исключение
+            return null;
         }
         try {
-            // Используем SHA-256
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            // В реальном приложении добавьте соль: byte[] hash = digest.digest((pin + salt).getBytes(StandardCharsets.UTF_8));
-            byte[] hash = digest.digest(pin.getBytes(StandardCharsets.UTF_8));
-            // Конвертируем байтовый массив в Hex строку
-            return bytesToHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "SHA-256 Algorithm not found", e);
-            return null; // Обработка ошибки
+            byte[] salt = new byte[16];
+            new SecureRandom().nextBytes(salt);
+            byte[] hash = pbkdf2(pin.toCharArray(), salt);
+            return Base64.getEncoder().encodeToString(salt) + ":" + Base64.getEncoder().encodeToString(hash);
+        } catch (Exception e) {
+            Log.e(TAG, "Error hashing PIN", e);
+            return null;
         }
     }
 
-    // Вспомогательный метод для конвертации байтов в Hex
-    private static String bytesToHex(byte[] hash) {
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
-
-    // Метод для проверки введенного пина с сохраненным хешем
-    public static boolean verifyPin(String enteredPin, String storedHash) {
-        if (enteredPin == null || storedHash == null) {
+    public static boolean verifyPin(String enteredPin, String storedValue) {
+        if (enteredPin == null || storedValue == null) {
             return false;
         }
-        String newHash = hashPin(enteredPin); // Хешируем введенный пин (с той же солью, если она используется!)
-        return storedHash.equals(newHash);
+        if (!storedValue.contains(":")) {
+            // Legacy SHA-256 format — migrate on next successful login
+            return verifyLegacySha256(enteredPin, storedValue);
+        }
+        try {
+            String[] parts = storedValue.split(":", 2);
+            byte[] salt = Base64.getDecoder().decode(parts[0]);
+            byte[] storedHash = Base64.getDecoder().decode(parts[1]);
+            byte[] enteredHash = pbkdf2(enteredPin.toCharArray(), salt);
+            return constantTimeEquals(storedHash, enteredHash);
+        } catch (Exception e) {
+            Log.e(TAG, "Error verifying PIN", e);
+            return false;
+        }
+    }
+
+    private static byte[] pbkdf2(char[] pin, byte[] salt)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+        PBEKeySpec spec = new PBEKeySpec(pin, salt, ITERATIONS, KEY_LENGTH);
+        try {
+            return SecretKeyFactory.getInstance(ALGORITHM).generateSecret(spec).getEncoded();
+        } finally {
+            spec.clearPassword();
+        }
+    }
+
+    private static boolean constantTimeEquals(byte[] a, byte[] b) {
+        if (a.length != b.length) return false;
+        int result = 0;
+        for (int i = 0; i < a.length; i++) {
+            result |= a[i] ^ b[i];
+        }
+        return result == 0;
+    }
+
+    private static boolean verifyLegacySha256(String pin, String storedHash) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(pin.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                String h = Integer.toHexString(0xff & b);
+                if (h.length() == 1) hex.append('0');
+                hex.append(h);
+            }
+            return storedHash.equals(hex.toString());
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "SHA-256 not available", e);
+            return false;
+        }
     }
 }

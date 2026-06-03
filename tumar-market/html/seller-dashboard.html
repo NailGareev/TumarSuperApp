@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кабинет продавца — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/seller-dashboard.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <div style="flex:1"></div>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <div class="seller-layout">
+    <!-- SIDEBAR -->
+    <aside class="seller-sidebar">
+      <div class="seller-sidebar-logo">🏪 Кабинет продавца</div>
+      <nav class="seller-nav">
+        <a href="#" class="seller-nav-item active" data-tab="dashboard">📊 Дашборд</a>
+        <a href="#" class="seller-nav-item" data-tab="products">📦 Мои товары</a>
+        <a href="#" class="seller-nav-item" data-tab="orders">🛍 Заказы</a>
+        <a href="#" class="seller-nav-item" data-tab="returns">↩ Возвраты</a>
+        <a href="#" class="seller-nav-item" data-tab="store">🏪 Мой магазин</a>
+        <a href="/seller/add-product" class="seller-nav-item highlight">+ Добавить товар</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="seller-main">
+
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="tab-content active">
+        <h1 class="page-title">Добро пожаловать!</h1>
+
+        <div id="no-store-banner" class="no-store-banner" style="display:none">
+          <div class="no-store-icon">🏪</div>
+          <h3>У вас нет магазина</h3>
+          <p>Зарегистрируйте магазин, чтобы начать продавать</p>
+          <a href="/seller/store-register" class="btn btn-primary btn-lg">Зарегистрировать магазин</a>
+        </div>
+
+        <div id="dashboard-stats" class="stats-grid"></div>
+
+        <div class="dashboard-charts">
+          <div class="chart-card">
+            <h3>Быстрые действия</h3>
+            <div class="quick-actions">
+              <a href="/seller/add-product" class="quick-action-btn">
+                <span class="qa-icon">➕</span>
+                <span>Добавить товар</span>
+              </a>
+              <a href="#" onclick="switchTab('orders')" class="quick-action-btn">
+                <span class="qa-icon">📋</span>
+                <span>Заказы</span>
+              </a>
+              <a href="#" onclick="switchTab('store')" class="quick-action-btn">
+                <span class="qa-icon">✏️</span>
+                <span>Настройки магазина</span>
+              </a>
+              <a href="/catalog" class="quick-action-btn">
+                <span class="qa-icon">🔍</span>
+                <span>Каталог</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS TAB -->
+      <div id="tab-products" class="tab-content">
+        <div class="tab-header">
+          <h1 class="page-title">Мои товары</h1>
+          <a href="/seller/add-product" class="btn btn-primary">+ Добавить товар</a>
+        </div>
+        <div id="seller-products-list" class="products-table-wrap">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- ORDERS TAB -->
+      <div id="tab-orders" class="tab-content">
+        <h1 class="page-title">Заказы магазина</h1>
+        <div class="tabs seller-orders-tabs">
+          <div class="tab active" onclick="filterSellerOrders('active', event)">Активные</div>
+          <div class="tab" onclick="filterSellerOrders('archive', event)">Архив</div>
+        </div>
+        <div id="seller-orders-list">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- RETURNS TAB -->
+      <div id="tab-returns" class="tab-content">
+        <h1 class="page-title">Заявки на возврат</h1>
+        <div id="seller-returns-list">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- STORE TAB -->
+      <div id="tab-store" class="tab-content">
+        <h1 class="page-title">Настройки магазина</h1>
+        <div id="store-form-wrap" class="card" style="padding:24px;max-width:600px">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div id="edit-product-modal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Редактировать предложение</h3>
+        <div class="modal-close" onclick="closeModal('edit-product-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-ps-id">
+        <div class="form-group">
+          <label class="form-label">Цена (₸)</label>
+          <input type="number" id="edit-price" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Старая цена (₸)</label>
+          <input type="number" id="edit-orig-price" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Остаток (шт.)</label>
+          <input type="number" id="edit-stock" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Срок доставки (дней)</label>
+          <input type="number" id="edit-delivery" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="edit-active">
+            <span>Активен (отображается в каталоге)</span>
+          </label>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="saveProductEdit()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/seller-dashboard.js"></script>
+</body>
+</html>

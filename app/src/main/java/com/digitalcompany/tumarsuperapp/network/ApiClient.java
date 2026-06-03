@@ -22,10 +22,10 @@ public class ApiClient {
         if (retrofit == null) {
             // Создаем OkHttpClient один раз (ленивая инициализация)
             if (okHttpClient == null) {
-                // Настройка логгирования HTTP запросов
                 HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                // Уровни: NONE, BASIC, HEADERS, BODY
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Логируем тело запроса/ответа
+                loggingInterceptor.setLevel(android.util.Log.isLoggable("ApiClient", android.util.Log.DEBUG)
+                        ? HttpLoggingInterceptor.Level.BASIC
+                        : HttpLoggingInterceptor.Level.NONE);
 
                 // Создаем строитель OkHttpClient
                 OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();

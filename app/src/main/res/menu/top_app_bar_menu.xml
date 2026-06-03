@@ -4,8 +4,9 @@
 
     <item
         android:id="@+id/action_notifications"
-        android:icon="@drawable/ic_notifications_24dp"
         android:title="Уведомления"
-        android:contentDescription="Уведомления"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/ic_bell_notification"
+        app:showAsAction="always"
+        app:iconTint="@null" />
+
 </menu>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Корзина — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/cart.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+      <h1 class="cart-title">Корзина <span id="cart-count-title"></span></h1>
+
+      <div id="cart-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">🛒</div>
+        <h3>Ваша корзина пуста</h3>
+        <p>Добавьте товары из каталога</p>
+        <a href="/catalog" class="btn btn-primary btn-lg" style="margin-top:16px">Перейти в каталог</a>
+      </div>
+
+      <div id="cart-layout" class="cart-layout" style="display:none">
+        <!-- Items -->
+        <div class="cart-items" id="cart-items-list"></div>
+
+        <!-- Summary -->
+        <div class="cart-summary card">
+          <h3 class="summary-title">Итого</h3>
+          <div class="summary-rows" id="summary-rows"></div>
+          <div class="summary-total">
+            <span>Итого:</span>
+            <strong id="cart-total-price"></strong>
+          </div>
+          <a href="/checkout" class="btn btn-primary btn-lg" style="width:100%;margin-top:16px">
+            Перейти к оформлению →
+          </a>
+          <a href="/catalog" class="btn btn-secondary" style="width:100%;margin-top:8px">
+            ← Продолжить покупки
+          </a>
+        </div>
+      </div>
+
+      <div id="cart-loading" class="loading-wrapper"><div class="spinner"></div></div>
+    </div>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+</body>
+</html>

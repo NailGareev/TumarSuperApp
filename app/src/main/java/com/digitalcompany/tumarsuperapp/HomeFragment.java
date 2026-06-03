@@ -83,6 +83,14 @@ public class HomeFragment extends Fragment implements MenuProvider {
         tvPhoneNumber.setText("+7 ...");
         tvBalance.setText("---.-- ???");
 
+        // Карточка Travel
+        view.findViewById(R.id.ll_travel).setOnClickListener(v ->
+                navigateToFragment(new TravelFragment(), "travel"));
+
+        // Карточка Tumar Market
+        view.findViewById(R.id.ll_market).setOnClickListener(v ->
+                navigateToFragment(new TumarMarketFragment(), "market"));
+
         // Устанавливаем слушатели кликов
         setupActionButtons();
 
@@ -110,32 +118,21 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     // Метод для установки слушателей на кнопки действий
     private void setupActionButtons() {
-        buttonTopUp.setOnClickListener(v -> showToast("Нажата кнопка Пополнить"));
+        buttonTopUp.setOnClickListener(v -> navigateToFragment(new TopUpFragment(), "topup"));
 
-        // --- ИЗМЕНЕНИЕ: Навигация на HistoryFragment ---
         buttonHistory.setOnClickListener(v -> {
-            Log.d(TAG, "Кнопка История нажата, переход на HistoryFragment");
             if (getActivity() != null) {
-                // Создаем экземпляр HistoryFragment (код для него был предоставлен ранее)
-                HistoryFragment historyFragment = new HistoryFragment();
-                navigateToFragment(historyFragment, "history"); // Используем вспомогательный метод
-            } else {
-                Log.e(TAG, "Activity is null when History button clicked.");
+                navigateToFragment(new HistoryFragment(), "history");
             }
         });
-        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
         buttonTransfer.setOnClickListener(v -> {
-            Log.d(TAG, "Кнопка Перевод нажата");
             if (getActivity() != null) {
-                TransferFragment transferFragment = new TransferFragment();
-                navigateToFragment(transferFragment, "transfer");
-            } else {
-                Log.e(TAG, "Activity is null when Transfer button clicked.");
+                navigateToFragment(new TransferFragment(), "transfer");
             }
         });
 
-        buttonPayments.setOnClickListener(v -> showToast("Нажата кнопка Платежи"));
+        buttonPayments.setOnClickListener(v -> navigateToFragment(new PaymentsFragment(), "payments"));
     }
 
     // Вспомогательный метод для навигации
@@ -193,8 +190,9 @@ public class HomeFragment extends Fragment implements MenuProvider {
                     Log.e(TAG, "Ошибка ответа сервера при загрузке профиля: " + response.code());
                     if (getContext() != null) Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_SHORT).show();
                     if (response.code() == 401 || response.code() == 403) {
-                        Log.w(TAG, "Ошибка авторизации (401/403), возможно, токен истек.");
-                        // LoginActivity.logout(requireActivity());
+                        Log.w(TAG, "Ошибка авторизации (401/403), возможно, токен истек. Выполняем выход.");
+                        Toast.makeText(requireContext(), "Сессия истекла. Войдите снова", Toast.LENGTH_SHORT).show();
+                        LoginActivity.logout(requireActivity());
                     }
                 }
             }
@@ -269,12 +267,6 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-        // ... (код без изменений) ...
-        if (menuItem.getItemId() == R.id.action_notifications) {
-            showToast("Нажаты Уведомления (HomeFragment Listener)");
-            // TODO: Открыть экран уведомлений
-            return true;
-        }
         return false;
     }
 }

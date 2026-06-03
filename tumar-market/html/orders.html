@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои заказы — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/orders.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container" style="max-width:900px">
+      <div class="breadcrumb">
+        <a href="/">Главная</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="/profile">Профиль</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Заказы</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h1 class="page-heading" style="font-size:26px;font-weight:700;margin:0">Мои заказы</h1>
+        <button class="btn btn-outline btn-sm" onclick="openMyReturns()">📦 Мои возвраты</button>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="filterOrders('')">Все заказы</div>
+        <div class="tab" onclick="filterOrders('pending')">Ожидают</div>
+        <div class="tab" onclick="filterOrders('processing')">В обработке</div>
+        <div class="tab" onclick="filterOrders('shipped')">В пути</div>
+        <div class="tab" onclick="filterOrders('delivered')">Доставлены</div>
+        <div class="tab" onclick="filterOrders('cancelled')">Отменены</div>
+      </div>
+
+      <div id="orders-loading" class="loading-wrapper"><div class="spinner"></div></div>
+      <div id="orders-list"></div>
+    </div>
+  </main>
+
+  <!-- Order Detail Modal -->
+  <div id="order-modal" class="modal-overlay" style="display:none">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <h3 id="modal-order-title">Заказ</h3>
+        <div class="modal-close" onclick="document.getElementById('order-modal').style.display='none'">✕</div>
+      </div>
+      <div class="modal-body" id="modal-order-body"></div>
+    </div>
+  </div>
+
+  <!-- Return Form Modal -->
+  <div id="return-modal" class="modal-overlay" style="display:none">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3>Заявка на возврат</h3>
+        <div class="modal-close" onclick="closeReturnModal()">✕</div>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="return-order-id">
+        <label style="font-size:13px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px">Причина возврата *</label>
+        <textarea id="return-reason" rows="4" placeholder="Опишите причину возврата..."
+          style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+
+        <div style="margin-top:16px">
+          <label style="font-size:13px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px">
+            Фотографии товара * <span id="return-photo-count" style="color:var(--gray-400)">(0 выбрано, мин. 2, макс. 10)</span>
+          </label>
+          <div id="return-photos-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+          <label id="return-photo-btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--gray-100);border:1px dashed var(--gray-300);border-radius:8px;cursor:pointer;font-size:13px">
+            📷 Добавить фото
+            <input type="file" id="return-photo-input" accept="image/*" multiple style="display:none" onchange="handleReturnPhotos(this)">
+          </label>
+        </div>
+
+        <div id="return-error" style="color:var(--red);font-size:13px;margin-top:10px;display:none"></div>
+
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="btn btn-outline" style="flex:1" onclick="closeReturnModal()">Отмена</button>
+          <button class="btn btn-primary" style="flex:1" id="btn-submit-return" onclick="submitReturn()">Отправить заявку</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Returns Modal -->
+  <div id="my-returns-modal" class="modal-overlay" style="display:none">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <h3>Мои возвраты</h3>
+        <div class="modal-close" onclick="document.getElementById('my-returns-modal').style.display='none'">✕</div>
+      </div>
+      <div class="modal-body" id="my-returns-body">
+        <div class="loading-wrapper"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2024 Tumar Market</p></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/orders.js"></script>
+</body>
+</html>

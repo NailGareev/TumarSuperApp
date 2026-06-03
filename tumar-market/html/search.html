@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Поиск — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/catalog.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <form id="search-form" class="search-bar">
+        <input id="search-input" type="text" placeholder="Поиск товаров...">
+        <button type="submit">🔍</button>
+      </form>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+    <nav class="header-nav"><ul id="categories-nav"></ul></nav>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/">Главная</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Поиск: <strong id="search-query-display"></strong></span>
+      </div>
+
+      <div class="catalog-header" style="margin-bottom:20px">
+        <h1 class="catalog-title" id="search-title">Результаты поиска</h1>
+        <span id="search-count" class="products-count"></span>
+      </div>
+
+      <div id="search-loading" class="loading-wrapper"><div class="spinner"></div></div>
+      <div class="product-grid" id="search-results"></div>
+      <div class="pagination" id="search-pagination"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom"><p>© 2024 Tumar Market</p></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/search.js"></script>
+</body>
+</html>

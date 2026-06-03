@@ -45,7 +45,7 @@ CREATE TABLE `balances` (
 CREATE TABLE `transactions` (
   `id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
-  `recipient_id` int(11) NOT NULL,
+  `recipient_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'KZT',
   `transaction_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TRANSFER',
@@ -141,3 +141,38 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `tours`
+--
+CREATE TABLE `tours` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hotel_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `stars` int(11) NOT NULL DEFAULT '3',
+  `price` bigint(20) NOT NULL,
+  `months` int(11) NOT NULL DEFAULT '1',
+  `discount_percent` int(11) NOT NULL DEFAULT '0',
+  `original_price` bigint(20) NOT NULL,
+  `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_hot` tinyint(1) NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Пример туров (раскомментируйте чтобы добавить тестовые данные)
+--
+-- INSERT INTO `tours` (`location`, `hotel_name`, `stars`, `price`, `months`, `discount_percent`, `original_price`, `image_url`, `is_hot`) VALUES
+-- ('Таиланд', 'Dusit Thani', 5, 450000, 12, 15, 529000, 'https://example.com/thailand.jpg', 1),
+-- ('Малайзия', 'Shangri-La', 4, 320000, 6, 0, 320000, 'https://example.com/malaysia.jpg', 0),
+-- ('ОАЭ', 'Atlantis The Palm', 5, 680000, 12, 20, 850000, 'https://example.com/uae.jpg', 1);
+
+-- Migration: allow NULL recipient_id for PAYMENT-type transactions
+-- Run this on existing databases:
+-- ALTER TABLE `transactions` DROP FOREIGN KEY `fk_recipient`;
+-- ALTER TABLE `transactions` MODIFY `recipient_id` int(11) DEFAULT NULL;
+-- ALTER TABLE `transactions` ADD CONSTRAINT `fk_recipient` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`);

@@ -9,7 +9,17 @@ import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 // --- НАЧАЛО: Импорты для перевода и истории ---
 import com.digitalcompany.tumarsuperapp.network.models.TransferRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
-import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse; // Модель для ответа истории
+import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpRequest;
+import com.digitalcompany.tumarsuperapp.network.models.TopUpResponse;
+import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
+import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
+import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
+import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
+import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
+import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -18,6 +28,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 /**
  * Интерфейс, описывающий эндпоинты API для Retrofit.
@@ -61,9 +72,46 @@ public interface ApiService {
     @GET("api/transactions")
     Call<TransactionHistoryResponse> getTransactionHistory();
 
+    /**
+     * Пополнение баланса текущего пользователя.
+     */
+    @POST("api/topup")
+    Call<TopUpResponse> topUp(@Body TopUpRequest topUpRequest);
+
+    /**
+     * Оплата услуг (мобильная связь, ЖКХ, интернет и др.).
+     */
+    @POST("api/pay")
+    Call<PayResponse> pay(@Body PayRequest payRequest);
+
+    /**
+     * Поиск клиента Tumar по номеру телефона (для подтверждения получателя перевода).
+     */
+    @GET("api/lookup-phone")
+    Call<UserLookupResponse> lookupUserByPhone(@Query("phone") String phone);
+
+    @GET("api/card")
+    Call<CardResponse> getCard();
+
+    @POST("api/card/issue")
+    Call<CardResponse> issueCard();
+
+    @GET("api/tours")
+    Call<TourListResponse> getTours();
+
+    @GET("api/tours/search")
+    Call<TourListResponse> searchTours(
+            @Query("destination") String destination,
+            @Query("adults") int adults,
+            @Query("children") int children
+    );
+
+    @POST("api/market/pay")
+    Call<MarketPayResponse> marketPay(@Body MarketPayRequest request);
+
+    @GET("api/market/orders")
+    Call<MarketPurchasesResponse> getMarketOrders();
+
     // --- КОНЕЦ: Добавленные методы ---
-
-
-    // Здесь можно добавлять другие методы API по мере необходимости
 
 }

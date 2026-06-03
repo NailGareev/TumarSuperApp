@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оформление заказа — Tumar Market</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/checkout.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="logo">Tumar<span>.Market</span></a>
+      <div style="flex:1"></div>
+      <div id="header-user-nav" class="header-actions"></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+      <h1 class="page-heading">Оформление заказа</h1>
+
+      <div id="checkout-loading" class="loading-wrapper"><div class="spinner"></div></div>
+      <div id="checkout-layout" class="checkout-layout" style="display:none">
+
+        <!-- Delivery & Payment -->
+        <div class="checkout-main">
+          <div class="card checkout-section">
+            <h3 class="checkout-section-title">📍 Адрес доставки</h3>
+            <div class="form-group">
+              <label class="form-label">Город</label>
+              <select id="delivery-city" class="form-control">
+                <option>Алматы</option>
+                <option>Нур-Султан (Астана)</option>
+                <option>Шымкент</option>
+                <option>Қарағанды</option>
+                <option>Актобе</option>
+                <option>Тараз</option>
+                <option>Павлодар</option>
+                <option>Усть-Каменогорск</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Улица и номер дома</label>
+              <input type="text" id="delivery-street" class="form-control" placeholder="пр. Абая, 52, кв. 10">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Комментарий к доставке</label>
+              <input type="text" id="delivery-comment" class="form-control" placeholder="Необязательно">
+            </div>
+          </div>
+
+          <div class="card checkout-section">
+            <h3 class="checkout-section-title">💳 Способ оплаты</h3>
+            <div class="payment-options">
+              <label id="tumar-pay-option" class="payment-option">
+                <input type="radio" name="payment" value="tumar_pay">
+                <div class="payment-card">
+                  <span class="payment-icon">💳</span>
+                  <div>
+                    <div class="payment-name">Tumar Pay</div>
+                    <div class="payment-desc">Оплата через приложение</div>
+                  </div>
+                </div>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment" value="card" checked>
+                <div class="payment-card">
+                  <span class="payment-icon">💰</span>
+                  <div>
+                    <div class="payment-name">Банковская карта</div>
+                    <div class="payment-desc">Visa, Mastercard</div>
+                  </div>
+                </div>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment" value="cash">
+                <div class="payment-card">
+                  <span class="payment-icon">💵</span>
+                  <div>
+                    <div class="payment-name">Наличными</div>
+                    <div class="payment-desc">При получении</div>
+                  </div>
+                </div>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment" value="installment">
+                <div class="payment-card">
+                  <span class="payment-icon">📅</span>
+                  <div>
+                    <div class="payment-name">Рассрочка</div>
+                    <div class="payment-desc">0-0-12 месяцев</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="card checkout-section">
+            <h3 class="checkout-section-title">📞 Контакты для связи</h3>
+            <div id="contact-info"></div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="checkout-summary">
+          <div class="card" style="padding:20px">
+            <h3 class="summary-title">Ваш заказ</h3>
+            <div id="checkout-items"></div>
+            <div class="checkout-total-block">
+              <div class="total-row"><span>Товары</span><span id="co-subtotal"></span></div>
+              <div class="total-row"><span>Доставка</span><span style="color:#2e7d32">Бесплатно</span></div>
+              <div class="total-row total-final"><strong>Итого</strong><strong id="co-total"></strong></div>
+            </div>
+
+            <div id="checkout-error" class="error-msg" style="display:none"></div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%;margin-top:16px" onclick="placeOrder()">
+              Подтвердить заказ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success State -->
+      <div id="checkout-success" class="checkout-success" style="display:none">
+        <div class="success-icon">🎉</div>
+        <h2>Заказ оформлен!</h2>
+        <p>Номер вашего заказа: <strong id="order-number"></strong></p>
+        <p>Мы свяжемся с вами для подтверждения</p>
+        <div class="success-actions">
+          <a href="/orders" class="btn btn-primary btn-lg">Мои заказы</a>
+          <a href="/" class="btn btn-secondary btn-lg">На главную</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>

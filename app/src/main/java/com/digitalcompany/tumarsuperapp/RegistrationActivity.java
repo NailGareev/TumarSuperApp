@@ -19,6 +19,7 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -26,9 +27,11 @@ import java.io.IOException; // Добавлен импорт IOException
 
 public class RegistrationActivity extends AppCompatActivity {
 
-    // --- Константы SharedPreferences (только для флага) ---
-    private static final String USER_PREFS_NAME = "UserPrefs";
+        private static final String USER_PREFS_NAME = "UserPrefs";
     private static final String KEY_IS_REGISTERED = "is_registered";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_AUTH_TOKEN = "auth_token";
+    private static final String KEY_USER_ID = "user_id";
 
     // --- View компоненты ---
     private TextInputLayout tilPhone, tilEmail, tilAge, tilFirstName, tilLastName, tilPassword;
@@ -65,8 +68,15 @@ public class RegistrationActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
         btnRegister = findViewById(R.id.btn_register);
 
-        // --- Установка слушателя на кнопку ---
+        // Phone auto-format
+        etPhone.addTextChangedListener(new PhoneFormatWatcher(etPhone));
+
         btnRegister.setOnClickListener(v -> attemptRegistration());
+
+        TextView tvGoToLogin = findViewById(R.id.tv_go_to_login);
+        if (tvGoToLogin != null) {
+            tvGoToLogin.setOnClickListener(v -> finish());
+        }
     }
 
     private void attemptRegistration() {
@@ -79,7 +89,7 @@ public class RegistrationActivity extends AppCompatActivity {
         tilPassword.setError(null);
 
         // --- Получение данных из полей ввода ---
-        String phone = etPhone.getText().toString().trim();
+        String phone = PhoneFormatWatcher.raw(etPhone);
         String email = etEmail.getText().toString().trim();
         String firstName = etFirstName.getText().toString().trim();
         String lastName = etLastName.getText().toString().trim();
@@ -189,13 +199,13 @@ public class RegistrationActivity extends AppCompatActivity {
                         Log.d(TAG, "Тело ответа регистрации: " + registrationResponse);
 
                         if (registrationResponse.isSuccess()) {
-                            Log.d(TAG, "Регистрация на сервере успешна. Сообщение: " + registrationResponse.getMessage());
-                            // Сохраняем флаг, что пользователь зарегистрирован
+                            Log.d(TAG, "Регистрация успешна. Сообщение: " + registrationResponse.getMessage());
                             saveRegistrationFlag();
-
+                            // Auto-login: save auth state so the user is already logged in
+                            if (registrationResponse.getToken() != null) {
+                                saveLoginState(registrationResponse.getToken(), registrationResponse.getUserId());
+                            }
                             Toast.makeText(RegistrationActivity.this, "Регистрация успешна!", Toast.LENGTH_SHORT).show();
-
-                            // Переход к экрану установки PIN-кода
                             Intent intent = new Intent(RegistrationActivity.this, PinSetupActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
@@ -233,11 +243,17 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private void saveRegistrationFlag() {
-        SharedPreferences prefs = getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(KEY_IS_REGISTERED, true);
-        editor.apply();
-        Log.d(TAG, "Флаг KEY_IS_REGISTERED сохранен в SharedPreferences.");
+        getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().putBoolean(KEY_IS_REGISTERED, true).apply();
+    }
+
+    private void saveLoginState(String token, Integer userId) {
+        SharedPreferences.Editor editor = getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE).edit();
+        editor.putBoolean(KEY_IS_LOGGED_IN, true);
+        editor.putString(KEY_AUTH_TOKEN, token);
+        if (userId != null) editor.putInt(KEY_USER_ID, userId);
+        editor.commit();
+        Log.d(TAG, "Login state saved after registration.");
     }
 
     @Override

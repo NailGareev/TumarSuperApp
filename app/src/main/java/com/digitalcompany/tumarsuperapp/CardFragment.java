@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log; // Не забудьте импорт Log, если используете
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,10 +22,18 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.digitalcompany.tumarsuperapp.network.ApiClient;
+import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.CardResponse;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CardFragment extends Fragment {
 
@@ -55,6 +63,7 @@ public class CardFragment extends Fragment {
 
     // Состояние карты и CVV
     private SharedPreferences sharedPreferences;
+    private ApiService apiService;
     private String actualCvv;
     private boolean isCvvVisible = false;
 
@@ -93,6 +102,7 @@ public class CardFragment extends Fragment {
         // Получаем SharedPreferences безопасно
         if (getActivity() != null) {
             sharedPreferences = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            apiService = ApiClient.getApiService(getActivity().getApplicationContext());
         } else {
             Log.e(TAG, "getActivity() is null in onCreateView, cannot get SharedPreferences");
         }
@@ -267,29 +277,59 @@ public class CardFragment extends Fragment {
         transaction.commit();
     }
 
-    // Создание новой карты (с именем по умолчанию)
+    // Создание новой карты через API (с сохранением в SharedPreferences)
     private void createNewCard() {
         if (getContext() == null || sharedPreferences == null) {
             Log.e(TAG, "Cannot create card: Context or SharedPreferences is null");
             return;
         }
+        if (apiService != null) {
+            buttonCreateCard.setEnabled(false);
+            apiService.issueCard().enqueue(new Callback<CardResponse>() {
+                @Override
+                public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
+                    if (!isAdded() || getContext() == null) return;
+                    buttonCreateCard.setEnabled(true);
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        CardResponse.CardData card = response.body().getCard();
+                        if (card != null) {
+                            saveCardToPrefs(card.getCardNumber(), card.getExpiry(), card.getCvv());
+                            Toast.makeText(requireContext(), R.string.card_created_toast, Toast.LENGTH_LONG).show();
+                            displayCardDetails();
+                            return;
+                        }
+                    }
+                    createCardLocally();
+                }
+                @Override
+                public void onFailure(Call<CardResponse> call, Throwable t) {
+                    if (!isAdded() || getContext() == null) return;
+                    buttonCreateCard.setEnabled(true);
+                    createCardLocally();
+                }
+            });
+        } else {
+            createCardLocally();
+        }
+    }
 
-        String cardNumber = generateCardNumber();
-        String expiryDate = generateExpiryDate();
-        String cvv = generateCvv();
-
+    private void saveCardToPrefs(String cardNumber, String expiryDate, String cvv) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(KEY_CARD_EXISTS, true);
         editor.putString(KEY_CARD_NUMBER, cardNumber);
         editor.putString(KEY_CARD_EXPIRY, expiryDate);
         editor.putString(KEY_CARD_CVV, cvv);
         editor.putBoolean(KEY_CARD_BLOCKED, false);
-        // Устанавливаем имя по умолчанию из ресурсов
-        editor.putString(KEY_CARD_CUSTOM_NAME, getString(R.string.default_card_name_value)); // ИЗМЕНЕНО
-        editor.apply(); // Используем apply для асинхронности
+        editor.putString(KEY_CARD_CUSTOM_NAME, getString(R.string.default_card_name_value));
+        editor.apply();
+    }
 
+    private void createCardLocally() {
+        String cardNumber = generateCardNumber();
+        String expiryDate = generateExpiryDate();
+        String cvv = generateCvv();
+        saveCardToPrefs(cardNumber, expiryDate, cvv);
         Toast.makeText(requireContext(), R.string.card_created_toast, Toast.LENGTH_LONG).show();
-        // Немедленно обновляем UI, чтобы показать новую карту
         displayCardDetails();
     }
 
@@ -306,7 +346,7 @@ public class CardFragment extends Fragment {
 
     private String generateExpiryDate() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.YEAR, 5);
+        calendar.add(Calendar.YEAR, 2);
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/yy", Locale.getDefault());
         return dateFormat.format(calendar.getTime());
     }

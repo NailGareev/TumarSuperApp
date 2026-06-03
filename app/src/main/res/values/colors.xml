@@ -8,6 +8,27 @@
     <color name="grey_light">#F1F1F1</color>
     <color name="grey_text">#888888</color>
     <color name="grey_medium">#BDBDBD</color>
-    <color name="red_error">#FF0000</color>
-    <color name="green_success">#008000</color>
+    <color name="red_error">#D32F2F</color>
+    <color name="green_success">#2E7D32</color>
+
+    <!-- Travel section -->
+    <color name="travel_dark">#1A1A1A</color>
+    <color name="travel_surface">#2C2C2E</color>
+    <color name="travel_accent_red">#E53935</color>
+    <color name="travel_accent_blue">#1E88E5</color>
+    <color name="travel_gold">#FFC107</color>
+    <color name="travel_text_secondary">#9E9E9E</color>
+
+    <!-- App theme -->
+    <color name="app_bg">#F8F5FF</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="income_color">#2E7D32</color>
+    <color name="income_bg">#E8F5E9</color>
+    <color name="expense_color">#C62828</color>
+    <color name="expense_bg">#FFEBEE</color>
+    <color name="payment_color">#6200EE</color>
+    <color name="payment_bg">#EDE7F6</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="divider_color">#EEEEEE</color>
 </resources>
