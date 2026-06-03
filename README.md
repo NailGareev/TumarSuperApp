@@ -1,50 +1,64 @@
 # TumarSuperApp
 
-**TumarSuperApp** — казахстанский финтех-суперапп: цифровой кошелёк, денежные переводы, бронирование авиабилетов и туров, маркетплейс, оплата услуг. Целевая аудитория — рынок Казахстана и Центральной Азии (валюта KZT, номера +7).
+**TumarSuperApp** — казахстанский финтех-суперапп: цифровой кошелёк, денежные переводы, оплата услуг, бронирование авиабилетов и туров, встроенный маркетплейс Tumar Market. Целевая аудитория — рынок Казахстана и Центральной Азии (валюта KZT, номера +7).
 
 ---
 
 ## Содержание
 
-- [Экраны и функции](#экраны-и-функции)
+- [Функции и экраны](#функции-и-экраны)
 - [Стек технологий](#стек-технологий)
 - [Архитектура](#архитектура)
 - [Структура проекта](#структура-проекта)
 - [Установка и запуск](#установка-и-запуск)
 - [API](#api)
+- [Tumar Market API](#tumar-market-api)
 - [База данных](#база-данных)
 - [Безопасность](#безопасность)
 
 ---
 
-## Экраны и функции
+## Функции и экраны
 
 ### Вход и безопасность
-- **PIN-код** — 4-значный PIN при каждом запуске (PinEntryActivity — точка входа)
-- **Регистрация / Вход** — email + пароль, JWT-токен сохраняется в SharedPreferences
-- **Смена PIN** — доступна из профиля в любой момент
+- **PIN-код** — 4-значный PIN при каждом запуске (`PinEntryActivity` — точка входа приложения)
+- **Регистрация** — email, телефон (+7), имя, фамилия, возраст, пароль; после регистрации пользователь автоматически входит в систему без повторного ввода данных
+- **Вход** — email + пароль, JWT-токен (30 дней) сохраняется в `SharedPreferences`
+- **Смена PIN** — доступна из профиля
 
 ### Главный экран (Home)
-- Отображение баланса в KZT и номера телефона (загружается с API)
+- Баланс в KZT и номер телефона пользователя
 - Быстрые действия: **Пополнить**, **История**, **Перевести**, **Оплата**
-- Навигационные карточки в разделы **Путешествия** и **Tumar Market**
+- Карточки-навигаторы в **Путешествия** и **Tumar Market**
+- Колокольчик уведомлений в шапке (виден только на главном экране)
+
+### Уведомления
+Три вкладки, открываются по нажатию колокольчика:
+
+| Вкладка | Источник данных | Содержимое |
+|---|---|---|
+| Переводы | Node.js `/api/transactions` | Входящие и исходящие переводы с суммой, именем/телефоном контрагента и комментарием |
+| Tumar Market | Go Market `/api/notifications` | Коды выдачи заказов и уведомления маркетплейса |
+| Tumar Credit | — | Заглушка, готова к подключению кредитных продуктов |
 
 ### Виртуальная карта (Card)
-- Генерация виртуальной Visa-карты (номер, срок действия, CVV)
+- Генерация виртуальной Visa-карты (16 цифр, срок, CVV)
 - Просмотр CVV с автоскрытием через 60 секунд
-- Блокировка / разблокировка карты
-- Переименование карты
+- Блокировка / разблокировка и переименование карты
 
 ### Переводы (Transfer)
 Три режима в одном экране:
+
 | Режим | Описание |
 |---|---|
-| По номеру телефона | Поиск получателя по номеру +7, подтверждение, отправка |
-| По номеру карты | Ввод 16-значного номера карты |
-| Международный | Страна, имя, IBAN, SWIFT, цель платежа; валюты: USD, EUR, RUB, GBP |
+| По номеру телефона | Поиск получателя по номеру +7 с автоформатированием `+7 (XXX) XXX XX XX`, подтверждение и необязательный комментарий (до 200 символов) |
+| По номеру карты | Ввод 16-значного номера карты с автоформатированием |
+| Международный | Страна, имя получателя, IBAN, SWIFT, цель; валюты: USD, EUR, RUB, GBP |
+
+Комментарий к переводу сохраняется в `transactions.description` и виден обоим участникам в разделе «Уведомления → Переводы».
 
 ### Оплата услуг (Payments)
-30+ провайдеров в 6 категориях:
+30+ провайдеров в шести категориях:
 - **Мобильная связь** — Activ/Kcell, Beeline KZ, Tele2, Алтел и др.
 - **ЖКХ** — АЛСЕКО, водоканал, теплоснабжение, газ
 - **Интернет** — Beeline, АЛМА, MEGANET, Казахтелеком
@@ -53,52 +67,31 @@
 - **Транспорт** — Air Astana, FlyArystan, Yandex Такси
 
 ### История транзакций (History)
-- Полный список операций из API
-- Отображение суммы, типа и даты каждой транзакции
+- Полный список операций с суммой, типом и датой
+- Тип `MARKET_REFUND` отображается со статусом **«Возвращено»** и зелёной меткой
 
 ### Путешествия (Travel)
-Хаб с вращающимся баннером (смена каждые 3 сек.) и 4 разделами:
+Хаб с вращающимся баннером и четырьмя разделами:
 
-#### Авиабилеты (Aviation → Aviasales)
-- Выбор городов вылета/назначения (150+ городов с IATA-кодами)
-- Дата туда / обратно
-- Класс обслуживания (Эконом / Комфорт / Бизнес / Первый)
-- Открывает Aviasales с заполненными параметрами поиска
-
-#### Туры (TourSearch → ht.kz)
-- Выбор города вылета (Алматы, Астана, Шымкент и др.)
-- Выбор направления (100+ городов и стран)
-- Даты заезда и выезда, количество ночей
-- Открывает **ht.kz** с фильтрами `country`, `region`, `departCity`, `adult`, `daysFrom`, `daysTo`, `dateFrom`
-
-#### Карточки туров (на главном экране Travel)
-10 горящих и рекомендованных туров:
-- Анталья, Дубай, Пхукет, Мальдивы, Хургада, Бали, Барселона, Паттайя, Амальфи, Шарм-эш-Шейх
-- Фото с Unsplash, название отеля, звёзды, цена, рассрочка на 12 месяцев, скидка
-- Нажатие → ht.kz с поиском туров по конкретной стране/курорту
-- Вкладки **Рекомендуем** / **Горящие**
-
-#### Ж/Д билеты (TrainSearch)
-- Выбор городов (20+ городов ЦА и России)
-- Дата отправления, количество пассажиров
-- UI готов, внешняя интеграция в разработке
-
-#### Казахстан (Kazakhstan)
-8 внутренних направлений: Алматы, Астана, Шымкент, Боровое, Туркестан, Актау, Чарын, Шымбулак
+- **Авиабилеты** — выбор городов (150+ с IATA-кодами), даты, класс → Aviasales
+- **Туры** — город вылета, направление, даты, ночи → ht.kz
+- **Ж/Д билеты** — города ЦА и России, дата, пассажиры (UI готов)
+- **Казахстан** — 8 внутренних направлений
+- **Карточки туров** — 10 горящих и рекомендованных туров со стоимостью и рассрочкой
 
 ### Tumar Market
-- Встроенный маркетплейс на WebView (`http://10.0.2.2:8080`)
-- JavaScript-мост (TumarBridge) для нативного взаимодействия с Android
-- Автологин через инъекцию JWT-токена
-- 5 вкладок: Магазин, Каталог, Избранное, Корзина, Заказы
-- Оплата через Tumar Pay прямо из приложения
+- Встроенный мультивендорный маркетплейс в `WebView` (`http://10.0.2.2:8080`)
+- JavaScript-мост (`TumarBridge`) для нативного взаимодействия с Android
+- Автологин через инъекцию JWT-токена маркетплейса
+- **Покупка через Tumar Pay** — списание с кошелька через Node.js, создание заказа в Go
+- **Отмена заказа** — возврат средств на Tumar-кошелёк + отмена Go-заказа (транзакция `MARKET_REFUND`)
+- **Возврат товара** — покупатель прикладывает фото (2–10 шт.) и указывает причину; продавец принимает возврат или сразу переводит деньги
+- Портал продавца: управление товарами, заказами и возвратами
+- 5 вкладок для покупателя: Магазин, Каталог, Избранное, Корзина, Заказы
 
-### Акции (Promotions)
-- Вертикальный список промо-баннеров
-
-### Профиль (Profile)
+### Профиль
 - Смена PIN-кода
-- Выход из аккаунта (очистка SharedPreferences)
+- Выход из аккаунта (очистка токена и данных)
 
 ---
 
@@ -113,78 +106,92 @@
 | Сеть | Retrofit 2.9.0 + OkHttp 4.11.0 |
 | Изображения | Glide 4.16.0 |
 | Локальная БД | Room 2.6.1 |
-| Веб-интеграции | WebView (Aviasales, ht.kz, Tumar Market) |
-| Аутентификация | JWT в SharedPreferences + AuthInterceptor |
+| Аутентификация | JWT в SharedPreferences + `AuthInterceptor` |
+| Форматирование телефона | `PhoneFormatWatcher` (собственная реализация) |
 
-### Backend (Node.js)
+### Node.js Backend
 | Компонент | Технология |
 |---|---|
 | Среда | Node.js |
 | Фреймворк | Express.js 5.1.0 |
 | База данных | MySQL |
-| ORM / Драйвер | mysql2 3.14.1 |
-| Аутентификация | jsonwebtoken 9.0.2 |
-| Хэширование | bcryptjs 3.0.2 |
-| Прочее | cors 2.8.5, dotenv 16.5.0 |
+| Драйвер | mysql2 3.14.1 |
+| Аутентификация | jsonwebtoken 9.0.2 (30 дней) |
+| Хэширование паролей | bcryptjs 3.0.2 |
+| Прочее | cors, dotenv |
 
-### Tumar Market (фронтенд маркетплейса)
-- Отдельный веб-модуль в папке `tumar-market/`
-- Запускается на порту 8080
-- Интегрируется с Android через JavaScript-мост
+### Tumar Market
+| Компонент | Технология |
+|---|---|
+| Бэкенд | Go 1.21, Gin |
+| БД | MySQL (собственная схема) |
+| Аутентификация | JWT (HS256) |
+| Фронтенд | HTML / CSS / JS (без фреймворков) |
+| Порт | 8080 |
 
 ---
 
 ## Архитектура
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                    Android App                       │
-│                                                      │
-│  PinEntryActivity (Launcher)                         │
-│         │                                            │
-│  LoginActivity / RegistrationActivity                │
-│         │                                            │
-│  MainActivity ──── BottomNavigationView              │
-│    │  │  │  │  │                                     │
-│    │  │  │  │  └── PromotionsFragment                │
-│    │  │  │  └───── ProfileFragment                   │
-│    │  │  └──────── TravelFragment                    │
-│    │  │               ├── AviationFragment           │
-│    │  │               ├── TourSearchFragment         │
-│    │  │               ├── TrainSearchFragment        │
-│    │  │               ├── KazakhstanFragment         │
-│    │  │               └── FlightWebFragment (WebView)│
-│    │  └─────────── CardFragment                      │
-│    │                  └── CardManagementFragment      │
-│    └────────────── HomeFragment                      │
-│                       ├── PaymentsFragment           │
-│                       ├── TopUpFragment              │
-│                       ├── TransferFragment           │
-│                       ├── HistoryFragment            │
-│                       └── TumarMarketFragment (WebView)│
-│                                                      │
-│  network/ ──── Retrofit + OkHttp + AuthInterceptor   │
-│  adapter/ ──── RecyclerView адаптеры                 │
-│  db/      ──── Room (локальное хранение User)         │
-└──────────────────────────┬───────────────────────────┘
-                           │ HTTP/JSON (порт 3000)
-┌──────────────────────────▼───────────────────────────┐
-│              Node.js Backend (Express)               │
-│  /api/register  /api/login  /api/profile             │
-│  /api/transfer  /api/transactions  /api/topup        │
-│  /api/pay  /api/card  /api/tours  /api/market/*      │
-└──────────────────────────┬───────────────────────────┘
-                           │ SQL
-┌──────────────────────────▼───────────────────────────┐
-│                     MySQL                            │
-│       users | balances | transactions                │
-└──────────────────────────────────────────────────────┘
-                           
-┌─────────────────────────────────────────────────────┐
-│           Tumar Market (порт 8080)                  │
-│    Веб-маркетплейс + JavaScript-мост к Android      │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        Android App                          │
+│                                                             │
+│  PinEntryActivity (Launcher)                                │
+│  LoginActivity / RegistrationActivity                       │
+│                                                             │
+│  MainActivity                                               │
+│  ├── HomeFragment                                           │
+│  │   ├── NotificationsFragment (колокольчик)               │
+│  │   │   ├── Переводы (Node.js /api/transactions)          │
+│  │   │   ├── Tumar Market (Go /api/notifications)          │
+│  │   │   └── Tumar Credit (заглушка)                       │
+│  │   ├── TransferFragment (телефон / карта / международный) │
+│  │   ├── PaymentsFragment                                   │
+│  │   ├── TopUpFragment                                      │
+│  │   └── HistoryFragment                                    │
+│  ├── CardFragment                                           │
+│  ├── TravelFragment → AviationFragment / TourSearchFragment │
+│  ├── PromotionsFragment                                     │
+│  └── ProfileFragment                                        │
+│                                                             │
+│  TumarMarketFragment (WebView + TumarBridge)                │
+│                                                             │
+│  network/ ── Retrofit + OkHttp + AuthInterceptor            │
+└────────────┬────────────────────────────┬───────────────────┘
+             │ HTTP :3000                 │ HTTP :8080
+             ▼                           ▼
+┌────────────────────────┐  ┌────────────────────────────────┐
+│  Node.js Backend       │  │       Tumar Market (Go)        │
+│  Express + MySQL       │◄─┤  Gin + MySQL                   │
+│  :3000                 │  │  :8080                         │
+│                        │  │                                │
+│  /api/register         │  │  /api/auth/login               │
+│  /api/login            │  │  /api/auth/app-auto-login      │
+│  /api/profile          │  │  /api/orders                   │
+│  /api/transfer         │  │  /api/products                 │
+│  /api/transactions     │  │  /api/cart                     │
+│  /api/topup            │  │  /api/notifications            │
+│  /api/pay              │  │  /api/returns                  │
+│  /api/market/pay       │  │  /api/seller/*                 │
+│  /api/market/cancel    │  │                                │
+│  /api/market/return/   │  │  ← вызывает Node.js для       │
+│    process-refund      │  │    возврата средств            │
+└────────────┬───────────┘  └────────────────────────────────┘
+             │ SQL                        │ SQL
+             ▼                           ▼
+      ┌─────────────┐            ┌───────────────┐
+      │  MySQL      │            │  MySQL        │
+      │  (Node.js   │            │  (Go Market   │
+      │   схема)    │            │   схема)      │
+      └─────────────┘            └───────────────┘
 ```
+
+### Межсервисное взаимодействие
+- **Покупка Tumar Pay**: Android → `POST /api/market/pay` (Node.js списывает кошелёк) → Android → `POST /api/orders` (Go создаёт заказ с `tumar_ref`)
+- **Отмена**: Android → `POST /api/market/cancel` (Node.js возвращает деньги) + Android → `PUT /api/orders/:id/cancel` (Go меняет статус)
+- **Возврат товара**: Go → `POST localhost:3000/api/market/return/process-refund` с `app_secret` (server-to-server)
+- **Уведомления маркетплейса**: Android → `POST /api/auth/app-auto-login` (Go, с `app_secret`) → Android → `GET /api/notifications` (Go, с полученным JWT)
 
 ---
 
@@ -199,8 +206,10 @@ TumarSuperApp/
 │       │   ├── LoginActivity.java
 │       │   ├── RegistrationActivity.java
 │       │   ├── PinSetupActivity.java
-│       │   ├── PinEntryActivity.java          # Launcher
+│       │   ├── PinEntryActivity.java              # Launcher
+│       │   ├── PhoneFormatWatcher.java            # Форматирование +7 (XXX) XXX XX XX
 │       │   ├── HomeFragment.java
+│       │   ├── NotificationsFragment.java         # Колокольчик: 3 вкладки
 │       │   ├── CardFragment.java
 │       │   ├── CardManagementFragment.java
 │       │   ├── PaymentsFragment.java
@@ -209,45 +218,54 @@ TumarSuperApp/
 │       │   ├── HistoryFragment.java
 │       │   ├── ProfileFragment.java
 │       │   ├── PromotionsFragment.java
-│       │   ├── TravelFragment.java            # Хаб путешествий
-│       │   ├── AviationFragment.java          # Авиабилеты → Aviasales
-│       │   ├── TourSearchFragment.java        # Туры → ht.kz
-│       │   ├── TrainSearchFragment.java       # Ж/Д билеты
-│       │   ├── KazakhstanFragment.java        # Внутренний туризм
-│       │   ├── FlightWebFragment.java         # WebView для внешних сайтов
-│       │   ├── TumarMarketFragment.java       # Маркетплейс WebView
+│       │   ├── TravelFragment.java
+│       │   ├── AviationFragment.java
+│       │   ├── TourSearchFragment.java
+│       │   ├── TrainSearchFragment.java
+│       │   ├── KazakhstanFragment.java
+│       │   ├── FlightWebFragment.java
+│       │   ├── TumarMarketFragment.java           # WebView + TumarBridge
 │       │   ├── SecurityUtils.java
 │       │   ├── adapter/
+│       │   │   ├── TransactionAdapter.java        # MARKET_REFUND → «Возвращено»
 │       │   │   ├── TourCardAdapter.java
-│       │   │   ├── TransactionAdapter.java
 │       │   │   ├── PaymentsAdapter.java
 │       │   │   └── BannerAdapter.java
 │       │   ├── network/
-│       │   │   ├── ApiClient.java             # Retrofit singleton
-│       │   │   ├── ApiService.java            # 14 эндпоинтов
-│       │   │   ├── AuthInterceptor.java       # Авто-добавление токена
-│       │   │   └── models/                   # POJO для запросов/ответов
+│       │   │   ├── ApiClient.java
+│       │   │   ├── ApiService.java
+│       │   │   ├── AuthInterceptor.java
+│       │   │   └── models/
 │       │   └── db/
-│       │       ├── AppDatabase.java
-│       │       ├── entity/User.java
-│       │       └── dao/UserDao.java
 │       └── res/
-│           ├── layout/                        # 30 XML-макетов
-│           ├── drawable/                      # Иконки, баннеры, фоны
-│           ├── values/                        # Цвета, строки, темы
-│           ├── anim/                          # Анимации переходов
-│           └── xml/network_security_config.xml
+│           ├── layout/                            # XML-макеты
+│           ├── drawable/                          # Иконки, фоны, векторы
+│           ├── menu/top_app_bar_menu.xml          # Колокольчик в шапке
+│           ├── values/                            # Цвета, строки, темы
+│           └── anim/
 │
 ├── tumar-super-app-backend/
-│   ├── server.js                              # Основной файл сервера
+│   ├── server.js                                  # Единственный файл сервера
+│   ├── setup_db.py                                # Скрипт создания схемы
 │   ├── package.json
-│   └── .env                                   # Конфигурация (DB, JWT)
+│   └── .env
 │
-├── tumar-market/                              # Веб-маркетплейс
-├── tumar_super_app_db.sql                     # Схема базы данных
+├── tumar-market/
+│   ├── go/
+│   │   ├── main.go                                # Маршруты Gin
+│   │   ├── database.go                            # Миграции таблиц
+│   │   ├── auth.go
+│   │   ├── order.go                               # Заказы + Tumar Pay отмена
+│   │   ├── returns.go                             # Возвраты товаров
+│   │   ├── models.go
+│   │   └── go.mod
+│   ├── html/                                      # Страницы маркетплейса
+│   ├── js/                                        # Клиентский JS
+│   └── css/
+│
+├── tumar_super_app_db.sql                         # Схема Node.js БД
 ├── build.gradle.kts
-├── settings.gradle.kts
-└── gradle.properties
+└── settings.gradle.kts
 ```
 
 ---
@@ -257,46 +275,57 @@ TumarSuperApp/
 ### 1. База данных (MySQL)
 
 ```bash
+# Создать схему для Node.js backend
 mysql -u root -p < tumar_super_app_db.sql
 ```
 
-### 2. Бэкенд
+Схему Go Market создаёт сам при первом запуске через `database.go`.
+
+### 2. Node.js Backend
 
 ```bash
 cd tumar-super-app-backend
-
 npm install
 
-# Настроить .env:
-# DB_HOST=localhost
-# DB_USER=root
-# DB_PASSWORD=
-# DB_NAME=tumar_super_app_db
-# PORT=3000
-# JWT_SECRET=замените_на_надёжный_ключ
+# Создать .env:
+cat > .env << 'EOF'
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=tumar_super_app_db
+PORT=3000
+JWT_SECRET=замените_на_надёжный_ключ
+EOF
 
 node server.js
+# → http://localhost:3000
 ```
 
-### 3. Tumar Market (маркетплейс)
+### 3. Tumar Market (Go)
 
 ```bash
-cd tumar-market
-npm install
-npm start   # запускается на порту 8080
+cd tumar-market/go
+go mod tidy
+go run .
+# → http://localhost:8080
+```
+
+Переменные среды для Go (или `.env` рядом с бинарником):
+```
+DB_DSN=root:@tcp(localhost:3306)/tumar_market_db
+JWT_SECRET=market_secret
+PORT=8080
 ```
 
 ### 4. Android-приложение
 
 ```bash
-# Сборка
-./gradlew build
-
-# Установка на эмулятор/устройство
+./gradlew assembleDebug
 ./gradlew installDebug
 ```
 
-> **Важно:** Бэкенд слушает по адресу `http://10.0.2.2:3000/` (стандартный адрес хоста для эмулятора Android). При запуске на физическом устройстве замените адрес в `ApiClient.java` на IP вашего компьютера в локальной сети.
+> **Эмулятор**: бэкенды доступны по адресам `http://10.0.2.2:3000` и `http://10.0.2.2:8080`.  
+> **Физическое устройство**: замените `10.0.2.2` на IP компьютера в локальной сети в `ApiClient.java` и `TumarMarketFragment.java`.
 
 ---
 
@@ -304,59 +333,127 @@ npm start   # запускается на порту 8080
 
 Все защищённые эндпоинты требуют заголовка `Authorization: Bearer <token>`.
 
+### Аутентификация и профиль
+
 | Метод | Эндпоинт | Описание | Авторизация |
 |---|---|---|---|
-| POST | `/api/register` | Регистрация | — |
-| POST | `/api/login` | Вход, получение токена | — |
-| GET | `/api/profile` | Данные профиля (телефон, баланс) | JWT |
-| POST | `/api/transfer` | Перевод средств | JWT |
-| GET | `/api/transactions` | История транзакций | JWT |
-| POST | `/api/topup` | Пополнение баланса | JWT |
-| POST | `/api/pay` | Оплата услуг | JWT |
-| GET | `/api/lookup-phone` | Поиск пользователя по телефону | JWT |
-| GET | `/api/card` | Данные виртуальной карты | JWT |
-| POST | `/api/card/issue` | Выпуск новой карты | JWT |
-| GET | `/api/tours` | Список туров | JWT |
-| GET | `/api/tours/search` | Поиск туров | JWT |
-| POST | `/api/market/pay` | Оплата в маркетплейсе | JWT |
-| GET | `/api/market/orders` | Заказы в маркетплейсе | JWT |
+| POST | `/api/register` | Регистрация + автовыдача JWT | — |
+| POST | `/api/login` | Вход, получение токена (30 дней) | — |
+| GET | `/api/profile` | Телефон, баланс, валюта | JWT |
 
-### Примеры
+### Кошелёк и транзакции
+
+| Метод | Эндпоинт | Описание | Авторизация |
+|---|---|---|---|
+| POST | `/api/topup` | Пополнение баланса | JWT |
+| POST | `/api/transfer` | Перевод по телефону с комментарием | JWT |
+| GET | `/api/transactions` | История (TRANSFER, TOPUP, PAYMENT, MARKET_REFUND) | JWT |
+| GET | `/api/lookup-phone` | Поиск пользователя по `?phone=` | JWT |
+
+### Оплата
+
+| Метод | Эндпоинт | Описание | Авторизация |
+|---|---|---|---|
+| POST | `/api/pay` | Оплата услуги (`service`, `accountNumber`, `amount`) | JWT |
+
+### Виртуальная карта
+
+| Метод | Эндпоинт | Описание | Авторизация |
+|---|---|---|---|
+| GET | `/api/card` | Данные карты (номер, срок, CVV зашифрован) | JWT |
+| POST | `/api/card/issue` | Выпуск новой карты | JWT |
+
+### Tumar Market (интеграция)
+
+| Метод | Эндпоинт | Описание | Авторизация |
+|---|---|---|---|
+| POST | `/api/market/pay` | Списание с кошелька при покупке | JWT |
+| GET | `/api/market/orders` | Список покупок через Tumar Pay | JWT |
+| POST | `/api/market/cancel` | Возврат средств при отмене заказа | JWT |
+| POST | `/api/market/return/process-refund` | Возврат средств (server-to-server от Go) | `app_secret` |
+
+### Примеры запросов
 
 **Регистрация**
 ```json
 POST /api/register
 {
-  "name": "Асель Нурова",
+  "firstName": "Асель",
+  "lastName": "Нурова",
   "email": "asel@example.com",
   "phone": "+77001234567",
   "age": 28,
   "password": "securepassword"
 }
 ```
+Ответ: `{ "success": true, "userId": 42, "token": "<jwt>" }`
 
-**Перевод по телефону**
+**Перевод с комментарием**
 ```json
 POST /api/transfer
 {
-  "recipient_phone": "+77009876543",
-  "amount": 5000
+  "recipientPhone": "+77009876543",
+  "amount": 5000,
+  "description": "За обед"
 }
 ```
 
 ---
 
+## Tumar Market API
+
+Базовый URL: `http://localhost:8080/api`  
+Аутентификация: `Authorization: Bearer <market_jwt>`
+
+### Покупатель
+
+| Метод | Эндпоинт | Описание |
+|---|---|---|
+| POST | `/auth/login` | Вход |
+| POST | `/auth/app-auto-login` | Автологин по `phone` + `app_secret` |
+| GET | `/products` | Каталог товаров |
+| GET/POST | `/cart` | Корзина |
+| POST | `/orders` | Создание заказа |
+| GET | `/orders` | Список заказов |
+| PUT | `/orders/:id/cancel` | Отмена заказа |
+| POST | `/returns` | Заявка на возврат (фото + причина) |
+| GET | `/returns` | Мои возвраты |
+| GET | `/notifications` | Уведомления (коды выдачи) |
+
+### Продавец
+
+| Метод | Эндпоинт | Описание |
+|---|---|---|
+| GET | `/seller/orders` | Заказы в магазине продавца |
+| GET | `/seller/returns` | Заявки на возврат |
+| PUT | `/seller/returns/:id/accept` | Принять возврат (→ курьер) |
+| PUT | `/seller/returns/:id/refund` | Вернуть деньги покупателю |
+
+---
+
 ## База данных
 
-Схема определена в `tumar_super_app_db.sql`:
+### Node.js (tumar_super_app_db)
 
 ```sql
-users        (id, name, email, phone, age, password_hash)
-balances     (id, user_id, balance, currency)
-transactions (id, sender_id, recipient_id, amount, type, created_at)
+users         (id, first_name, last_name, email, phone, age, password_hash)
+balances      (id, user_id, balance, currency)
+transactions  (id, sender_id, recipient_id, amount, currency,
+               transaction_type ENUM('TRANSFER','TOPUP','PAYMENT','MARKET_REFUND'),
+               description, timestamp)
+cards         (id, user_id, card_number, cvv_encrypted, expiry_encrypted)
+market_purchases (id, user_id, order_ref, amount, items_json, address, status)
 ```
 
-Переводы выполняются в рамках транзакций БД с блокировкой строк (`SELECT ... FOR UPDATE`) для защиты от состояния гонки.
+Переводы выполняются в транзакциях БД с `SELECT ... FOR UPDATE` для защиты от гонки.
+
+### Tumar Market (Go, создаётся автоматически)
+
+```
+users, stores, products, product_sellers, categories
+cart_items, orders, order_items, favorites
+return_requests, notifications
+```
 
 ---
 
@@ -364,11 +461,12 @@ transactions (id, sender_id, recipient_id, amount, type, created_at)
 
 | Механизм | Реализация |
 |---|---|
-| Пароли | bcrypt, 10 раундов соли |
-| Сессии | JWT, срок действия 24 часа |
-| Устройство | 4-значный PIN (хэш в SharedPreferences) |
-| HTTP-запросы | AuthInterceptor автоматически добавляет Bearer-токен |
-| CVV карты | Отображается максимум 60 секунд, затем скрывается |
-| Сеть | `network_security_config.xml` разрешает HTTP только для localhost |
+| Пароли | bcrypt, 10 раундов |
+| Сессии | JWT, 30 дней |
+| PIN | SHA-256 хэш в `PinSecurityPrefs` |
+| Запросы | `AuthInterceptor` добавляет Bearer-токен ко всем запросам |
+| CVV | AES-256-CBC шифрование; отображается максимум 60 секунд |
+| HTTP | `network_security_config.xml` разрешает cleartext только для `10.0.2.2` |
+| Межсервис | Go Market → Node.js через `app_secret = "tumar_app_secret_2024"` |
 
-> **Перед деплоем в продакшн:** замените `JWT_SECRET` в `.env` на криптографически стойкий ключ и переведите все соединения на HTTPS.
+> **Перед деплоем в продакшн:** замените `JWT_SECRET` и `app_secret` на криптографически стойкие ключи, переведите все соединения на HTTPS, ограничьте CORS конкретными доменами.
