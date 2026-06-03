@@ -278,6 +278,20 @@ func runMigrations() {
 			FOREIGN KEY (user_id) REFERENCES users(id),
 			FOREIGN KEY (product_id) REFERENCES products(id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+
+		`CREATE TABLE IF NOT EXISTS return_requests (
+			id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+			order_id    BIGINT NOT NULL,
+			user_id     BIGINT NOT NULL,
+			reason      TEXT NOT NULL,
+			photos_json TEXT NOT NULL DEFAULT '[]',
+			status      ENUM('CREATED','COURIER_PENDING','IN_TRANSIT','PENDING_DECISION','REFUNDED') DEFAULT 'CREATED',
+			created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at  TIMESTAMP NULL DEFAULT NULL,
+			UNIQUE KEY unique_return_per_order (order_id, user_id),
+			FOREIGN KEY (order_id) REFERENCES orders(id),
+			FOREIGN KEY (user_id) REFERENCES users(id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 	}
 
 	for _, m := range migrations {

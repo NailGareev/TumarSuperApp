@@ -12,6 +12,7 @@ function switchTab(name) {
 
   if (name === 'products') loadSellerProducts();
   if (name === 'orders') loadSellerOrders();
+  if (name === 'returns') loadSellerReturns();
   if (name === 'store') loadStoreSettings();
 }
 
@@ -370,6 +371,102 @@ async function loadStoreSettings() {
 }
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── Seller Returns ─────────────────────────────────────────────
+
+const sellerReturnStatusLabels = {
+  CREATED:          { text: 'Новая заявка',              color: '#1976d2' },
+  COURIER_PENDING:  { text: 'Ожидает курьера',           color: '#e65100' },
+  IN_TRANSIT:       { text: 'В пути к продавцу',         color: '#7b1fa2' },
+  PENDING_DECISION: { text: 'Ожидает решения',           color: '#f57c00' },
+  REFUNDED:         { text: 'Возврат совершён',          color: '#2e7d32' },
+};
+
+async function loadSellerReturns() {
+  const el = document.getElementById('seller-returns-list');
+  el.innerHTML = '<div class="loading-wrapper"><div class="spinner"></div></div>';
+
+  const res = await apiFetch('/seller/returns');
+  if (!res?.ok) { el.innerHTML = '<p style="color:var(--red)">Ошибка загрузки</p>'; return; }
+
+  const list = res.data.returns;
+  if (!list.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <h3>Заявок на возврат нет</h3>
+        <p>Здесь появятся заявки от покупателей</p>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(r => {
+    const st = sellerReturnStatusLabels[r.status] || { text: r.status, color: '#666' };
+    let photos = [];
+    try { photos = JSON.parse(r.photos_json); } catch(e) {}
+
+    const photosHtml = photos.length ? `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
+        ${photos.map(b64 => `<img src="data:image/jpeg;base64,${b64}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-200)">`).join('')}
+      </div>` : '';
+
+    const acceptBtn = r.status === 'CREATED' ? `
+      <button class="btn btn-outline btn-sm" onclick="sellerAcceptReturn(${r.id}, this)">
+        ✅ Принять на проверку
+      </button>` : '';
+
+    const refundBtn = r.status !== 'REFUNDED' ? `
+      <button class="btn btn-primary btn-sm" style="background:var(--green,#2e7d32)" onclick="sellerRefundReturn(${r.id}, ${r.order_total}, this)">
+        💸 Вернуть деньги
+      </button>` : '';
+
+    return `
+      <div style="border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <span style="font-weight:700;font-size:15px">Заказ #${r.order_id}</span>
+            <span style="margin-left:10px;font-size:13px;color:var(--gray-500)">📞 ${r.user_phone}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:13px;color:var(--gray-400)">${formatDate(r.created_at)}</span>
+            <span style="font-size:14px;font-weight:700;color:var(--red)">-${formatPrice(r.order_total)}</span>
+          </div>
+        </div>
+        <div style="display:inline-block;margin:8px 0;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;background:${st.color}">${st.text}</div>
+        <div style="font-size:13px;color:var(--gray-700);margin-bottom:4px"><strong>Причина:</strong> ${r.reason}</div>
+        ${photosHtml}
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          ${acceptBtn}
+          ${refundBtn}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function sellerAcceptReturn(returnId, btn) {
+  btn.disabled = true;
+  const res = await apiFetch(`/seller/returns/${returnId}/accept`, { method: 'PUT' });
+  if (res?.ok) {
+    showToast('Заявка принята. Покупатель передаст товар курьеру.', 'success');
+    loadSellerReturns();
+  } else {
+    btn.disabled = false;
+    showToast(res?.data?.error || 'Ошибка', 'error');
+  }
+}
+
+async function sellerRefundReturn(returnId, amount, btn) {
+  if (!confirm(`Вернуть ${formatPrice(amount)} покупателю?`)) return;
+  btn.disabled = true;
+  const res = await apiFetch(`/seller/returns/${returnId}/refund`, { method: 'PUT' });
+  if (res?.ok) {
+    showToast('Деньги успешно возвращены покупателю', 'success');
+    loadSellerReturns();
+  } else {
+    btn.disabled = false;
+    showToast(res?.data?.error || 'Ошибка перевода средств', 'error');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   loadDashboard();

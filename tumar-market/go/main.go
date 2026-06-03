@@ -143,6 +143,18 @@ func main() {
 	orders.GET("/:id", getOrderHandler)
 	orders.PUT("/:id/cancel", cancelOrderHandler)
 
+	// Returns (buyer)
+	returns := api.Group("/returns")
+	returns.Use(authMiddleware())
+	returns.POST("", createReturnHandler)
+	returns.GET("", getMyReturnsHandler)
+	returns.PUT("/:id/courier-sent", markCourierSentHandler)
+
+	// Returns (seller)
+	seller.GET("/returns", getSellerReturnsHandler)
+	seller.PUT("/returns/:id/accept", acceptReturnHandler)
+	seller.PUT("/returns/:id/refund", refundReturnHandler)
+
 	// Upload endpoint
 	api.POST("/upload", authMiddleware(), uploadHandler)
 

@@ -718,6 +718,52 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/market/return/process-refund — server-to-server: Go market refunds buyer wallet
+app.post('/api/market/return/process-refund', async (req, res) => {
+    const { buyer_phone, amount, app_secret } = req.body;
+    if (app_secret !== 'tumar_app_secret_2024') {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!buyer_phone || !amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ success: false, message: 'Некорректные данные' });
+    }
+
+    const parsedAmount = parseFloat(amount);
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [userRows] = await connection.execute(
+            'SELECT id FROM users WHERE phone_number = ? LIMIT 1', [buyer_phone]);
+        if (!userRows.length) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Покупатель не найден' });
+        }
+        const buyerId = userRows[0].id;
+
+        const [balRows] = await connection.execute(
+            'SELECT currency FROM balances WHERE user_id = ?', [buyerId]);
+        const currency = balRows.length ? (balRows[0].currency || 'KZT') : 'KZT';
+
+        await connection.execute(
+            'UPDATE balances SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?',
+            [parsedAmount, buyerId]);
+        await connection.execute(
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
+            [buyerId, parsedAmount, currency, 'MARKET_REFUND', 'Возврат товара — Tumar Market']);
+
+        await connection.commit();
+        res.json({ success: true, refunded: parsedAmount });
+    } catch (err) {
+        if (connection) await connection.rollback();
+        console.error('Process refund error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка возврата средств' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // GET /api/tours - Список активных туров (публичный)
 app.get('/api/tours', async (req, res) => {
     let connection;

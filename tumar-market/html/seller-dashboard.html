@@ -24,6 +24,7 @@
         <a href="#" class="seller-nav-item active" data-tab="dashboard">📊 Дашборд</a>
         <a href="#" class="seller-nav-item" data-tab="products">📦 Мои товары</a>
         <a href="#" class="seller-nav-item" data-tab="orders">🛍 Заказы</a>
+        <a href="#" class="seller-nav-item" data-tab="returns">↩ Возвраты</a>
         <a href="#" class="seller-nav-item" data-tab="store">🏪 Мой магазин</a>
         <a href="/seller/add-product" class="seller-nav-item highlight">+ Добавить товар</a>
       </nav>
@@ -89,6 +90,14 @@
           <div class="tab" onclick="filterSellerOrders('archive', event)">Архив</div>
         </div>
         <div id="seller-orders-list">
+          <div class="loading-wrapper"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- RETURNS TAB -->
+      <div id="tab-returns" class="tab-content">
+        <h1 class="page-title">Заявки на возврат</h1>
+        <div id="seller-returns-list">
           <div class="loading-wrapper"><div class="spinner"></div></div>
         </div>
       </div>
