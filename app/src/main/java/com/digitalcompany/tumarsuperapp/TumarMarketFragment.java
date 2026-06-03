@@ -352,7 +352,7 @@ public class TumarMarketFragment extends Fragment {
             + "var order=(window.allOrders||[]).find(function(o){return o.id===orderId;});"
             + "if(order&&order.payment_method==='tumar_pay'&&order.tumar_ref){"
             + "if(confirm('Отменить заказ? Средства вернутся на Tumar счёт')){"
-            + "TumarBridge.cancelTumarPayOrder(order.tumar_ref,String(order.total));"
+            + "TumarBridge.cancelTumarPayOrder(order.tumar_ref,String(order.total),String(order.id));"
             + "}"
             + "}else{"
             + "if(typeof _orig==='function')_orig(orderId);"
@@ -617,7 +617,7 @@ public class TumarMarketFragment extends Fragment {
 
     // ── Cancel Tumar Pay order (called from JS bridge) ─────────────────────────
 
-    private void cancelTumarPayOrderAsync(String orderRef) {
+    private void cancelTumarPayOrderAsync(String orderRef, String goOrderId) {
         SharedPreferences prefs = requireContext().getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE);
         String appToken = prefs.getString(KEY_TOKEN, "");
         if (appToken.isEmpty()) { showToastSafe("Ошибка авторизации"); return; }
@@ -632,6 +632,7 @@ public class TumarMarketFragment extends Fragment {
         });
 
         try {
+            // Step 1: refund via Node.js wallet
             JSONObject body = new JSONObject();
             body.put("order_ref", orderRef);
             Request req = new Request.Builder()
@@ -644,16 +645,31 @@ public class TumarMarketFragment extends Fragment {
                 public void onResponse(@NonNull Call call, @NonNull Response resp) throws IOException {
                     boolean ok = resp.isSuccessful();
                     resp.close();
+                    // Step 2: cancel Go market order regardless of wallet result
+                    // (wallet may already be refunded if called twice)
+                    if (goOrderId != null && !goOrderId.isEmpty() && marketToken != null) {
+                        try {
+                            Request goReq = new Request.Builder()
+                                .url(MARKET_URL + "/api/orders/" + goOrderId + "/cancel")
+                                .header("Authorization", "Bearer " + marketToken)
+                                .put(RequestBody.create("{}", MediaType.parse("application/json")))
+                                .build();
+                            httpClient.newCall(goReq).enqueue(new Callback() {
+                                @Override public void onResponse(@NonNull Call c, @NonNull Response r) throws IOException { r.close(); }
+                                @Override public void onFailure(@NonNull Call c, @NonNull IOException e) {}
+                            });
+                        } catch (Exception ignored) {}
+                    }
                     mainHandler.post(() -> {
                         if (progressHolder[0] != null && progressHolder[0].isShowing())
                             progressHolder[0].dismiss();
                         if (!isAdded()) return;
                         if (ok) {
                             showToastSafe("Заказ отменён. Средства возвращены на Tumar счёт.");
-                            webView.reload();
                         } else {
                             showToastSafe("Не удалось отменить заказ");
                         }
+                        webView.reload();
                     });
                 }
                 @Override
@@ -760,9 +776,9 @@ public class TumarMarketFragment extends Fragment {
         }
 
         @JavascriptInterface
-        public void cancelTumarPayOrder(String orderRef, String totalStr) {
+        public void cancelTumarPayOrder(String orderRef, String totalStr, String goOrderId) {
             if (getContext() == null || orderRef == null || orderRef.isEmpty()) return;
-            cancelTumarPayOrderAsync(orderRef);
+            cancelTumarPayOrderAsync(orderRef, goOrderId);
         }
     }
 }

@@ -20,6 +20,7 @@ async function loadOrders() {
 
   if (!res?.ok) return;
   allOrders = res.data;
+  window.allOrders = allOrders; // expose for Android cancel bridge
   renderOrders(allOrders);
 }
 
