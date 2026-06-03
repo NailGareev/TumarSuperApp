@@ -50,20 +50,21 @@ public class PhoneFormatWatcher implements TextWatcher {
 
     private static String format(String digits) {
         if (digits.isEmpty()) return "";
-        StringBuilder sb = new StringBuilder("+7");
         int len = digits.length();
-        if (len > 1) {
-            sb.append(" (").append(digits, 1, Math.min(4, len));
-            if (len >= 4) {
-                sb.append(") ").append(digits, 4, Math.min(7, len));
-                if (len >= 7) {
-                    sb.append(" ").append(digits, 7, Math.min(9, len));
-                    if (len >= 9) {
-                        sb.append(" ").append(digits, 9, Math.min(11, len));
-                    }
-                }
-            }
-        }
+        StringBuilder sb = new StringBuilder("+7");
+        if (len <= 1) return sb.toString();
+
+        // Area code — open paren, up to 3 digits; close paren + space only when group 3 starts
+        sb.append(" (").append(digits, 1, Math.min(4, len));
+        if (len <= 4) return sb.toString();
+
+        sb.append(") ").append(digits, 4, Math.min(7, len));
+        if (len <= 7) return sb.toString();
+
+        sb.append(" ").append(digits, 7, Math.min(9, len));
+        if (len <= 9) return sb.toString();
+
+        sb.append(" ").append(digits, 9, Math.min(11, len));
         return sb.toString();
     }
 
