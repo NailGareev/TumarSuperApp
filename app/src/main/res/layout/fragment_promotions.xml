@@ -84,7 +84,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|start"
                     android:layout_margin="12dp"
-                    android:background="@drawable/bg_avatar_edit_badge"
+                    android:background="@drawable/bg_badge_gold"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp"
                     android:paddingTop="3dp"
