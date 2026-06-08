@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone         VARCHAR(20)  NOT NULL UNIQUE,
     age           INT          NULL,
     password_hash VARCHAR(255) NOT NULL,
+    avatar_url    VARCHAR(500) NULL        COMMENT 'URL фото профиля (хранится в img/)',
     created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Пользователи приложения'

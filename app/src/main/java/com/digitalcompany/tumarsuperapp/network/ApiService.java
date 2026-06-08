@@ -21,14 +21,21 @@ import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
 import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
+import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateRequest;
+import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateResponse;
+import com.digitalcompany.tumarsuperapp.network.models.AvatarUploadResponse;
 // --- КОНЕЦ: Импорты ---
 
 
 // Импорты Retrofit аннотаций
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 /**
@@ -115,6 +122,13 @@ public interface ApiService {
 
     @GET("api/rates")
     Call<CurrencyRatesResponse> getCurrencyRates();
+
+    @PUT("api/profile")
+    Call<ProfileUpdateResponse> updateProfile(@Body ProfileUpdateRequest request);
+
+    @Multipart
+    @POST("api/profile/avatar")
+    Call<AvatarUploadResponse> uploadAvatar(@Part MultipartBody.Part avatar);
 
     // --- КОНЕЦ: Добавленные методы ---
 

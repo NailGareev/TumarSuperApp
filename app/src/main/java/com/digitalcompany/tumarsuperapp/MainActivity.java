@@ -266,10 +266,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         boolean isCardRoot = currentTabId == R.id.navigation_card
                 && getSupportFragmentManager().getBackStackEntryCount() == 0;
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        boolean isPromotionsRoot = currentTabId == R.id.navigation_promotions
+                && getSupportFragmentManager().getBackStackEntryCount() == 0;
         boolean isFullScreen = current instanceof TumarMarketFragment
                 || current instanceof QrScanFragment
-                || current instanceof CardManagementFragment;
-        appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isFullScreen) ? View.GONE : View.VISIBLE);
+                || current instanceof CardManagementFragment
+                || current instanceof PromoDetailFragment;
+        appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
     public void shouldDisplayHomeUp() {
