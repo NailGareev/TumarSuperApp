@@ -24,6 +24,7 @@ import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
 import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateRequest;
 import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateResponse;
 import com.digitalcompany.tumarsuperapp.network.models.AvatarUploadResponse;
+import com.digitalcompany.tumarsuperapp.network.models.PromotionsListResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -129,6 +130,9 @@ public interface ApiService {
     @Multipart
     @POST("api/profile/avatar")
     Call<AvatarUploadResponse> uploadAvatar(@Part MultipartBody.Part avatar);
+
+    @GET("api/promotions")
+    Call<PromotionsListResponse> getPromotions();
 
     // --- КОНЕЦ: Добавленные методы ---
 

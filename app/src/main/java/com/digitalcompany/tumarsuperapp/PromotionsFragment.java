@@ -8,84 +8,68 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.digitalcompany.tumarsuperapp.network.ApiClient;
+import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.Promotion;
+import com.digitalcompany.tumarsuperapp.network.models.PromotionsListResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class PromotionsFragment extends Fragment {
 
     private static final String[] FILTER_TABS = {"Все", "Кэшбэк", "Кредиты", "Партнёры", "Новые"};
     private int activeFilterIndex = 0;
-
-    private static class PromoItem {
-        final String tag, title, subtitle, badge;
-        final boolean hot;
-        final String stat1V, stat1L, stat2V, stat2L, stat3V, stat3L;
-        final String description, terms;
-
-        PromoItem(String tag, String title, String subtitle, String badge, boolean hot,
-                  String s1v, String s1l, String s2v, String s2l, String s3v, String s3l,
-                  String desc, String terms) {
-            this.tag = tag; this.title = title; this.subtitle = subtitle;
-            this.badge = badge; this.hot = hot;
-            this.stat1V = s1v; this.stat1L = s1l; this.stat2V = s2v; this.stat2L = s2l;
-            this.stat3V = s3v; this.stat3L = s3l;
-            this.description = desc; this.terms = terms;
-        }
-    }
-
-    private static final PromoItem[] ALL_PROMOS = {
-        new PromoItem(
-            "Кэшбэк", "До 7% кэшбэк",
-            "На все покупки в Tumar Market до 30 июня",
-            "Кэшбэк · До 30 июня", true,
-            "7%", "Кэшбэк", "30 июня", "До", "₸ 50К", "Лимит",
-            "Получайте до 7% кэшбэка на все покупки в Tumar Market при оплате картой Tumar. " +
-            "Кэшбэк начисляется в течение 3 рабочих дней после совершения покупки.",
-            "• Акция действует для всех держателей карты Tumar\n" +
-            "• Максимальная сумма кэшбэка — ₸ 50 000 в месяц\n" +
-            "• Кэшбэк не начисляется на покупки, оплаченные бонусами"
-        ),
-        new PromoItem(
-            "Кредит", "0% на переводы",
-            "Бесплатные переводы внутри Tumar Bank",
-            "Кредит · Без ограничений", false,
-            "0%", "Комиссия", "∞", "Лимит", "30 дней", "Период",
-            "Переводите средства другим клиентам Tumar Bank абсолютно бесплатно. " +
-            "Никаких скрытых комиссий и лимитов на количество переводов в сутки.",
-            "• Акция действует для переводов между клиентами Tumar\n" +
-            "• Одна транзакция — от ₸ 1 до ₸ 5 000 000\n" +
-            "• Переводы в другие банки тарифицируются стандартно"
-        ),
-        new PromoItem(
-            "Партнёр", "Скидка 15% в AirAstana",
-            "При оплате картой Tumar",
-            "Партнёр · До 31 декабря", false,
-            "15%", "Скидка", "31 дек", "До", "Рейсы", "Тип",
-            "Покупайте авиабилеты AirAstana со скидкой 15% при оплате картой Tumar. " +
-            "Скидка применяется автоматически на сайте и в приложении AirAstana.",
-            "• Скидка действует на все направления AirAstana\n" +
-            "• Максимальная скидка — ₸ 30 000 на один билет\n" +
-            "• Нельзя совмещать с другими промокодами"
-        )
-    };
+    private List<Promotion> allPromos = new ArrayList<>();
+    private View rootView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_promotions, container, false);
-
-        buildFilterTabs(view);
-        buildPromoCards(view, "Все");
-
-        return view;
+        rootView = inflater.inflate(R.layout.fragment_promotions, container, false);
+        buildFilterTabs();
+        fetchPromotions();
+        return rootView;
     }
 
-    private void buildFilterTabs(View root) {
-        LinearLayout container = root.findViewById(R.id.filter_tabs_container);
+    private void fetchPromotions() {
+        ApiService api = ApiClient.getApiService(requireActivity().getApplicationContext());
+        api.getPromotions().enqueue(new Callback<PromotionsListResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PromotionsListResponse> call,
+                                   @NonNull Response<PromotionsListResponse> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    allPromos = response.body().getPromotions();
+                    if (allPromos == null) allPromos = new ArrayList<>();
+                    buildPromoCards(FILTER_TABS[activeFilterIndex]);
+                } else {
+                    Toast.makeText(getContext(), "Не удалось загрузить акции", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PromotionsListResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(getContext(), "Нет соединения с сервером", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void buildFilterTabs() {
+        LinearLayout container = rootView.findViewById(R.id.filter_tabs_container);
         container.removeAllViews();
 
         for (int i = 0; i < FILTER_TABS.length; i++) {
@@ -103,13 +87,12 @@ public class PromotionsFragment extends Fragment {
             chip.setTextSize(13);
             chip.setTypeface(null, Typeface.BOLD);
             chip.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
-
             updateChipStyle(chip, i == activeFilterIndex);
 
             chip.setOnClickListener(v -> {
                 activeFilterIndex = index;
-                buildFilterTabs(root);
-                buildPromoCards(root, tab);
+                buildFilterTabs();
+                buildPromoCards(tab);
             });
 
             container.addView(chip);
@@ -126,64 +109,66 @@ public class PromotionsFragment extends Fragment {
         }
     }
 
-    private void buildPromoCards(View root, String filter) {
-        LinearLayout container = root.findViewById(R.id.promos_container);
+    private void buildPromoCards(String filter) {
+        LinearLayout container = rootView.findViewById(R.id.promos_container);
         container.removeAllViews();
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        for (PromoItem promo : ALL_PROMOS) {
+        for (Promotion promo : allPromos) {
             boolean show = filter.equals("Все")
-                    || (filter.equals("Кэшбэк") && promo.tag.equals("Кэшбэк"))
-                    || (filter.equals("Кредиты") && promo.tag.equals("Кредит"))
-                    || (filter.equals("Партнёры") && promo.tag.equals("Партнёр"))
-                    || (filter.equals("Новые") && promo.hot);
+                    || (filter.equals("Кэшбэк")  && promo.getTag().equals("Кэшбэк"))
+                    || (filter.equals("Кредиты")  && promo.getTag().equals("Кредит"))
+                    || (filter.equals("Партнёры") && promo.getTag().equals("Партнёр"))
+                    || (filter.equals("Новые")    && promo.isHot());
             if (!show) continue;
 
             View card = inflater.inflate(R.layout.item_promo_card, container, false);
-
-            TextView tvTag   = card.findViewById(R.id.text_promo_tag);
-            TextView tvTitle = card.findViewById(R.id.text_promo_title);
-            TextView tvSub   = card.findViewById(R.id.text_promo_subtitle);
-            View badgeHot    = card.findViewById(R.id.badge_hot);
-            View iconBox     = card.findViewById(R.id.promo_icon_box);
-
-            tvTag.setText(promo.tag);
-            tvTitle.setText(promo.title);
-            tvSub.setText(promo.subtitle);
-            badgeHot.setVisibility(promo.hot ? View.VISIBLE : View.GONE);
-
-            int tagDrawable;
-            int tagColor;
-            switch (promo.tag) {
-                case "Кредит":
-                    tagDrawable = R.drawable.bg_tag_credit;
-                    tagColor    = 0xFFC9A227;
-                    break;
-                case "Партнёр":
-                    tagDrawable = R.drawable.bg_tag_partner;
-                    tagColor    = 0xFFD97222;
-                    break;
-                default:
-                    tagDrawable = R.drawable.bg_tag_cashback;
-                    tagColor    = 0xFF6B21A8;
-            }
-            tvTag.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
-            tvTag.setTextColor(tagColor);
-            iconBox.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
-
-            final PromoItem item = promo;
-            card.setOnClickListener(v -> openPromoDetail(item));
-
+            bindPromoCard(card, promo);
+            card.setOnClickListener(v -> openPromoDetail(promo));
             container.addView(card);
         }
     }
 
-    private void openPromoDetail(PromoItem promo) {
+    private void bindPromoCard(View card, Promotion promo) {
+        TextView tvTag   = card.findViewById(R.id.text_promo_tag);
+        TextView tvTitle = card.findViewById(R.id.text_promo_title);
+        TextView tvSub   = card.findViewById(R.id.text_promo_subtitle);
+        View badgeHot    = card.findViewById(R.id.badge_hot);
+        View iconBox     = card.findViewById(R.id.promo_icon_box);
+
+        tvTag.setText(promo.getTag());
+        tvTitle.setText(promo.getTitle());
+        tvSub.setText(promo.getSubtitle());
+        badgeHot.setVisibility(promo.isHot() ? View.VISIBLE : View.GONE);
+
+        int tagDrawable;
+        int tagColor;
+        switch (promo.getTag()) {
+            case "Кредит":
+                tagDrawable = R.drawable.bg_tag_credit;
+                tagColor    = 0xFFC9A227;
+                break;
+            case "Партнёр":
+                tagDrawable = R.drawable.bg_tag_partner;
+                tagColor    = 0xFFD97222;
+                break;
+            default:
+                tagDrawable = R.drawable.bg_tag_cashback;
+                tagColor    = 0xFF6B21A8;
+        }
+        tvTag.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
+        tvTag.setTextColor(tagColor);
+        iconBox.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
+    }
+
+    private void openPromoDetail(Promotion promo) {
         if (getActivity() == null) return;
         Fragment detail = PromoDetailFragment.newInstance(
-                promo.tag, promo.title, promo.subtitle, promo.badge,
-                promo.stat1V, promo.stat1L, promo.stat2V, promo.stat2L,
-                promo.stat3V, promo.stat3L, promo.description, promo.terms
+                promo.getTag(), promo.getTitle(), promo.getSubtitle(), promo.getBadge(),
+                promo.getStat1Value(), promo.getStat1Label(),
+                promo.getStat2Value(), promo.getStat2Label(),
+                promo.getStat3Value(), promo.getStat3Label(),
+                promo.getDescription(), promo.getTerms()
         );
         getActivity().getSupportFragmentManager()
                 .beginTransaction()

@@ -1010,6 +1010,28 @@ function scheduleDailyRateUpdate() {
     console.log(`Next NBK rate update scheduled in ${Math.round(msLeft / 60000)} min`);
 }
 
+// GET /api/promotions - Список активных акций (публичный)
+app.get('/api/promotions', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT id, tag, title, subtitle, badge, hot,
+                    stat1_value, stat1_label, stat2_value, stat2_label,
+                    stat3_value, stat3_label, description, terms
+             FROM promotions
+             WHERE is_active = 1
+             ORDER BY hot DESC, created_at DESC`
+        );
+        res.json({ success: true, promotions: rows });
+    } catch (err) {
+        console.error('Get promotions error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {
@@ -1026,6 +1048,28 @@ app.listen(port, async () => {
         try {
             await connection.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL COMMENT 'URL фото профиля'`);
         } catch (e) { /* already exists */ }
+
+        // Create promotions table if not exists
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS promotions (
+                id          INT           AUTO_INCREMENT PRIMARY KEY,
+                tag         VARCHAR(50)   NOT NULL,
+                title       VARCHAR(255)  NOT NULL,
+                subtitle    VARCHAR(500)  NOT NULL,
+                badge       VARCHAR(100)  NOT NULL,
+                hot         TINYINT(1)    NOT NULL DEFAULT 0,
+                stat1_value VARCHAR(50)   NOT NULL,
+                stat1_label VARCHAR(50)   NOT NULL,
+                stat2_value VARCHAR(50)   NOT NULL,
+                stat2_label VARCHAR(50)   NOT NULL,
+                stat3_value VARCHAR(50)   NOT NULL,
+                stat3_label VARCHAR(50)   NOT NULL,
+                description TEXT          NOT NULL,
+                terms       TEXT          NOT NULL,
+                is_active   TINYINT(1)    NOT NULL DEFAULT 1,
+                created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
         // Create currency_rates table if not exists
         await connection.execute(`
