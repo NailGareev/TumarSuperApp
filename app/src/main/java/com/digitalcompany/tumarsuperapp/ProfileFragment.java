@@ -57,6 +57,7 @@ public class ProfileFragment extends Fragment {
     private ImageView imgAvatar;
     private TextView textName, textPhone, textMenuName, textMenuPhone, textMenuEmail;
     private TextView textStatCashback, textStatOperations, textStatLevel;
+    private TextView textVerifiedBadge;
 
     private ApiService apiService;
     private SharedPreferences prefs;
@@ -94,9 +95,10 @@ public class ProfileFragment extends Fragment {
         textMenuName      = view.findViewById(R.id.text_menu_name);
         textMenuPhone     = view.findViewById(R.id.text_menu_phone);
         textMenuEmail     = view.findViewById(R.id.text_menu_email);
-        textStatCashback  = view.findViewById(R.id.text_stat_cashback);
+        textStatCashback   = view.findViewById(R.id.text_stat_cashback);
         textStatOperations = view.findViewById(R.id.text_stat_operations);
-        textStatLevel     = view.findViewById(R.id.text_stat_level);
+        textStatLevel      = view.findViewById(R.id.text_stat_level);
+        textVerifiedBadge  = view.findViewById(R.id.text_verified_badge);
 
         // Restore cached data instantly
         loadFromCache();
@@ -197,6 +199,7 @@ public class ProfileFragment extends Fragment {
                             .apply();
 
                     loadAvatar(avatar);
+                    updateVerifiedBadge(!first.isEmpty() && !phone.isEmpty());
                 }
             }
 
@@ -311,6 +314,21 @@ public class ProfileFragment extends Fragment {
         } catch (IOException e) {
             Log.e(TAG, "Failed to prepare avatar file", e);
             Toast.makeText(getContext(), "Не удалось обработать изображение", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateVerifiedBadge(boolean verified) {
+        if (textVerifiedBadge == null) return;
+        if (verified) {
+            textVerifiedBadge.setText("✓ Верифицирован");
+            textVerifiedBadge.setTextColor(0xFF1A8A4A);
+            textVerifiedBadge.setBackground(
+                    androidx.core.content.ContextCompat.getDrawable(requireContext(), R.drawable.bg_badge_verified));
+        } else {
+            textVerifiedBadge.setText("✗ Не верифицирован");
+            textVerifiedBadge.setTextColor(0xFFC62828);
+            textVerifiedBadge.setBackground(
+                    androidx.core.content.ContextCompat.getDrawable(requireContext(), R.drawable.bg_badge_unverified));
         }
     }
 
