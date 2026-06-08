@@ -25,6 +25,8 @@ import android.widget.Toast;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.CurrencyRate;
+import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 
 import java.math.BigDecimal;
@@ -32,6 +34,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -44,16 +47,28 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
     private static final String USER_PREFS_NAME = "UserPrefs";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-    private static final String KEY_AUTH_TOKEN = "auth_token";
-    private static final String KEY_USER_NAME = "user_name";
+    private static final String KEY_AUTH_TOKEN    = "auth_token";
+    private static final String KEY_USER_NAME     = "user_name";
 
+    // Header views
     private TextView tvGreeting;
     private TextView tvDate;
+
+    // Balance card
     private TextView tvPhoneNumber;
     private TextView tvBalance;
+
+    // Quick actions
     private LinearLayout buttonTopUp, buttonHistory, buttonTransfer, buttonPayments;
+
+    // Buttons
     private FrameLayout btnQrPay;
     private FrameLayout btnBell;
+
+    // Currency rate views
+    private TextView tvUsdRate, tvUsdChange;
+    private TextView tvEurRate, tvEurChange;
+    private TextView tvRubRate, tvRubChange;
 
     private ApiService apiService;
 
@@ -62,8 +77,6 @@ public class HomeFragment extends Fragment implements MenuProvider {
         super.onCreate(savedInstanceState);
         if (getActivity() != null) {
             apiService = ApiClient.getApiService(getActivity().getApplicationContext());
-        } else {
-            Log.e(TAG, "Activity is null in onCreate");
         }
     }
 
@@ -83,6 +96,13 @@ public class HomeFragment extends Fragment implements MenuProvider {
         buttonPayments = view.findViewById(R.id.buttonPayments);
         btnQrPay       = view.findViewById(R.id.btnQrPay);
         btnBell        = view.findViewById(R.id.btnBell);
+
+        tvUsdRate   = view.findViewById(R.id.tvUsdRate);
+        tvUsdChange = view.findViewById(R.id.tvUsdChange);
+        tvEurRate   = view.findViewById(R.id.tvEurRate);
+        tvEurChange = view.findViewById(R.id.tvEurChange);
+        tvRubRate   = view.findViewById(R.id.tvRubRate);
+        tvRubChange = view.findViewById(R.id.tvRubChange);
 
         tvPhoneNumber.setText("+7 ...");
         tvBalance.setText("---.-- ₸");
@@ -109,64 +129,45 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
         if (apiService != null) {
             loadUserProfileData();
-        } else {
-            Log.e(TAG, "apiService is null in onViewCreated");
+            loadCurrencyRates();
         }
     }
 
+    // ── Greeting ────────────────────────────────────────────────────────────────
+
     private void setGreeting() {
-        if (getContext() == null) return;
+        if (getContext() == null || tvGreeting == null) return;
         SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
         String name = prefs.getString(KEY_USER_NAME, null);
-        if (tvGreeting == null) return;
-        if (name != null && !name.isEmpty()) {
-            tvGreeting.setText("Привет, " + name + "! 👋");
-        } else {
-            tvGreeting.setText("Привет! 👋");
-        }
+        tvGreeting.setText((name != null && !name.isEmpty())
+                ? "Привет, " + name + "! 👋"
+                : "Привет! 👋");
     }
 
     private void setCurrentDate() {
         if (tvDate == null) return;
         try {
             LocalDate today = LocalDate.now();
-            Locale ruLocale = new Locale("ru");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EE, d MMMM yyyy", ruLocale);
-            String dateStr = today.format(formatter);
-            // Capitalise first letter
-            if (!dateStr.isEmpty()) {
-                dateStr = Character.toUpperCase(dateStr.charAt(0)) + dateStr.substring(1);
-            }
-            tvDate.setText(dateStr);
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("EE, d MMMM yyyy", new Locale("ru"));
+            String s = today.format(fmt);
+            if (!s.isEmpty()) s = Character.toUpperCase(s.charAt(0)) + s.substring(1);
+            tvDate.setText(s);
         } catch (Exception e) {
-            Log.e(TAG, "Date formatting error", e);
+            Log.e(TAG, "Date format error", e);
         }
     }
 
+    // ── Buttons ─────────────────────────────────────────────────────────────────
+
     private void setupActionButtons() {
-        buttonTopUp.setOnClickListener(v -> navigateToFragment(new TopUpFragment(), "topup"));
-
-        buttonHistory.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                navigateToFragment(new HistoryFragment(), "history");
-            }
-        });
-
-        buttonTransfer.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                navigateToFragment(new TransferFragment(), "transfer");
-            }
-        });
-
-        buttonPayments.setOnClickListener(v ->
-                navigateToFragment(new PaymentsFragment(), "payments"));
+        buttonTopUp.setOnClickListener(v    -> navigateToFragment(new TopUpFragment(),    "topup"));
+        buttonTransfer.setOnClickListener(v -> navigateToFragment(new TransferFragment(), "transfer"));
+        buttonPayments.setOnClickListener(v -> navigateToFragment(new PaymentsFragment(), "payments"));
+        buttonHistory.setOnClickListener(v  -> navigateToFragment(new HistoryFragment(),  "history"));
 
         if (btnQrPay != null) {
-            btnQrPay.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "QR-оплата", Toast.LENGTH_SHORT).show();
-                }
-            });
+            btnQrPay.setOnClickListener(v ->
+                    navigateToFragment(new QrScanFragment(), "qr_scan"));
         }
 
         if (btnBell != null) {
@@ -176,97 +177,108 @@ public class HomeFragment extends Fragment implements MenuProvider {
     }
 
     private void navigateToFragment(Fragment fragment, String tag) {
-        if (getActivity() != null) {
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.replace(R.id.fragment_container, fragment, tag);
-            transaction.addToBackStack(tag);
-            transaction.commit();
-        } else {
-            Log.e(TAG, "Cannot navigate, activity is null");
-        }
+        if (getActivity() == null) return;
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        fm.beginTransaction()
+                .replace(R.id.fragment_container, fragment, tag)
+                .addToBackStack(tag)
+                .commit();
     }
+
+    // ── Profile data ─────────────────────────────────────────────────────────────
 
     private void loadUserProfileData() {
         if (getContext() == null) return;
         SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
-        String token = prefs.getString(KEY_AUTH_TOKEN, null);
-        boolean isLoggedIn = prefs.getBoolean(KEY_IS_LOGGED_IN, false);
-
-        if (!isLoggedIn || token == null) {
-            Log.w(TAG, "User not logged in");
-            return;
-        }
+        if (!prefs.getBoolean(KEY_IS_LOGGED_IN, false)
+                || prefs.getString(KEY_AUTH_TOKEN, null) == null) return;
 
         apiService.getUserProfile().enqueue(new Callback<UserProfileResponse>() {
             @Override
-            public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+            public void onResponse(@NonNull Call<UserProfileResponse> call,
+                                   @NonNull Response<UserProfileResponse> response) {
                 if (!isAdded() || getContext() == null) return;
-
-                if (response.isSuccessful() && response.body() != null) {
-                    UserProfileResponse profile = response.body();
-                    if (profile.isSuccess()) {
-                        updateUI(profile);
-                    } else {
-                        Toast.makeText(getContext(), "Не удалось загрузить профиль", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Log.e(TAG, "Server error: " + response.code());
-                    if (response.code() == 401 || response.code() == 403) {
-                        Toast.makeText(requireContext(), "Сессия истекла. Войдите снова", Toast.LENGTH_SHORT).show();
-                        LoginActivity.logout(requireActivity());
-                    }
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess()) {
+                    updateBalanceUI(response.body());
+                } else if (response.code() == 401 || response.code() == 403) {
+                    LoginActivity.logout(requireActivity());
                 }
             }
 
             @Override
-            public void onFailure(Call<UserProfileResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-                Log.e(TAG, "Network error loading profile", t);
-                Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<UserProfileResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Profile load error", t);
             }
         });
     }
 
-    private void updateUI(UserProfileResponse profile) {
-        if (profile == null) return;
-        if (tvPhoneNumber != null) {
-            tvPhoneNumber.setText(formatPhoneNumber(profile.getPhone()));
-        }
+    private void updateBalanceUI(UserProfileResponse profile) {
+        if (tvPhoneNumber != null)
+            tvPhoneNumber.setText(formatPhone(profile.getPhone()));
+
         if (tvBalance != null) {
             BigDecimal balance = profile.getBalance() != null ? profile.getBalance() : BigDecimal.ZERO;
-            String currencyCode = profile.getCurrency() != null ? profile.getCurrency().toUpperCase() : "KZT";
+            String code = profile.getCurrency() != null ? profile.getCurrency().toUpperCase() : "KZT";
             try {
-                Locale localeKZ = new Locale("kk", "KZ");
-                NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(localeKZ);
-                currencyFormat.setCurrency(Currency.getInstance(currencyCode));
-                if ("KZT".equals(currencyCode)) {
-                    currencyFormat.setMaximumFractionDigits(0);
-                    currencyFormat.setMinimumFractionDigits(0);
-                } else {
-                    currencyFormat.setMaximumFractionDigits(2);
-                    currencyFormat.setMinimumFractionDigits(2);
-                }
-                tvBalance.setText(currencyFormat.format(balance));
+                NumberFormat fmt = NumberFormat.getCurrencyInstance(new Locale("kk", "KZ"));
+                fmt.setCurrency(Currency.getInstance(code));
+                if ("KZT".equals(code)) { fmt.setMaximumFractionDigits(0); fmt.setMinimumFractionDigits(0); }
+                tvBalance.setText(fmt.format(balance));
             } catch (Exception e) {
-                Log.e(TAG, "Currency format error: " + e.getMessage());
-                tvBalance.setText(String.format(Locale.US, "%.2f %s", balance, currencyCode));
+                tvBalance.setText(String.format(Locale.US, "%.0f ₸", balance));
             }
         }
     }
 
-    private String formatPhoneNumber(String phone) {
-        if (phone == null) return "+7 ??? ??? ?? ??";
-        String digits = phone.replaceAll("[^\\d+]", "");
-        if (digits.startsWith("+7") && digits.length() == 12) {
+    private String formatPhone(String phone) {
+        if (phone == null) return "+7 ???";
+        String d = phone.replaceAll("[^\\d+]", "");
+        if (d.startsWith("+7") && d.length() == 12) {
             return String.format("+7 (%s) %s-%s-%s",
-                    digits.substring(2, 5),
-                    digits.substring(5, 8),
-                    digits.substring(8, 10),
-                    digits.substring(10, 12));
+                    d.substring(2, 5), d.substring(5, 8),
+                    d.substring(8, 10), d.substring(10, 12));
         }
         return phone;
     }
+
+    // ── Currency rates ───────────────────────────────────────────────────────────
+
+    private void loadCurrencyRates() {
+        apiService.getCurrencyRates().enqueue(new Callback<CurrencyRatesResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CurrencyRatesResponse> call,
+                                   @NonNull Response<CurrencyRatesResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess()) {
+                    updateRatesUI(response.body().getRates());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CurrencyRatesResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Rates load error", t);
+            }
+        });
+    }
+
+    private void updateRatesUI(List<CurrencyRate> rates) {
+        if (rates == null) return;
+        for (CurrencyRate r : rates) {
+            String code = r.getCurrencyCode();
+            String rateStr = String.format(Locale.US, "%.2f", r.getRate());
+            if ("USD".equalsIgnoreCase(code)) {
+                if (tvUsdRate != null) tvUsdRate.setText(rateStr);
+            } else if ("EUR".equalsIgnoreCase(code)) {
+                if (tvEurRate != null) tvEurRate.setText(rateStr);
+            } else if ("RUB".equalsIgnoreCase(code)) {
+                if (tvRubRate != null) tvRubRate.setText(rateStr);
+            }
+        }
+    }
+
+    // ── Menu ─────────────────────────────────────────────────────────────────────
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {

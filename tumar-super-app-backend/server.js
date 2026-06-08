@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');     // Для хэширования и ср
 const cors = require('cors');           // Для разрешения кросс-доменных запросов от Android
 const jwt = require('jsonwebtoken');    // Для создания и проверки JWT токенов
 const crypto = require('crypto');       // Для шифрования данных карты
+const https = require('https');         // Для запросов к НБ РК
 
 // Создаем экземпляр Express приложения
 const app = express();
@@ -817,6 +818,117 @@ app.get('/api/tours/search', async (req, res) => {
     }
 });
 
+// ─── КУРСЫ ВАЛЮТ (НБ РК) ────────────────────────────────────────────────────
+
+// GET /api/rates — отдаёт последние сохранённые курсы
+app.get('/api/rates', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT currency_code, rate, date
+             FROM currency_rates
+             WHERE date = (SELECT MAX(date) FROM currency_rates)
+               AND currency_code IN ('USD','EUR','RUB')
+             ORDER BY FIELD(currency_code,'USD','EUR','RUB')`
+        );
+        if (rows.length === 0) {
+            // Таблица пустая — подгружаем прямо сейчас
+            await fetchAndStoreRatesFromNBK();
+            const [fresh] = await connection.execute(
+                `SELECT currency_code, rate, date
+                 FROM currency_rates
+                 WHERE date = (SELECT MAX(date) FROM currency_rates)
+                   AND currency_code IN ('USD','EUR','RUB')
+                 ORDER BY FIELD(currency_code,'USD','EUR','RUB')`
+            );
+            return res.json({ success: true, rates: fresh });
+        }
+        res.json({ success: true, rates: rows });
+    } catch (err) {
+        console.error('Error fetching rates:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch rates' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// Извлечь курс валюты из XML НБ РК
+function extractRate(xml, currCode) {
+    const re = new RegExp(
+        `<title>${currCode}<\\/title>[\\s\\S]*?<description>([0-9.]+)<\\/description>`,
+        'i'
+    );
+    const m = xml.match(re);
+    return m ? parseFloat(m[1]) : null;
+}
+
+// Загрузить курсы с nationalbank.kz и сохранить в БД
+async function fetchAndStoreRatesFromNBK() {
+    const now  = new Date();
+    const dd   = String(now.getDate()).padStart(2, '0');
+    const mm   = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const url  = `https://nationalbank.kz/rss/get_rates.cfm?fdate=${dd}.${mm}.${yyyy}`;
+
+    return new Promise((resolve, reject) => {
+        https.get(url, { timeout: 10000 }, (resp) => {
+            let data = '';
+            resp.on('data', chunk => { data += chunk; });
+            resp.on('end', async () => {
+                try {
+                    const rates = {};
+                    for (const code of ['USD', 'EUR', 'RUB']) {
+                        const r = extractRate(data, code);
+                        if (r) rates[code] = r;
+                    }
+                    if (Object.keys(rates).length === 0) {
+                        return reject(new Error('No rates found in NBK response'));
+                    }
+                    let conn;
+                    try {
+                        conn = await pool.getConnection();
+                        for (const [code, rate] of Object.entries(rates)) {
+                            await conn.execute(
+                                `INSERT INTO currency_rates (currency_code, rate, date)
+                                 VALUES (?, ?, CURDATE())
+                                 ON DUPLICATE KEY UPDATE rate = VALUES(rate)`,
+                                [code, rate]
+                            );
+                        }
+                        console.log('Currency rates updated from NBK:', rates);
+                        resolve(rates);
+                    } finally {
+                        if (conn) conn.release();
+                    }
+                } catch (e) { reject(e); }
+            });
+        }).on('error', reject).on('timeout', () => reject(new Error('NBK request timeout')));
+    });
+}
+
+// Планировщик: обновление каждый день в 00:00 (Asia/Almaty, задано через process.env.TZ)
+function scheduleDailyRateUpdate() {
+    const now       = new Date();
+    const midnight  = new Date(now);
+    midnight.setHours(24, 0, 5, 0); // следующая полночь + 5 сек запаса
+    const msLeft    = midnight - now;
+
+    setTimeout(() => {
+        fetchAndStoreRatesFromNBK().catch(err =>
+            console.error('Scheduled NBK fetch failed:', err)
+        );
+        // Повторять раз в сутки
+        setInterval(() => {
+            fetchAndStoreRatesFromNBK().catch(err =>
+                console.error('Daily NBK fetch failed:', err)
+            );
+        }, 24 * 60 * 60 * 1000);
+    }, msLeft);
+
+    console.log(`Next NBK rate update scheduled in ${Math.round(msLeft / 60000)} min`);
+}
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {
@@ -828,7 +940,31 @@ app.listen(port, async () => {
                 `ALTER TABLE transactions MODIFY COLUMN transaction_type ENUM('TRANSFER','TOPUP','PAYMENT','MARKET_REFUND') NOT NULL DEFAULT 'TRANSFER'`
             );
         } catch (e) { /* already includes MARKET_REFUND */ }
+
+        // Create currency_rates table if not exists
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS currency_rates (
+                id            INT AUTO_INCREMENT PRIMARY KEY,
+                currency_code VARCHAR(3)     NOT NULL,
+                rate          DECIMAL(12, 4) NOT NULL,
+                date          DATE           NOT NULL,
+                updated_at    TIMESTAMP      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_currency_date (currency_code, date)
+            )
+        `);
         connection.release();
+
+        // Initial fetch if table is empty
+        const [existing] = await pool.execute('SELECT COUNT(*) AS cnt FROM currency_rates');
+        if (existing[0].cnt === 0) {
+            fetchAndStoreRatesFromNBK().catch(err =>
+                console.error('Initial NBK fetch failed:', err)
+            );
+        }
+
+        // Schedule daily update at midnight Almaty time
+        scheduleDailyRateUpdate();
+
         console.log(`Server listening at http://localhost:${port}`);
     } catch (err) {
         console.error('!!! FAILED TO CONNECT TO DATABASE on startup: !!!', err);

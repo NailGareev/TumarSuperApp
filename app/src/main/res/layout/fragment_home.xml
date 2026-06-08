@@ -25,7 +25,6 @@
             android:paddingTop="14dp"
             android:paddingBottom="6dp">
 
-            <!-- Avatar placeholder circle -->
             <FrameLayout
                 android:layout_width="42dp"
                 android:layout_height="42dp"
@@ -38,7 +37,6 @@
                     android:alpha="0.45" />
             </FrameLayout>
 
-            <!-- Greeting + date -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -67,7 +65,6 @@
                     tools:text="Пн, 8 июня 2026" />
             </LinearLayout>
 
-            <!-- Bell button with badge -->
             <FrameLayout
                 android:id="@+id/btnBell"
                 android:layout_width="36dp"
@@ -103,7 +100,7 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- ── Compact Balance Card with mini bar chart ── -->
+        <!-- ── Compact Balance Card ── -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,111 +114,35 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:background="@drawable/bg_wallet_card_new"
-                android:padding="16dp"
-                android:gravity="center_vertical"
-                android:baselineAligned="false">
+                android:padding="16dp">
 
-                <!-- Balance info -->
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:text="Основной счёт"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="12sp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Основной счёт"
-                        android:textColor="#8CFFFFFF"
-                        android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/balanceTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/placeholder_balance"
+                    android:textColor="#FFFFFF"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/balanceTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/placeholder_balance"
-                        android:textColor="#FFFFFF"
-                        android:textSize="26sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp"
-                        android:gravity="center_vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="↑ +2.1%"
-                            android:textColor="#4ade80"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="за месяц"
-                            android:textColor="#55FFFFFF"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <!-- Phone number / account id -->
-                    <TextView
-                        android:id="@+id/userIdTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="+7 ..."
-                        android:textColor="#44FFFFFF"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-                <!-- Mini bar chart (7 bars, bottom-aligned) -->
-                <LinearLayout
-                    android:layout_width="70dp"
-                    android:layout_height="52dp"
-                    android:orientation="horizontal"
-                    android:gravity="bottom|center_horizontal"
-                    android:baselineAligned="false">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="18dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="27dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="15dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="34dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="42dp"
-                        android:layout_marginEnd="3dp"
-                        android:background="#2EFFFFFF" />
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="30dp"
-                        android:background="#AAFFFFFF" />
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/userIdTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="+7 ..."
+                    android:textColor="#44FFFFFF"
+                    android:textSize="12sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -266,7 +187,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ── Quick Actions Row (5 items) ── -->
+        <!-- ── Quick Actions Row ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -277,7 +198,6 @@
             android:paddingBottom="2dp"
             android:baselineAligned="false">
 
-            <!-- Пополнить -->
             <LinearLayout
                 android:id="@+id/buttonTopUp"
                 android:layout_width="0dp"
@@ -311,7 +231,6 @@
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- Перевод -->
             <LinearLayout
                 android:id="@+id/buttonTransfer"
                 android:layout_width="0dp"
@@ -345,7 +264,6 @@
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- Платёж -->
             <LinearLayout
                 android:id="@+id/buttonPayments"
                 android:layout_width="0dp"
@@ -379,7 +297,6 @@
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- История -->
             <LinearLayout
                 android:id="@+id/buttonHistory"
                 android:layout_width="0dp"
@@ -413,7 +330,6 @@
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- Ещё -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -446,7 +362,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- ── Tasks / Notifications Strip ── -->
+        <!-- ── Tasks Strip ── -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -456,21 +372,16 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="1dp"
             app:cardBackgroundColor="@color/card_bg">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:padding="12dp">
-
-                <!-- Purple dot -->
                 <View
                     android:layout_width="8dp"
                     android:layout_height="8dp"
                     android:background="@drawable/bg_dot_purple" />
-
-                <!-- Text -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -492,8 +403,6 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
-
-                <!-- Count badge -->
                 <FrameLayout
                     android:layout_width="24dp"
                     android:layout_height="24dp"
@@ -510,7 +419,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ── Currency Rates Section ── -->
+        <!-- ── Currency Rates ── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -531,6 +440,7 @@
             android:paddingEnd="14dp"
             android:baselineAligned="false">
 
+            <!-- USD -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -545,11 +455,12 @@
                     android:orientation="vertical"
                     android:padding="10dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="USD/KZT" android:textColor="@color/text_secondary" android:textSize="10sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="453.2" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="↑ 1.2%" android:textColor="#1a8a4a" android:textSize="11sp" />
+                    <TextView android:id="@+id/tvUsdRate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="—" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvUsdChange" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="" android:textColor="@color/text_secondary" android:textSize="11sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- EUR -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -564,11 +475,12 @@
                     android:orientation="vertical"
                     android:padding="10dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="EUR/KZT" android:textColor="@color/text_secondary" android:textSize="10sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="491.8" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="→ 0.0%" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                    <TextView android:id="@+id/tvEurRate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="—" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvEurChange" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="" android:textColor="@color/text_secondary" android:textSize="11sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- RUB -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -582,13 +494,13 @@
                     android:orientation="vertical"
                     android:padding="10dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RUB/KZT" android:textColor="@color/text_secondary" android:textSize="10sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="4.82" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="↓ 0.5%" android:textColor="#cc3333" android:textSize="11sp" />
+                    <TextView android:id="@+id/tvRubRate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="—" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvRubChange" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="" android:textColor="@color/text_secondary" android:textSize="11sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-        <!-- ── Services Section (horizontal scroll) ── -->
+        <!-- ── Services (horizontal scroll) ── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -646,25 +558,12 @@
                                 android:text="🛒"
                                 android:textSize="16sp" />
                         </FrameLayout>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Market"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Покупки"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Market" android:textColor="@color/text_primary" android:textSize="13sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Покупки" android:textColor="@color/text_secondary" android:textSize="10sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Travel -->
+                <!-- Travel — uses ImageView with vector icon -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_travel"
                     android:layout_width="104dp"
@@ -688,29 +587,15 @@
                             android:layout_width="34dp"
                             android:layout_height="34dp"
                             android:background="@drawable/bg_travel_category">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
-                                android:text="✈"
-                                android:textColor="@color/white"
-                                android:textSize="16sp" />
+                                android:src="@drawable/ic_flight"
+                                android:contentDescription="@null" />
                         </FrameLayout>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Travel"
-                            android:textColor="@color/white"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Авиа · ЖД"
-                            android:textColor="@color/travel_text_secondary"
-                            android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Travel" android:textColor="@color/white" android:textSize="13sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Авиа · ЖД" android:textColor="@color/travel_text_secondary" android:textSize="10sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -731,28 +616,10 @@
                             android:layout_width="34dp"
                             android:layout_height="34dp"
                             android:background="@drawable/bg_icon_circle_purple">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="🚀"
-                                android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="🚀" android:textSize="16sp" />
                         </FrameLayout>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Доставка"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Еда · Курьер"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Доставка" android:textColor="@color/text_primary" android:textSize="13sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Еда · Курьер" android:textColor="@color/text_secondary" android:textSize="10sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -772,67 +639,15 @@
                             android:layout_width="34dp"
                             android:layout_height="34dp"
                             android:background="@drawable/bg_action_icon_purple">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="+"
-                                android:textColor="@color/colorPrimary"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="+" android:textColor="@color/colorPrimary" android:textSize="20sp" android:textStyle="bold" />
                         </FrameLayout>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="+ Ещё"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Все сервисы"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="+ Ещё" android:textColor="@color/text_primary" android:textSize="13sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Все сервисы" android:textColor="@color/text_secondary" android:textSize="10sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
             </LinearLayout>
         </HorizontalScrollView>
-
-        <!-- ── Promo Banner ── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="8dp"
-            android:text="АКЦИИ И ПРЕДЛОЖЕНИЯ"
-            android:textColor="@color/colorPrimary"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1" />
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/banner_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:layout_marginEnd="14dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="@color/card_bg">
-
-            <ImageView
-                android:id="@+id/iv_banner"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/banner1"
-                android:contentDescription="@string/banner_content_description" />
-        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

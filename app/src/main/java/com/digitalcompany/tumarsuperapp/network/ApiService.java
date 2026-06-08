@@ -20,6 +20,7 @@ import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
+import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -111,6 +112,9 @@ public interface ApiService {
 
     @GET("api/market/orders")
     Call<MarketPurchasesResponse> getMarketOrders();
+
+    @GET("api/rates")
+    Call<CurrencyRatesResponse> getCurrencyRates();
 
     // --- КОНЕЦ: Добавленные методы ---
 
