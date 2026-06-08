@@ -52,6 +52,8 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
     // ZXing QR scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0") { isTransitive = true }
     implementation("com.google.zxing:core:3.5.3")

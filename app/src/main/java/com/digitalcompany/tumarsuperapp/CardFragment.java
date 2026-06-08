@@ -3,8 +3,6 @@ package com.digitalcompany.tumarsuperapp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +15,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
@@ -30,8 +28,10 @@ import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -42,32 +42,21 @@ import retrofit2.Response;
 public class CardFragment extends Fragment {
 
     private static final String PREFS_NAME     = "CardDataPrefs";
-    private static final String KEY_CARD_EXISTS = "card_exists";
-    private static final String KEY_CARD_NUMBER = "card_number";
-    private static final String KEY_CARD_EXPIRY = "card_expiry";
-    private static final String KEY_CARD_CVV    = "card_cvv";
-    private static final String KEY_CARD_BLOCKED     = "card_blocked";
-    private static final String KEY_CARD_CUSTOM_NAME = "card_custom_name";
-
-    private static final long   CVV_VISIBILITY_DURATION_MS = 60 * 1000;
-    private static final String CVV_PLACEHOLDER = "•••";
-    private static final String TAG = "CardFragment";
+    private static final String KEY_CARD_COUNT = "card_count";
+    private static final int    MAX_CARDS      = 3;
+    private static final String TAG            = "CardFragment";
 
     // Header
-    private FrameLayout btnAddCard;
-    private FrameLayout btnCardBell;
+    private FrameLayout  btnAddCard;
+    private FrameLayout  btnCardBell;
 
     // No-card state
     private LinearLayout layoutNoCard;
 
     // Card details state
     private LinearLayout layoutCardDetails;
-    private CardView     cardViewClickableArea;
-    private TextView     textCardCustomNameMain;
-    private TextView     textCardNumber;
-    private TextView     textCardExpiry;
-    private TextView     textCardCvv;
-    private View         textCardBlockedOverlayMain;  // LinearLayout acting as overlay
+    private ViewPager2   cardViewPager;
+    private LinearLayout carouselDotsContainer;
 
     // Stats
     private TextView tvStatBalance;
@@ -83,22 +72,23 @@ public class CardFragment extends Fragment {
     // All operations
     private LinearLayout btnAllOperations;
 
-    // CVV state
-    private String  actualCvv;
-    private boolean isCvvVisible = false;
+    // Data
+    private final List<CardPagerAdapter.CardEntry> cardList = new ArrayList<>();
+    private CardPagerAdapter cardPagerAdapter;
+    private boolean          callbackRegistered = false;
 
     private SharedPreferences sharedPreferences;
     private ApiService        apiService;
 
-    private Handler  cvvHandler;
-    private Runnable hideCvvRunnable;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        cvvHandler = new Handler(Looper.getMainLooper());
-        hideCvvRunnable = () -> { isCvvVisible = false; };
-    }
+    private final ViewPager2.OnPageChangeCallback pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(int position) {
+            if (position >= 0 && position < cardList.size()) {
+                updateDots(position);
+                updateBlockActionForPage(position);
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -109,28 +99,22 @@ public class CardFragment extends Fragment {
         btnAddCard  = view.findViewById(R.id.btn_add_card);
         btnCardBell = view.findViewById(R.id.btn_card_bell);
 
-        layoutNoCard     = view.findViewById(R.id.layout_no_card);
+        layoutNoCard      = view.findViewById(R.id.layout_no_card);
         layoutCardDetails = view.findViewById(R.id.layout_card_details);
 
         view.findViewById(R.id.button_create_card).setOnClickListener(v -> createNewCard());
 
-        cardViewClickableArea   = view.findViewById(R.id.card_view_clickable_area);
-        textCardCustomNameMain  = view.findViewById(R.id.text_card_custom_name_main);
-        textCardNumber          = view.findViewById(R.id.text_card_number);
-        textCardExpiry          = view.findViewById(R.id.text_card_expiry);
-        textCardCvv             = view.findViewById(R.id.text_card_cvv);
-        textCardBlockedOverlayMain = view.findViewById(R.id.text_card_blocked_overlay_main);
+        cardViewPager         = view.findViewById(R.id.card_view_pager);
+        carouselDotsContainer = view.findViewById(R.id.carousel_dots_container);
 
-        tvStatBalance = view.findViewById(R.id.tv_stat_balance);
-
+        tvStatBalance      = view.findViewById(R.id.tv_stat_balance);
         actionCardTopup    = view.findViewById(R.id.action_card_topup);
         actionCardTransfer = view.findViewById(R.id.action_card_transfer);
         actionCardBlock    = view.findViewById(R.id.action_card_block);
         actionCardSettings = view.findViewById(R.id.action_card_settings);
         tvBlockActionLabel = view.findViewById(R.id.tv_block_action_label);
         iconBlockAction    = view.findViewById(R.id.icon_block_action);
-
-        btnAllOperations = view.findViewById(R.id.btn_all_operations);
+        btnAllOperations   = view.findViewById(R.id.btn_all_operations);
 
         if (getActivity() != null) {
             sharedPreferences = getActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -142,27 +126,19 @@ public class CardFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        checkCardStatus();
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (cardViewPager != null && callbackRegistered) {
+            cardViewPager.unregisterOnPageChangeCallback(pageChangeCallback);
+        }
+        callbackRegistered = false;
+        cardPagerAdapter   = null;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (sharedPreferences != null && sharedPreferences.getBoolean(KEY_CARD_EXISTS, false)) {
-            updateCardAppearance(
-                    sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false),
-                    sharedPreferences.getString(KEY_CARD_CUSTOM_NAME, ""));
-        } else {
-            showCreateCardView();
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        cvvHandler.removeCallbacks(hideCvvRunnable);
+        refreshCards();
     }
 
     // ── Click listeners ─────────────────────────────────────────────────────────
@@ -172,16 +148,7 @@ public class CardFragment extends Fragment {
             btnCardBell.setOnClickListener(v -> navigate(new NotificationsFragment(), "notifications"));
 
         if (btnAddCard != null)
-            btnAddCard.setOnClickListener(v -> {
-                if (sharedPreferences != null && !sharedPreferences.getBoolean(KEY_CARD_EXISTS, false)) {
-                    createNewCard();
-                } else {
-                    Toast.makeText(requireContext(), "Карта уже создана", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        if (cardViewClickableArea != null)
-            cardViewClickableArea.setOnClickListener(v -> navigateToCardManagement());
+            btnAddCard.setOnClickListener(v -> createNewCard());
 
         if (actionCardTopup != null)
             actionCardTopup.setOnClickListener(v -> navigate(new TopUpFragment(), "topup"));
@@ -193,87 +160,155 @@ public class CardFragment extends Fragment {
             actionCardBlock.setOnClickListener(v -> toggleBlockStatusInline());
 
         if (actionCardSettings != null)
-            actionCardSettings.setOnClickListener(v -> navigateToCardManagement());
+            actionCardSettings.setOnClickListener(v -> {
+                int page = (cardViewPager != null && !cardList.isEmpty())
+                        ? cardViewPager.getCurrentItem() : 0;
+                navigateToCardManagement(page);
+            });
 
         if (btnAllOperations != null)
             btnAllOperations.setOnClickListener(v -> navigate(new HistoryFragment(), "history"));
     }
 
-    // ── Card status ──────────────────────────────────────────────────────────────
+    // ── Refresh all card state ───────────────────────────────────────────────────
 
-    private void checkCardStatus() {
+    private void refreshCards() {
         if (sharedPreferences == null) { showCreateCardView(); return; }
-        if (sharedPreferences.getBoolean(KEY_CARD_EXISTS, false)) {
-            displayCardDetails();
-            if (apiService != null) loadUserBalance();
-        } else {
+
+        migrateIfNeeded();
+
+        int savedPage = (cardViewPager != null && cardPagerAdapter != null)
+                ? cardViewPager.getCurrentItem() : 0;
+
+        reloadCardsIntoList();
+
+        if (cardList.isEmpty()) {
             showCreateCardView();
+            return;
         }
-    }
 
-    private void displayCardDetails() {
-        if (sharedPreferences == null) return;
-
-        String cardNumber = sharedPreferences.getString(KEY_CARD_NUMBER, "");
-        String expiry     = sharedPreferences.getString(KEY_CARD_EXPIRY, "");
-        actualCvv         = sharedPreferences.getString(KEY_CARD_CVV, "");
-        boolean isBlocked = sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false);
-        String customName = sharedPreferences.getString(KEY_CARD_CUSTOM_NAME, "");
-
-        if (textCardNumber != null)  textCardNumber.setText(maskCardNumber(cardNumber));
-        if (textCardExpiry != null)  textCardExpiry.setText(expiry);
-        if (textCardCvv != null)     textCardCvv.setText(CVV_PLACEHOLDER);
-        isCvvVisible = false;
-
-        updateCardAppearance(isBlocked, customName);
-
-        if (layoutNoCard != null)     layoutNoCard.setVisibility(View.GONE);
+        if (layoutNoCard != null)      layoutNoCard.setVisibility(View.GONE);
         if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.VISIBLE);
-        if (cardViewClickableArea != null) cardViewClickableArea.setClickable(true);
-    }
 
-    private void updateCardAppearance(boolean isBlocked, String customName) {
-        if (getContext() == null) return;
+        if (cardViewPager != null) {
+            if (cardPagerAdapter == null) {
+                cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
+                cardViewPager.setAdapter(cardPagerAdapter);
+                if (!callbackRegistered) {
+                    cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
+                    callbackRegistered = true;
+                }
+            } else {
+                cardPagerAdapter.notifyDataSetChanged();
+            }
 
-        // Custom name: show in top row; use default brand label when name matches default
-        if (textCardCustomNameMain != null) {
-            String defaultName = getString(R.string.default_card_name_value);
-            boolean hasCustomName = customName != null && !customName.isEmpty()
-                    && !customName.equalsIgnoreCase(defaultName);
-            textCardCustomNameMain.setText(hasCustomName ? customName : "Tumar Карта");
+            int page = Math.max(0, Math.min(savedPage, cardList.size() - 1));
+            if (cardViewPager.getCurrentItem() != page) {
+                cardViewPager.setCurrentItem(page, false);
+            }
+            updateDots(page);
+            updateBlockActionForPage(page);
         }
 
-        // Blocked overlay
-        if (textCardBlockedOverlayMain != null)
-            textCardBlockedOverlayMain.setVisibility(isBlocked ? View.VISIBLE : View.GONE);
+        if (btnAddCard != null)
+            btnAddCard.setAlpha(cardList.size() >= MAX_CARDS ? 0.4f : 1.0f);
 
-        // Block quick action label / icon
-        if (tvBlockActionLabel != null)
-            tvBlockActionLabel.setText(isBlocked ? "Разблокировать" : "Блокировка");
-        if (iconBlockAction != null)
-            iconBlockAction.setImageResource(isBlocked ? R.drawable.ic_lock_open_24dp : R.drawable.ic_lock_24dp);
-
-        isCvvVisible = false;
-        cvvHandler.removeCallbacks(hideCvvRunnable);
+        if (apiService != null) loadUserBalance();
     }
 
     private void showCreateCardView() {
-        if (layoutNoCard != null)     layoutNoCard.setVisibility(View.VISIBLE);
+        if (layoutNoCard != null)      layoutNoCard.setVisibility(View.VISIBLE);
         if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.GONE);
-        cvvHandler.removeCallbacks(hideCvvRunnable);
-        isCvvVisible = false;
+    }
+
+    // ── Migration from old single-card keys ──────────────────────────────────────
+
+    private void migrateIfNeeded() {
+        if (!sharedPreferences.contains(KEY_CARD_COUNT)
+                && sharedPreferences.getBoolean("card_exists", false)) {
+            SharedPreferences.Editor e = sharedPreferences.edit();
+            e.putString("card_0_number",      sharedPreferences.getString("card_number", ""));
+            e.putString("card_0_expiry",      sharedPreferences.getString("card_expiry", ""));
+            e.putString("card_0_cvv",         sharedPreferences.getString("card_cvv", ""));
+            e.putBoolean("card_0_blocked",    sharedPreferences.getBoolean("card_blocked", false));
+            e.putString("card_0_custom_name", sharedPreferences.getString("card_custom_name", ""));
+            e.putInt(KEY_CARD_COUNT, 1);
+            e.apply();
+        }
+    }
+
+    // ── Load cards from prefs into list ──────────────────────────────────────────
+
+    private void reloadCardsIntoList() {
+        cardList.clear();
+        if (sharedPreferences == null) return;
+        int count = sharedPreferences.getInt(KEY_CARD_COUNT, 0);
+        for (int i = 0; i < count; i++) {
+            CardPagerAdapter.CardEntry entry = new CardPagerAdapter.CardEntry();
+            entry.index      = i;
+            entry.number     = sharedPreferences.getString("card_" + i + "_number", "");
+            entry.expiry     = sharedPreferences.getString("card_" + i + "_expiry", "");
+            entry.cvv        = sharedPreferences.getString("card_" + i + "_cvv", "");
+            entry.blocked    = sharedPreferences.getBoolean("card_" + i + "_blocked", false);
+            entry.customName = sharedPreferences.getString("card_" + i + "_custom_name", "");
+            cardList.add(entry);
+        }
+    }
+
+    // ── Carousel dots ────────────────────────────────────────────────────────────
+
+    private void updateDots(int activePage) {
+        if (carouselDotsContainer == null || getContext() == null) return;
+        carouselDotsContainer.removeAllViews();
+        int count = cardList.size();
+        if (count <= 1) return;
+        float density = getResources().getDisplayMetrics().density;
+        for (int i = 0; i < count; i++) {
+            View dot = new View(getContext());
+            LinearLayout.LayoutParams params;
+            if (i == activePage) {
+                params = new LinearLayout.LayoutParams(
+                        Math.round(18 * density), Math.round(7 * density));
+                dot.setBackgroundResource(R.drawable.bg_dot_active);
+            } else {
+                params = new LinearLayout.LayoutParams(
+                        Math.round(7 * density), Math.round(7 * density));
+                dot.setBackgroundResource(R.drawable.bg_dot_inactive);
+            }
+            if (i > 0) params.setMarginStart(Math.round(6 * density));
+            dot.setLayoutParams(params);
+            carouselDotsContainer.addView(dot);
+        }
+    }
+
+    // ── Block quick action ────────────────────────────────────────────────────────
+
+    private void updateBlockActionForPage(int page) {
+        if (page < 0 || page >= cardList.size()) return;
+        boolean isBlocked = cardList.get(page).blocked;
+        if (tvBlockActionLabel != null)
+            tvBlockActionLabel.setText(isBlocked ? "Разблокировать" : "Блокировка");
+        if (iconBlockAction != null)
+            iconBlockAction.setImageResource(isBlocked
+                    ? R.drawable.ic_lock_open_24dp : R.drawable.ic_lock_24dp);
     }
 
     // ── Inline block toggle ──────────────────────────────────────────────────────
 
     private void toggleBlockStatusInline() {
-        if (sharedPreferences == null || getContext() == null) return;
-        boolean isBlocked = !sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false);
-        sharedPreferences.edit().putBoolean(KEY_CARD_BLOCKED, isBlocked).apply();
+        if (sharedPreferences == null || getContext() == null || cardList.isEmpty()) return;
+        int page = (cardViewPager != null) ? cardViewPager.getCurrentItem() : 0;
+        if (page >= cardList.size()) return;
+        CardPagerAdapter.CardEntry card = cardList.get(page);
+        card.blocked = !card.blocked;
+        sharedPreferences.edit()
+                .putBoolean("card_" + card.index + "_blocked", card.blocked)
+                .apply();
         Toast.makeText(requireContext(),
-                isBlocked ? R.string.card_blocked_toast : R.string.card_unblocked_toast,
+                card.blocked ? R.string.card_blocked_toast : R.string.card_unblocked_toast,
                 Toast.LENGTH_SHORT).show();
-        updateCardAppearance(isBlocked, sharedPreferences.getString(KEY_CARD_CUSTOM_NAME, ""));
+        if (cardPagerAdapter != null) cardPagerAdapter.notifyItemChanged(page);
+        updateBlockActionForPage(page);
     }
 
     // ── Balance from API ─────────────────────────────────────────────────────────
@@ -292,7 +327,10 @@ public class CardFragment extends Fragment {
                     try {
                         NumberFormat fmt = NumberFormat.getCurrencyInstance(new Locale("kk", "KZ"));
                         fmt.setCurrency(Currency.getInstance(code));
-                        if ("KZT".equals(code)) { fmt.setMaximumFractionDigits(0); fmt.setMinimumFractionDigits(0); }
+                        if ("KZT".equals(code)) {
+                            fmt.setMaximumFractionDigits(0);
+                            fmt.setMinimumFractionDigits(0);
+                        }
                         if (tvStatBalance != null) tvStatBalance.setText(fmt.format(balance));
                     } catch (Exception e) {
                         if (tvStatBalance != null)
@@ -318,14 +356,14 @@ public class CardFragment extends Fragment {
                 .commit();
     }
 
-    private void navigateToCardManagement() {
+    private void navigateToCardManagement(int cardIndex) {
         if (getParentFragmentManager() == null) return;
         FragmentManager fm = getParentFragmentManager();
         FragmentTransaction tx = fm.beginTransaction();
         tx.setCustomAnimations(
                 R.anim.slide_in_right, R.anim.slide_out_left,
                 R.anim.slide_in_left,  R.anim.slide_out_right);
-        tx.replace(R.id.fragment_container, new CardManagementFragment());
+        tx.replace(R.id.fragment_container, CardManagementFragment.newInstance(cardIndex));
         tx.addToBackStack("CardFragment");
         tx.commit();
     }
@@ -334,68 +372,87 @@ public class CardFragment extends Fragment {
 
     private void createNewCard() {
         if (getContext() == null || sharedPreferences == null) return;
+        int count = sharedPreferences.getInt(KEY_CARD_COUNT, 0);
+        if (count >= MAX_CARDS) {
+            Toast.makeText(requireContext(), "Максимум 3 карты", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (apiService != null) {
             apiService.issueCard().enqueue(new Callback<CardResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<CardResponse> call,
                                        @NonNull Response<CardResponse> response) {
                     if (!isAdded() || getContext() == null) return;
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    if (response.isSuccessful() && response.body() != null
+                            && response.body().isSuccess()) {
                         CardResponse.CardData card = response.body().getCard();
                         if (card != null) {
-                            saveCardToPrefs(card.getCardNumber(), card.getExpiry(), card.getCvv());
-                            Toast.makeText(requireContext(), R.string.card_created_toast, Toast.LENGTH_LONG).show();
-                            displayCardDetails();
+                            addCardToPrefs(card.getCardNumber(), card.getExpiry(), card.getCvv());
                             return;
                         }
                     }
-                    createCardLocally();
+                    addCardLocally();
                 }
                 @Override
                 public void onFailure(@NonNull Call<CardResponse> call, @NonNull Throwable t) {
                     if (!isAdded()) return;
-                    createCardLocally();
+                    addCardLocally();
                 }
             });
         } else {
-            createCardLocally();
+            addCardLocally();
         }
     }
 
-    private void saveCardToPrefs(String cardNumber, String expiryDate, String cvv) {
-        SharedPreferences.Editor e = sharedPreferences.edit();
-        e.putBoolean(KEY_CARD_EXISTS, true);
-        e.putString(KEY_CARD_NUMBER, cardNumber);
-        e.putString(KEY_CARD_EXPIRY, expiryDate);
-        e.putString(KEY_CARD_CVV, cvv);
-        e.putBoolean(KEY_CARD_BLOCKED, false);
-        e.putString(KEY_CARD_CUSTOM_NAME, getString(R.string.default_card_name_value));
-        e.apply();
+    private void addCardLocally() {
+        addCardToPrefs(generateCardNumber(), generateExpiryDate(), generateCvv());
     }
 
-    private void createCardLocally() {
-        String cardNumber = generateCardNumber();
-        String expiryDate = generateExpiryDate();
-        String cvv        = generateCvv();
-        saveCardToPrefs(cardNumber, expiryDate, cvv);
-        Toast.makeText(requireContext(), R.string.card_created_toast, Toast.LENGTH_LONG).show();
-        displayCardDetails();
+    private void addCardToPrefs(String number, String expiry, String cvv) {
+        int count = sharedPreferences.getInt(KEY_CARD_COUNT, 0);
+        int newIndex = count;
+        SharedPreferences.Editor e = sharedPreferences.edit();
+        e.putString("card_" + newIndex + "_number",      number);
+        e.putString("card_" + newIndex + "_expiry",      expiry);
+        e.putString("card_" + newIndex + "_cvv",         cvv);
+        e.putBoolean("card_" + newIndex + "_blocked",    false);
+        e.putString("card_" + newIndex + "_custom_name", "");
+        e.putInt(KEY_CARD_COUNT, newIndex + 1);
+        e.apply();
+
+        if (isAdded() && getContext() != null) {
+            Toast.makeText(requireContext(), R.string.card_created_toast, Toast.LENGTH_LONG).show();
+        }
+
+        reloadCardsIntoList();
+        if (cardList.isEmpty()) return;
+
+        if (layoutNoCard != null)      layoutNoCard.setVisibility(View.GONE);
+        if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.VISIBLE);
+
+        if (cardViewPager != null) {
+            if (cardPagerAdapter == null) {
+                cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
+                cardViewPager.setAdapter(cardPagerAdapter);
+                if (!callbackRegistered) {
+                    cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
+                    callbackRegistered = true;
+                }
+            } else {
+                cardPagerAdapter.notifyDataSetChanged();
+            }
+            cardViewPager.setCurrentItem(newIndex, newIndex > 0);
+            updateDots(newIndex);
+            updateBlockActionForPage(newIndex);
+        }
+
+        if (btnAddCard != null)
+            btnAddCard.setAlpha(cardList.size() >= MAX_CARDS ? 0.4f : 1.0f);
+
         if (apiService != null) loadUserBalance();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────
-
-    private String formatCardNumber(String n) {
-        if (n == null || n.length() != 16 || n.equals("NOT_FOUND_IN_PREFS")) return "---- ---- ---- ----";
-        try {
-            return n.substring(0,4) + " " + n.substring(4,8) + " " + n.substring(8,12) + " " + n.substring(12,16);
-        } catch (Exception e) { return "---- ---- ---- ----"; }
-    }
-
-    private String maskCardNumber(String n) {
-        if (n == null || n.length() != 16) return "•••• •••• •••• ----";
-        return "•••• •••• •••• " + n.substring(12);
-    }
 
     private String generateCardNumber() {
         StringBuilder sb = new StringBuilder("772233");

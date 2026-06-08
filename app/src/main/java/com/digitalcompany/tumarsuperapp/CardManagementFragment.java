@@ -32,17 +32,23 @@ import java.util.Random;
 
 public class CardManagementFragment extends Fragment {
 
-    private static final String PREFS_NAME           = "CardDataPrefs";
-    private static final String KEY_CARD_EXISTS      = "card_exists";
-    private static final String KEY_CARD_NUMBER      = "card_number";
-    private static final String KEY_CARD_EXPIRY      = "card_expiry";
-    private static final String KEY_CARD_CVV         = "card_cvv";
-    private static final String KEY_CARD_BLOCKED     = "card_blocked";
-    private static final String KEY_CARD_CUSTOM_NAME = "card_custom_name";
+    private static final String PREFS_NAME         = "CardDataPrefs";
+    private static final String KEY_CARD_COUNT     = "card_count";
+    private static final String ARG_CARD_INDEX     = "card_index";
+    private static final long   CVV_VISIBILITY_MS  = 60 * 1000;
+    private static final String CVV_PLACEHOLDER    = "•••";
+    private static final String TAG                = "CardMgmtFragment";
 
-    private static final long   CVV_VISIBILITY_DURATION_MS = 60 * 1000;
-    private static final String CVV_PLACEHOLDER = "•••";
-    private static final String TAG = "CardMgmtFragment";
+    public static CardManagementFragment newInstance(int cardIndex) {
+        CardManagementFragment f = new CardManagementFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_CARD_INDEX, cardIndex);
+        f.setArguments(args);
+        return f;
+    }
+
+    // Card index in shared prefs
+    private int cardIndex = 0;
 
     // Header
     private FrameLayout btnManageBack;
@@ -58,11 +64,11 @@ public class CardManagementFragment extends Fragment {
     private TextView    textCardCvvManage;
     private FrameLayout btnShowCvvManage;
 
-    // Blocked state views
+    // Blocked state
     private LinearLayout layoutBlockedBanner;
     private LinearLayout btnUnblockCta;
 
-    // Action items
+    // Actions
     private LinearLayout cardActionRename;
     private LinearLayout cardActionReissue;
     private LinearLayout cardActionBlockToggle;
@@ -83,9 +89,18 @@ public class CardManagementFragment extends Fragment {
     private Handler  cvvHandler;
     private Runnable hideCvvRunnable;
 
+    // ── Indexed prefs key helpers ────────────────────────────────────────────────
+
+    private String keyNumber()     { return "card_" + cardIndex + "_number"; }
+    private String keyExpiry()     { return "card_" + cardIndex + "_expiry"; }
+    private String keyCvv()        { return "card_" + cardIndex + "_cvv"; }
+    private String keyBlocked()    { return "card_" + cardIndex + "_blocked"; }
+    private String keyCustomName() { return "card_" + cardIndex + "_custom_name"; }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        cardIndex = getArguments() != null ? getArguments().getInt(ARG_CARD_INDEX, 0) : 0;
         cvvHandler = new Handler(Looper.getMainLooper());
         hideCvvRunnable = () -> {
             if (textCardCvvManage != null) textCardCvvManage.setText(CVV_PLACEHOLDER);
@@ -101,15 +116,15 @@ public class CardManagementFragment extends Fragment {
 
         btnManageBack = view.findViewById(R.id.btn_manage_back);
 
-        cardViewManage        = view.findViewById(R.id.card_view_manage);
-        textCardCustomName    = view.findViewById(R.id.text_card_custom_name);
-        textCardNumberManage  = view.findViewById(R.id.text_card_number_manage);
+        cardViewManage         = view.findViewById(R.id.card_view_manage);
+        textCardCustomName     = view.findViewById(R.id.text_card_custom_name);
+        textCardNumberManage   = view.findViewById(R.id.text_card_number_manage);
         textCardBlockedOverlay = view.findViewById(R.id.text_card_blocked_overlay);
-        tvManageCardSubtitle  = view.findViewById(R.id.tv_manage_card_subtitle);
+        tvManageCardSubtitle   = view.findViewById(R.id.tv_manage_card_subtitle);
 
-        tvManageNumberFull  = view.findViewById(R.id.tv_manage_number_full);
-        textCardCvvManage   = view.findViewById(R.id.text_card_cvv_manage);
-        btnShowCvvManage    = view.findViewById(R.id.btn_show_cvv_manage);
+        tvManageNumberFull = view.findViewById(R.id.tv_manage_number_full);
+        textCardCvvManage  = view.findViewById(R.id.text_card_cvv_manage);
+        btnShowCvvManage   = view.findViewById(R.id.btn_show_cvv_manage);
 
         layoutBlockedBanner = view.findViewById(R.id.layout_blocked_banner);
         btnUnblockCta       = view.findViewById(R.id.btn_unblock_cta);
@@ -140,10 +155,11 @@ public class CardManagementFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (sharedPreferences != null && sharedPreferences.getBoolean(KEY_CARD_EXISTS, false)) {
-            loadCardDataAndUpdateUI();
-        } else {
+        int count = sharedPreferences != null ? sharedPreferences.getInt(KEY_CARD_COUNT, 0) : 0;
+        if (cardIndex >= count) {
             closeFragment();
+        } else {
+            loadCardDataAndUpdateUI();
         }
     }
 
@@ -156,32 +172,24 @@ public class CardManagementFragment extends Fragment {
     // ── Load data ────────────────────────────────────────────────────────────────
 
     private void loadCardDataAndUpdateUI() {
-        if (sharedPreferences == null || !sharedPreferences.getBoolean(KEY_CARD_EXISTS, false)) {
-            closeFragment();
-            return;
-        }
+        if (sharedPreferences == null) { closeFragment(); return; }
 
-        String cardNumber = sharedPreferences.getString(KEY_CARD_NUMBER, "");
-        String expiry     = sharedPreferences.getString(KEY_CARD_EXPIRY, "");
-        actualCvv         = sharedPreferences.getString(KEY_CARD_CVV, "");
-        currentCustomName = sharedPreferences.getString(KEY_CARD_CUSTOM_NAME, "");
-        isCardBlocked     = sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false);
+        String cardNumber = sharedPreferences.getString(keyNumber(), "");
+        String expiry     = sharedPreferences.getString(keyExpiry(), "");
+        actualCvv         = sharedPreferences.getString(keyCvv(), "");
+        currentCustomName = sharedPreferences.getString(keyCustomName(), "");
+        isCardBlocked     = sharedPreferences.getBoolean(keyBlocked(), false);
 
-        // Card visual: compact masked number
         String masked = maskCard(cardNumber);
         if (textCardNumberManage != null) textCardNumberManage.setText(masked);
-        if (tvManageCardSubtitle != null) tvManageCardSubtitle.setText(masked);
+        if (tvManageCardSubtitle  != null) tvManageCardSubtitle.setText(masked);
 
-        // Card name
         String nameDisplay = currentCustomName.isEmpty()
                 ? getString(R.string.default_card_name_value) : currentCustomName;
         if (textCardCustomName != null) textCardCustomName.setText(nameDisplay);
 
-        // Full number in detail strip
         if (tvManageNumberFull != null) tvManageNumberFull.setText(formatCardNumber(cardNumber));
-
-        // Expiry shown in compact card header
-        if (textCardCvvManage != null) textCardCvvManage.setText(CVV_PLACEHOLDER);
+        if (textCardCvvManage  != null) textCardCvvManage.setText(CVV_PLACEHOLDER);
         isCvvVisible = false;
 
         updateCardAppearance();
@@ -194,38 +202,25 @@ public class CardManagementFragment extends Fragment {
 
         if (textCardBlockedOverlay != null)
             textCardBlockedOverlay.setVisibility(isCardBlocked ? View.VISIBLE : View.GONE);
-
         if (layoutBlockedBanner != null)
             layoutBlockedBanner.setVisibility(isCardBlocked ? View.VISIBLE : View.GONE);
-
         if (btnUnblockCta != null)
             btnUnblockCta.setVisibility(isCardBlocked ? View.VISIBLE : View.GONE);
 
-        // Dim rename/reissue when blocked
         float alpha = isCardBlocked ? 0.35f : 1.0f;
-        if (cardActionRename  != null) cardActionRename.setAlpha(alpha);
-        if (cardActionReissue != null) cardActionReissue.setAlpha(alpha);
-        if (cardActionRename  != null) cardActionRename.setClickable(!isCardBlocked);
-        if (cardActionReissue != null) cardActionReissue.setClickable(!isCardBlocked);
+        if (cardActionRename  != null) { cardActionRename.setAlpha(alpha);  cardActionRename.setClickable(!isCardBlocked); }
+        if (cardActionReissue != null) { cardActionReissue.setAlpha(alpha); cardActionReissue.setClickable(!isCardBlocked); }
 
-        // Block/Unblock toggle item
         if (isCardBlocked) {
-            if (iconBlockToggle != null)
-                iconBlockToggle.setImageResource(R.drawable.ic_lock_open_24dp);
-            if (titleBlockToggle != null)
-                titleBlockToggle.setText(R.string.unblock_card_button);
-            if (subtitleBlockToggle != null)
-                subtitleBlockToggle.setText(R.string.unblock_card_subtitle);
+            if (iconBlockToggle    != null) iconBlockToggle.setImageResource(R.drawable.ic_lock_open_24dp);
+            if (titleBlockToggle   != null) titleBlockToggle.setText(R.string.unblock_card_button);
+            if (subtitleBlockToggle != null) subtitleBlockToggle.setText(R.string.unblock_card_subtitle);
         } else {
-            if (iconBlockToggle != null)
-                iconBlockToggle.setImageResource(R.drawable.ic_lock_24dp);
-            if (titleBlockToggle != null)
-                titleBlockToggle.setText(R.string.block_card_button);
-            if (subtitleBlockToggle != null)
-                subtitleBlockToggle.setText(R.string.block_card_subtitle);
+            if (iconBlockToggle    != null) iconBlockToggle.setImageResource(R.drawable.ic_lock_24dp);
+            if (titleBlockToggle   != null) titleBlockToggle.setText(R.string.block_card_button);
+            if (subtitleBlockToggle != null) subtitleBlockToggle.setText(R.string.block_card_subtitle);
         }
 
-        // Reset CVV
         if (textCardCvvManage != null) textCardCvvManage.setText(CVV_PLACEHOLDER);
         isCvvVisible = false;
         cvvHandler.removeCallbacks(hideCvvRunnable);
@@ -243,7 +238,7 @@ public class CardManagementFragment extends Fragment {
             if (textCardCvvManage != null) textCardCvvManage.setText(actualCvv);
             isCvvVisible = true;
             cvvHandler.removeCallbacks(hideCvvRunnable);
-            cvvHandler.postDelayed(hideCvvRunnable, CVV_VISIBILITY_DURATION_MS);
+            cvvHandler.postDelayed(hideCvvRunnable, CVV_VISIBILITY_MS);
         }
     }
 
@@ -257,8 +252,8 @@ public class CardManagementFragment extends Fragment {
                 .inflate(R.layout.bottom_sheet_rename_card, null);
         sheet.setContentView(sheetView);
 
-        TextView    tvCounter  = sheetView.findViewById(R.id.tv_rename_counter);
-        EditText    etName     = sheetView.findViewById(R.id.et_rename_card);
+        TextView     tvCounter = sheetView.findViewById(R.id.tv_rename_counter);
+        EditText     etName    = sheetView.findViewById(R.id.et_rename_card);
         LinearLayout btnCancel = sheetView.findViewById(R.id.btn_rename_cancel);
         LinearLayout btnSave   = sheetView.findViewById(R.id.btn_rename_save);
 
@@ -271,19 +266,13 @@ public class CardManagementFragment extends Fragment {
         etName.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void onTextChanged(CharSequence s, int st, int b, int c) {}
-            @Override
-            public void afterTextChanged(Editable s) {
-                tvCounter.setText(s.length() + " / 30");
-            }
+            @Override public void afterTextChanged(Editable s) { tvCounter.setText(s.length() + " / 30"); }
         });
 
         btnCancel.setOnClickListener(v -> sheet.dismiss());
         btnSave.setOnClickListener(v -> {
             String newName = etName.getText().toString().trim();
-            if (newName.isEmpty()) {
-                etName.setError("Введите название");
-                return;
-            }
+            if (newName.isEmpty()) { etName.setError("Введите название"); return; }
             saveCardName(newName);
             sheet.dismiss();
         });
@@ -293,7 +282,7 @@ public class CardManagementFragment extends Fragment {
 
     private void saveCardName(String newName) {
         if (sharedPreferences == null) return;
-        sharedPreferences.edit().putString(KEY_CARD_CUSTOM_NAME, newName).apply();
+        sharedPreferences.edit().putString(keyCustomName(), newName).apply();
         currentCustomName = newName;
         if (textCardCustomName != null) textCardCustomName.setText(newName);
         if (getContext() != null)
@@ -301,12 +290,12 @@ public class CardManagementFragment extends Fragment {
                     getString(R.string.card_renamed_toast, newName), Toast.LENGTH_SHORT).show();
     }
 
-    // ── Block / Reissue / Delete ──────────────────────────────────────────────────
+    // ── Block / Reissue / Delete ─────────────────────────────────────────────────
 
     private void toggleBlockStatus() {
         if (sharedPreferences == null || getContext() == null) return;
         isCardBlocked = !isCardBlocked;
-        sharedPreferences.edit().putBoolean(KEY_CARD_BLOCKED, isCardBlocked).apply();
+        sharedPreferences.edit().putBoolean(keyBlocked(), isCardBlocked).apply();
         Toast.makeText(requireContext(),
                 isCardBlocked ? R.string.card_blocked_toast : R.string.card_unblocked_toast,
                 Toast.LENGTH_SHORT).show();
@@ -319,11 +308,11 @@ public class CardManagementFragment extends Fragment {
         String expiry = generateExpiryDate();
         String cvv    = generateCvv();
         sharedPreferences.edit()
-                .putString(KEY_CARD_NUMBER, number)
-                .putString(KEY_CARD_EXPIRY, expiry)
-                .putString(KEY_CARD_CVV, cvv)
-                .putString(KEY_CARD_CUSTOM_NAME, getString(R.string.default_card_name_value))
-                .putBoolean(KEY_CARD_BLOCKED, false)
+                .putString(keyNumber(), number)
+                .putString(keyExpiry(), expiry)
+                .putString(keyCvv(),    cvv)
+                .putString(keyCustomName(), getString(R.string.default_card_name_value))
+                .putBoolean(keyBlocked(), false)
                 .apply();
         Toast.makeText(requireContext(), R.string.card_reissued_toast, Toast.LENGTH_SHORT).show();
         loadCardDataAndUpdateUI();
@@ -335,19 +324,31 @@ public class CardManagementFragment extends Fragment {
                 .setTitle(R.string.delete_card_confirmation_title)
                 .setMessage(R.string.delete_card_confirmation_message)
                 .setPositiveButton(R.string.yes, (d, w) -> deleteCard())
-                .setNegativeButton(R.string.no, (d, w) -> d.cancel())
+                .setNegativeButton(R.string.no,  (d, w) -> d.cancel())
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
     private void deleteCard() {
         if (sharedPreferences == null) return;
-        sharedPreferences.edit()
-                .remove(KEY_CARD_NUMBER).remove(KEY_CARD_EXPIRY)
-                .remove(KEY_CARD_CVV).remove(KEY_CARD_BLOCKED)
-                .remove(KEY_CARD_CUSTOM_NAME)
-                .putBoolean(KEY_CARD_EXISTS, false)
-                .commit();
+        int count = sharedPreferences.getInt(KEY_CARD_COUNT, 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        // Shift cards after the deleted one down by one slot
+        for (int i = cardIndex; i < count - 1; i++) {
+            editor.putString("card_" + i + "_number",      sharedPreferences.getString("card_" + (i+1) + "_number", ""));
+            editor.putString("card_" + i + "_expiry",      sharedPreferences.getString("card_" + (i+1) + "_expiry", ""));
+            editor.putString("card_" + i + "_cvv",         sharedPreferences.getString("card_" + (i+1) + "_cvv", ""));
+            editor.putBoolean("card_" + i + "_blocked",    sharedPreferences.getBoolean("card_" + (i+1) + "_blocked", false));
+            editor.putString("card_" + i + "_custom_name", sharedPreferences.getString("card_" + (i+1) + "_custom_name", ""));
+        }
+        int last = count - 1;
+        editor.remove("card_" + last + "_number");
+        editor.remove("card_" + last + "_expiry");
+        editor.remove("card_" + last + "_cvv");
+        editor.remove("card_" + last + "_blocked");
+        editor.remove("card_" + last + "_custom_name");
+        editor.putInt(KEY_CARD_COUNT, Math.max(0, count - 1));
+        editor.commit();
         if (getContext() != null)
             Toast.makeText(requireContext(), R.string.card_deleted_toast, Toast.LENGTH_SHORT).show();
         closeFragment();

@@ -52,23 +52,6 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
-        <FrameLayout
-            android:id="@+id/btn_manage_more"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/bg_header_bell_btn"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="···"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </FrameLayout>
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
