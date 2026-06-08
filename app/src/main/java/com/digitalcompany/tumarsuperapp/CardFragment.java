@@ -377,7 +377,9 @@ public class CardFragment extends Fragment {
             Toast.makeText(requireContext(), "Максимум 3 карты", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (apiService != null) {
+        // Only use API for the very first card; subsequent cards are always local to
+        // guarantee unique numbers (the backend issues one card per user).
+        if (count == 0 && apiService != null) {
             apiService.issueCard().enqueue(new Callback<CardResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<CardResponse> call,
