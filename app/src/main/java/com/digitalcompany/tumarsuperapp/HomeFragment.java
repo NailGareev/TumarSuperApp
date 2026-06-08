@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.cardview.widget.CardView;
 import android.widget.Toast;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
@@ -65,6 +67,10 @@ public class HomeFragment extends Fragment implements MenuProvider {
     private FrameLayout btnQrPay;
     private FrameLayout btnBell;
 
+    // Messages card
+    private CardView cardMessages;
+    private TextView tvMessagesSubtitle;
+
     // Currency rate views
     private TextView tvUsdRate, tvUsdChange;
     private TextView tvEurRate, tvEurChange;
@@ -96,6 +102,9 @@ public class HomeFragment extends Fragment implements MenuProvider {
         buttonPayments = view.findViewById(R.id.buttonPayments);
         btnQrPay       = view.findViewById(R.id.btnQrPay);
         btnBell        = view.findViewById(R.id.btnBell);
+
+        cardMessages      = view.findViewById(R.id.card_messages);
+        tvMessagesSubtitle = view.findViewById(R.id.tv_messages_subtitle);
 
         tvUsdRate   = view.findViewById(R.id.tvUsdRate);
         tvUsdChange = view.findViewById(R.id.tvUsdChange);
@@ -130,6 +139,25 @@ public class HomeFragment extends Fragment implements MenuProvider {
         if (apiService != null) {
             loadUserProfileData();
             loadCurrencyRates();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshMessagesCard();
+    }
+
+    private void refreshMessagesCard() {
+        if (getContext() == null || cardMessages == null) return;
+        SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
+        String code = prefs.getString("market_delivery_code", null);
+        if (code != null && !code.isEmpty()) {
+            if (tvMessagesSubtitle != null)
+                tvMessagesSubtitle.setText("Код получения товара: " + code);
+            cardMessages.setVisibility(View.VISIBLE);
+        } else {
+            cardMessages.setVisibility(View.GONE);
         }
     }
 

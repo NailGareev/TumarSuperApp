@@ -362,13 +362,15 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- ── Tasks Strip ── -->
+        <!-- ── Messages Strip ── -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_messages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:layout_marginEnd="14dp"
             android:layout_marginTop="10dp"
+            android:visibility="gone"
             app:cardCornerRadius="12dp"
             app:cardElevation="1dp"
             app:cardBackgroundColor="@color/card_bg">
@@ -391,31 +393,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Задачи"
+                        android:text="Сообщения"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                     <TextView
+                        android:id="@+id/tv_messages_subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
-                        android:text="Подтвердите входящий платёж…"
+                        android:text=""
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
-                <FrameLayout
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_action_icon_purple">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="2"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </FrameLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
