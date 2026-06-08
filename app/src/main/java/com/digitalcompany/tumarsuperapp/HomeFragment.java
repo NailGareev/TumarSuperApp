@@ -53,6 +53,7 @@ public class HomeFragment extends Fragment implements MenuProvider {
     private TextView tvBalance;
     private LinearLayout buttonTopUp, buttonHistory, buttonTransfer, buttonPayments;
     private FrameLayout btnQrPay;
+    private FrameLayout btnBell;
 
     private ApiService apiService;
 
@@ -81,6 +82,7 @@ public class HomeFragment extends Fragment implements MenuProvider {
         buttonTransfer = view.findViewById(R.id.buttonTransfer);
         buttonPayments = view.findViewById(R.id.buttonPayments);
         btnQrPay       = view.findViewById(R.id.btnQrPay);
+        btnBell        = view.findViewById(R.id.btnBell);
 
         tvPhoneNumber.setText("+7 ...");
         tvBalance.setText("---.-- ₸");
@@ -165,6 +167,11 @@ public class HomeFragment extends Fragment implements MenuProvider {
                     Toast.makeText(getContext(), "QR-оплата", Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+
+        if (btnBell != null) {
+            btnBell.setOnClickListener(v ->
+                    navigateToFragment(new NotificationsFragment(), "notifications"));
         }
     }
 
