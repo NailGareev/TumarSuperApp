@@ -80,11 +80,6 @@ public class CardFragment extends Fragment {
     private TextView     tvBlockActionLabel;
     private ImageView    iconBlockAction;
 
-    // Details strip
-    private TextView    tvCardNumberMasked;
-    private TextView    tvCardCvvStrip;
-    private FrameLayout btnShowCvv;
-
     // All operations
     private LinearLayout btnAllOperations;
 
@@ -102,11 +97,7 @@ public class CardFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         cvvHandler = new Handler(Looper.getMainLooper());
-        hideCvvRunnable = () -> {
-            if (textCardCvv != null)      textCardCvv.setText(CVV_PLACEHOLDER);
-            if (tvCardCvvStrip != null)   tvCardCvvStrip.setText(CVV_PLACEHOLDER);
-            isCvvVisible = false;
-        };
+        hideCvvRunnable = () -> { isCvvVisible = false; };
     }
 
     @Nullable
@@ -138,10 +129,6 @@ public class CardFragment extends Fragment {
         actionCardSettings = view.findViewById(R.id.action_card_settings);
         tvBlockActionLabel = view.findViewById(R.id.tv_block_action_label);
         iconBlockAction    = view.findViewById(R.id.icon_block_action);
-
-        tvCardNumberMasked = view.findViewById(R.id.tv_card_number_masked);
-        tvCardCvvStrip     = view.findViewById(R.id.tv_card_cvv_strip);
-        btnShowCvv         = view.findViewById(R.id.btn_show_cvv);
 
         btnAllOperations = view.findViewById(R.id.btn_all_operations);
 
@@ -193,12 +180,6 @@ public class CardFragment extends Fragment {
                 }
             });
 
-        if (textCardCvv != null)
-            textCardCvv.setOnClickListener(v -> toggleCvvVisibility());
-
-        if (btnShowCvv != null)
-            btnShowCvv.setOnClickListener(v -> toggleCvvVisibility());
-
         if (cardViewClickableArea != null)
             cardViewClickableArea.setOnClickListener(v -> navigateToCardManagement());
 
@@ -239,11 +220,9 @@ public class CardFragment extends Fragment {
         boolean isBlocked = sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false);
         String customName = sharedPreferences.getString(KEY_CARD_CUSTOM_NAME, "");
 
-        if (textCardNumber != null)  textCardNumber.setText(formatCardNumber(cardNumber));
+        if (textCardNumber != null)  textCardNumber.setText(maskCardNumber(cardNumber));
         if (textCardExpiry != null)  textCardExpiry.setText(expiry);
         if (textCardCvv != null)     textCardCvv.setText(CVV_PLACEHOLDER);
-        if (tvCardCvvStrip != null)  tvCardCvvStrip.setText(CVV_PLACEHOLDER);
-        if (tvCardNumberMasked != null) tvCardNumberMasked.setText(maskCardNumber(cardNumber));
         isCvvVisible = false;
 
         updateCardAppearance(isBlocked, customName);
@@ -256,14 +235,12 @@ public class CardFragment extends Fragment {
     private void updateCardAppearance(boolean isBlocked, String customName) {
         if (getContext() == null) return;
 
-        // Custom name
+        // Custom name: show in top row; use default brand label when name matches default
         if (textCardCustomNameMain != null) {
-            if (customName != null && !customName.isEmpty()) {
-                textCardCustomNameMain.setText(customName);
-                textCardCustomNameMain.setVisibility(View.VISIBLE);
-            } else {
-                textCardCustomNameMain.setVisibility(View.GONE);
-            }
+            String defaultName = getString(R.string.default_card_name_value);
+            boolean hasCustomName = customName != null && !customName.isEmpty()
+                    && !customName.equalsIgnoreCase(defaultName);
+            textCardCustomNameMain.setText(hasCustomName ? customName : "Tumar Карта");
         }
 
         // Blocked overlay
@@ -276,9 +253,6 @@ public class CardFragment extends Fragment {
         if (iconBlockAction != null)
             iconBlockAction.setImageResource(isBlocked ? R.drawable.ic_lock_open_24dp : R.drawable.ic_lock_24dp);
 
-        // CVV reset
-        if (textCardCvv != null)    { textCardCvv.setText(CVV_PLACEHOLDER); }
-        if (tvCardCvvStrip != null) { tvCardCvvStrip.setText(CVV_PLACEHOLDER); }
         isCvvVisible = false;
         cvvHandler.removeCallbacks(hideCvvRunnable);
     }
@@ -288,23 +262,6 @@ public class CardFragment extends Fragment {
         if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.GONE);
         cvvHandler.removeCallbacks(hideCvvRunnable);
         isCvvVisible = false;
-    }
-
-    // ── CVV toggle ───────────────────────────────────────────────────────────────
-
-    private void toggleCvvVisibility() {
-        if (getContext() == null || sharedPreferences == null) return;
-        if (sharedPreferences.getBoolean(KEY_CARD_BLOCKED, false)) {
-            Toast.makeText(requireContext(), "Карта заблокирована", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!isCvvVisible && actualCvv != null && !actualCvv.isEmpty()) {
-            if (textCardCvv != null)    textCardCvv.setText(actualCvv);
-            if (tvCardCvvStrip != null) tvCardCvvStrip.setText(actualCvv);
-            isCvvVisible = true;
-            cvvHandler.removeCallbacks(hideCvvRunnable);
-            cvvHandler.postDelayed(hideCvvRunnable, CVV_VISIBILITY_DURATION_MS);
-        }
     }
 
     // ── Inline block toggle ──────────────────────────────────────────────────────
