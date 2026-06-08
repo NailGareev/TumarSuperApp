@@ -8,8 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager; // Импорт
-import androidx.fragment.app.FragmentTransaction; // Импорт
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,42 +18,42 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Импорты для сети и моделей
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 
-// Импорты для форматирования
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Currency;
 import java.util.Locale;
 
-// Импорты Retrofit
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-// Реализуем MenuProvider для современного управления меню
 public class HomeFragment extends Fragment implements MenuProvider {
 
     private static final String TAG = "HomeFragment";
 
-    // Ключи SharedPreferences для проверки статуса входа и получения токена
     private static final String USER_PREFS_NAME = "UserPrefs";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_AUTH_TOKEN = "auth_token";
+    private static final String KEY_USER_NAME = "user_name";
 
-    // --- UI Элементы ---
+    private TextView tvGreeting;
+    private TextView tvDate;
     private TextView tvPhoneNumber;
     private TextView tvBalance;
     private LinearLayout buttonTopUp, buttonHistory, buttonTransfer, buttonPayments;
+    private FrameLayout btnQrPay;
 
-    // --- Сетевые компоненты ---
     private ApiService apiService;
 
     @Override
@@ -62,36 +62,37 @@ public class HomeFragment extends Fragment implements MenuProvider {
         if (getActivity() != null) {
             apiService = ApiClient.getApiService(getActivity().getApplicationContext());
         } else {
-            Log.e(TAG, "Activity is null in onCreate, cannot initialize ApiService");
+            Log.e(TAG, "Activity is null in onCreate");
         }
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Находим View элементы по их ID из fragment_home.xml
-        tvPhoneNumber = view.findViewById(R.id.userIdTextView);
-        tvBalance = view.findViewById(R.id.balanceTextView);
-        buttonTopUp = view.findViewById(R.id.buttonTopUp);
-        buttonHistory = view.findViewById(R.id.buttonHistory);
+        tvGreeting     = view.findViewById(R.id.tvGreeting);
+        tvDate         = view.findViewById(R.id.tvDate);
+        tvPhoneNumber  = view.findViewById(R.id.userIdTextView);
+        tvBalance      = view.findViewById(R.id.balanceTextView);
+        buttonTopUp    = view.findViewById(R.id.buttonTopUp);
+        buttonHistory  = view.findViewById(R.id.buttonHistory);
         buttonTransfer = view.findViewById(R.id.buttonTransfer);
         buttonPayments = view.findViewById(R.id.buttonPayments);
+        btnQrPay       = view.findViewById(R.id.btnQrPay);
 
-        // Устанавливаем временные плейсхолдеры
         tvPhoneNumber.setText("+7 ...");
-        tvBalance.setText("---.-- ???");
+        tvBalance.setText("---.-- ₸");
 
-        // Карточка Travel
+        setGreeting();
+        setCurrentDate();
+
         view.findViewById(R.id.ll_travel).setOnClickListener(v ->
                 navigateToFragment(new TravelFragment(), "travel"));
-
-        // Карточка Tumar Market
         view.findViewById(R.id.ll_market).setOnClickListener(v ->
                 navigateToFragment(new TumarMarketFragment(), "market"));
 
-        // Устанавливаем слушатели кликов
         setupActionButtons();
 
         return view;
@@ -101,22 +102,45 @@ public class HomeFragment extends Fragment implements MenuProvider {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Настройка MenuProvider
         MenuHost menuHost = requireActivity();
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
-        // Загружаем данные пользователя
         if (apiService != null) {
             loadUserProfileData();
         } else {
-            Log.e(TAG, "apiService is null in onViewCreated, cannot load profile data.");
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Ошибка инициализации сети", Toast.LENGTH_SHORT).show();
-            }
+            Log.e(TAG, "apiService is null in onViewCreated");
         }
     }
 
-    // Метод для установки слушателей на кнопки действий
+    private void setGreeting() {
+        if (getContext() == null) return;
+        SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
+        String name = prefs.getString(KEY_USER_NAME, null);
+        if (tvGreeting == null) return;
+        if (name != null && !name.isEmpty()) {
+            tvGreeting.setText("Привет, " + name + "! 👋");
+        } else {
+            tvGreeting.setText("Привет! 👋");
+        }
+    }
+
+    private void setCurrentDate() {
+        if (tvDate == null) return;
+        try {
+            LocalDate today = LocalDate.now();
+            Locale ruLocale = new Locale("ru");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EE, d MMMM yyyy", ruLocale);
+            String dateStr = today.format(formatter);
+            // Capitalise first letter
+            if (!dateStr.isEmpty()) {
+                dateStr = Character.toUpperCase(dateStr.charAt(0)) + dateStr.substring(1);
+            }
+            tvDate.setText(dateStr);
+        } catch (Exception e) {
+            Log.e(TAG, "Date formatting error", e);
+        }
+    }
+
     private void setupActionButtons() {
         buttonTopUp.setOnClickListener(v -> navigateToFragment(new TopUpFragment(), "topup"));
 
@@ -132,65 +156,56 @@ public class HomeFragment extends Fragment implements MenuProvider {
             }
         });
 
-        buttonPayments.setOnClickListener(v -> navigateToFragment(new PaymentsFragment(), "payments"));
+        buttonPayments.setOnClickListener(v ->
+                navigateToFragment(new PaymentsFragment(), "payments"));
+
+        if (btnQrPay != null) {
+            btnQrPay.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "QR-оплата", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
-    // Вспомогательный метод для навигации
     private void navigateToFragment(Fragment fragment, String tag) {
         if (getActivity() != null) {
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
-            // ВАЖНО: Замените R.id.fragment_container на ID вашего контейнера в MainActivity
             transaction.replace(R.id.fragment_container, fragment, tag);
-            transaction.addToBackStack(tag); // Добавляем в стек для кнопки "назад"
+            transaction.addToBackStack(tag);
             transaction.commit();
         } else {
-            Log.e(TAG, "Cannot navigate to fragment, activity is null (inside navigateToFragment).");
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Не удалось открыть экран", Toast.LENGTH_SHORT).show();
-            }
+            Log.e(TAG, "Cannot navigate, activity is null");
         }
     }
 
-
-    // --- Метод для загрузки данных пользователя с бэкенда ---
     private void loadUserProfileData() {
-        // ... (код без изменений) ...
-        if (getContext() == null) { Log.w(TAG, "Context is null, cannot load profile data."); return; }
+        if (getContext() == null) return;
         SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
         String token = prefs.getString(KEY_AUTH_TOKEN, null);
         boolean isLoggedIn = prefs.getBoolean(KEY_IS_LOGGED_IN, false);
 
         if (!isLoggedIn || token == null) {
-            Log.w(TAG, "Пользователь не вошел в систему, не могу загрузить профиль.");
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Требуется вход в систему", Toast.LENGTH_SHORT).show();
-            }
-            // LoginActivity.logout(requireActivity());
+            Log.w(TAG, "User not logged in");
             return;
         }
 
-        Log.d(TAG, "Запрос данных профиля к /api/profile...");
         apiService.getUserProfile().enqueue(new Callback<UserProfileResponse>() {
             @Override
             public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
-                if (!isAdded() || getContext() == null) { Log.w(TAG, "Fragment detached or context is null after API response."); return; }
+                if (!isAdded() || getContext() == null) return;
 
                 if (response.isSuccessful() && response.body() != null) {
                     UserProfileResponse profile = response.body();
-                    Log.d(TAG, "Профиль успешно загружен: " + profile);
                     if (profile.isSuccess()) {
                         updateUI(profile);
                     } else {
-                        Log.w(TAG, "API вернул success=false при загрузке профиля.");
-                        if (getContext() != null) Toast.makeText(getContext(), "Не удалось загрузить данные профиля", Toast.LENGTH_SHORT).show();
-                        // LoginActivity.logout(requireActivity());
+                        Toast.makeText(getContext(), "Не удалось загрузить профиль", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Log.e(TAG, "Ошибка ответа сервера при загрузке профиля: " + response.code());
-                    if (getContext() != null) Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Server error: " + response.code());
                     if (response.code() == 401 || response.code() == 403) {
-                        Log.w(TAG, "Ошибка авторизации (401/403), возможно, токен истек. Выполняем выход.");
                         Toast.makeText(requireContext(), "Сессия истекла. Войдите снова", Toast.LENGTH_SHORT).show();
                         LoginActivity.logout(requireActivity());
                     }
@@ -199,16 +214,14 @@ public class HomeFragment extends Fragment implements MenuProvider {
 
             @Override
             public void onFailure(Call<UserProfileResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) { Log.w(TAG, "Fragment detached or context is null on API failure."); return; }
-                Log.e(TAG, "Ошибка сети при загрузке профиля", t);
-                if (getContext() != null) Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (!isAdded() || getContext() == null) return;
+                Log.e(TAG, "Network error loading profile", t);
+                Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // --- Метод для обновления UI данными из профиля ---
     private void updateUI(UserProfileResponse profile) {
-        // ... (код без изменений) ...
         if (profile == null) return;
         if (tvPhoneNumber != null) {
             tvPhoneNumber.setText(formatPhoneNumber(profile.getPhone()));
@@ -229,16 +242,14 @@ public class HomeFragment extends Fragment implements MenuProvider {
                 }
                 tvBalance.setText(currencyFormat.format(balance));
             } catch (Exception e) {
-                Log.e(TAG, "Ошибка форматирования валюты: " + e.getMessage());
+                Log.e(TAG, "Currency format error: " + e.getMessage());
                 tvBalance.setText(String.format(Locale.US, "%.2f %s", balance, currencyCode));
             }
         }
     }
 
-    // --- Вспомогательный метод для форматирования номера телефона ---
     private String formatPhoneNumber(String phone) {
-        // ... (код без изменений) ...
-        if (phone == null) { return "+7 ??? ??? ?? ??"; }
+        if (phone == null) return "+7 ??? ??? ?? ??";
         String digits = phone.replaceAll("[^\\d+]", "");
         if (digits.startsWith("+7") && digits.length() == 12) {
             return String.format("+7 (%s) %s-%s-%s",
@@ -250,18 +261,8 @@ public class HomeFragment extends Fragment implements MenuProvider {
         return phone;
     }
 
-
-    // Вспомогательный метод для показа Toast
-    private void showToast(String message) {
-        if (getContext() != null) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // --- Методы MenuProvider ---
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        // ... (код без изменений) ...
         menuInflater.inflate(R.menu.top_app_bar_menu, menu);
     }
 
