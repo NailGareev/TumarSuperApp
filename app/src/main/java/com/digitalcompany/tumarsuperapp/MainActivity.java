@@ -265,7 +265,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 && getSupportFragmentManager().getBackStackEntryCount() == 0;
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         boolean isFullScreen = current instanceof TumarMarketFragment
-                || current instanceof QrScanFragment;
+                || current instanceof QrScanFragment
+                || current instanceof CardManagementFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
