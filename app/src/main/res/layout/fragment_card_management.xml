@@ -136,7 +136,7 @@
                             android:id="@+id/text_card_number_manage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="rgba(255,255,255,0.75)"
+                            android:textColor="#BFFFFFFF"
                             android:textSize="15sp"
                             android:fontFamily="monospace"
                             android:letterSpacing="0.05" />
