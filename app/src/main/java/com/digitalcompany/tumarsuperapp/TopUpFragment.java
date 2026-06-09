@@ -64,6 +64,7 @@ public class TopUpFragment extends Fragment {
     // Method selector cards
     private CardView methodCard, methodBank;
     private TextView tvMethodCardTitle, tvMethodCardSub, tvMethodBankTitle, tvMethodBankSub;
+    private View iconMethodCardCheck, iconMethodBankCheck;
 
     private ApiService apiService;
 
@@ -98,6 +99,8 @@ public class TopUpFragment extends Fragment {
         tvMethodCardSub   = view.findViewById(R.id.tv_method_card_sub);
         tvMethodBankTitle = view.findViewById(R.id.tv_method_bank_title);
         tvMethodBankSub   = view.findViewById(R.id.tv_method_bank_sub);
+        iconMethodCardCheck = view.findViewById(R.id.icon_method_card_check);
+        iconMethodBankCheck = view.findViewById(R.id.icon_method_bank_check);
 
         sectionCardInput = view.findViewById(R.id.section_card_input);
         tilCardNumber = view.findViewById(R.id.til_card_number);
@@ -129,14 +132,38 @@ public class TopUpFragment extends Fragment {
 
         etCardNumber.addTextChangedListener(new CardNumberFormatter());
         etCardExpiry.addTextChangedListener(new ExpiryFormatter());
+        etAmount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateTopUpButtonText(s != null ? s.toString() : "");
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+        updateTopUpButtonText(etAmount.getText() != null ? etAmount.getText().toString() : "");
 
         loadCurrentBalance();
+    }
+
+    private void updateTopUpButtonText(String amountText) {
+        if (btnTopUp == null) return;
+        String digits = amountText == null ? "" : amountText.replaceAll("[^\\d.]", "");
+        if (digits.isEmpty()) {
+            btnTopUp.setText("Пополнить");
+            return;
+        }
+        try {
+            BigDecimal amount = new BigDecimal(digits).setScale(0, RoundingMode.DOWN);
+            String formatted = NumberFormat.getNumberInstance(new Locale("ru", "RU")).format(amount);
+            btnTopUp.setText("Пополнить на ₸ " + formatted);
+        } catch (NumberFormatException e) {
+            btnTopUp.setText("Пополнить");
+        }
     }
 
     private void selectMethod(Method method) {
         selectedMethod = method;
         if (method == Method.CARD) {
-            methodCard.setCardBackgroundColor(0xFF6200EE);
+            methodCard.setCardBackgroundColor(0xFF2D0A45);
             methodBank.setCardBackgroundColor(resolveCardBg());
             if (tvMethodCardTitle != null) {
                 tvMethodCardTitle.setTextColor(0xFFFFFFFF);
@@ -146,10 +173,12 @@ public class TopUpFragment extends Fragment {
                 tvMethodBankTitle.setTextColor(0xFF212121);
                 tvMethodBankSub.setTextColor(0xFF757575);
             }
+            if (iconMethodCardCheck != null) iconMethodCardCheck.setVisibility(View.VISIBLE);
+            if (iconMethodBankCheck != null) iconMethodBankCheck.setVisibility(View.GONE);
             sectionCardInput.setVisibility(View.VISIBLE);
             sectionBankTransfer.setVisibility(View.GONE);
         } else {
-            methodBank.setCardBackgroundColor(0xFF6200EE);
+            methodBank.setCardBackgroundColor(0xFF2D0A45);
             methodCard.setCardBackgroundColor(resolveCardBg());
             if (tvMethodBankTitle != null) {
                 tvMethodBankTitle.setTextColor(0xFFFFFFFF);
@@ -159,6 +188,8 @@ public class TopUpFragment extends Fragment {
                 tvMethodCardTitle.setTextColor(0xFF212121);
                 tvMethodCardSub.setTextColor(0xFF757575);
             }
+            if (iconMethodCardCheck != null) iconMethodCardCheck.setVisibility(View.GONE);
+            if (iconMethodBankCheck != null) iconMethodBankCheck.setVisibility(View.VISIBLE);
             sectionCardInput.setVisibility(View.GONE);
             sectionBankTransfer.setVisibility(View.VISIBLE);
             loadUserCard();
