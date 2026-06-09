@@ -29,15 +29,22 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
         public final String icon;
         public final String category;
         public final String logoUrl;
+        public final String phoneFormat;
 
         public Service(String name, String accountLabel, String accountHint,
                        String icon, String category, String logoUrl) {
+            this(name, accountLabel, accountHint, icon, category, logoUrl, "");
+        }
+
+        public Service(String name, String accountLabel, String accountHint,
+                       String icon, String category, String logoUrl, String phoneFormat) {
             this.name         = name;
             this.accountLabel = accountLabel;
             this.accountHint  = accountHint;
             this.icon         = icon;
             this.category     = category;
             this.logoUrl      = logoUrl;
+            this.phoneFormat  = phoneFormat;
         }
     }
 

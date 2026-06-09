@@ -223,7 +223,7 @@ public class PaymentsFragment extends Fragment {
                 tvRemove.setGravity(android.view.Gravity.CENTER);
                 tvRemove.setTextSize(12);
                 tvRemove.setTextColor(0xFFFFFFFF);
-                tvRemove.setBackgroundResource(R.drawable.bg_dot_active);
+                tvRemove.setBackgroundResource(R.drawable.bg_remove_favorite);
                 iconBox.addView(tvRemove);
             }
 
@@ -416,7 +416,7 @@ public class PaymentsFragment extends Fragment {
         int accentColor = getAccentColor(service.category);
         PaymentBottomSheet sheet = PaymentBottomSheet.newInstance(
                 service.name, service.icon, service.category,
-                service.accountLabel, service.accountHint, accentColor, initialAccount);
+                service.accountLabel, service.accountHint, accentColor, initialAccount, service.phoneFormat);
         sheet.show(getChildFragmentManager(), "payment");
     }
 
@@ -521,12 +521,12 @@ public class PaymentsFragment extends Fragment {
         Map<String, List<PaymentsAdapter.Service>> map = new LinkedHashMap<>();
 
         map.put("Мобильная связь", Arrays.asList(
-                svc("Activ / Kcell",  "Номер телефона", "+7XXXXXXXXXX",  "📶", "Мобильная связь", "https://logo.clearbit.com/kcell.kz"),
-                svc("Beeline / IZI",  "Номер телефона", "+7XXXXXXXXXX",  "🟡", "Мобильная связь", "https://logo.clearbit.com/beeline.kz"),
-                svc("Tele2 / Altel",  "Номер телефона", "+7XXXXXXXXXX",  "🔵", "Мобильная связь", "https://logo.clearbit.com/tele2.kz"),
-                svc("Beeline KG",     "Номер телефона", "+996XXXXXXXXX", "📡", "Мобильная связь", "https://logo.clearbit.com/beeline.kg"),
-                svc("O! KG",          "Номер телефона", "+996XXXXXXXXX", "📱", "Мобильная связь", "https://logo.clearbit.com/o.kg"),
-                svc("MegaCom KG",     "Номер телефона", "+996XXXXXXXXX", "📲", "Мобильная связь", "https://logo.clearbit.com/megacom.kg")
+                svc("Activ / Kcell",  "Номер телефона", "+7XXXXXXXXXX",  "📶", "Мобильная связь", "https://logo.clearbit.com/kcell.kz", "KZ"),
+                svc("Beeline / IZI",  "Номер телефона", "+7XXXXXXXXXX",  "🟡", "Мобильная связь", "https://logo.clearbit.com/beeline.kz", "KZ"),
+                svc("Tele2 / Altel",  "Номер телефона", "+7XXXXXXXXXX",  "🔵", "Мобильная связь", "https://logo.clearbit.com/tele2.kz", "KZ"),
+                svc("Beeline KG",     "Номер телефона", "+996XXXXXXXXX", "📡", "Мобильная связь", "https://logo.clearbit.com/beeline.kg", "KG"),
+                svc("O! KG",          "Номер телефона", "+996XXXXXXXXX", "📱", "Мобильная связь", "https://logo.clearbit.com/o.kg", "KG"),
+                svc("MegaCom KG",     "Номер телефона", "+996XXXXXXXXX", "📲", "Мобильная связь", "https://logo.clearbit.com/megacom.kg", "KG")
         ));
 
         map.put("ЖКХ", Arrays.asList(
@@ -544,9 +544,9 @@ public class PaymentsFragment extends Fragment {
         ));
 
         map.put("Кошельки", Arrays.asList(
-                svc("YURTA WALLET", "Номер телефона / счёта", "+7XXXXXXXXXX", "👛", "Кошельки", "https://logo.clearbit.com/yurta.kz"),
+                svc("YURTA WALLET", "Номер телефона / счёта", "+7XXXXXXXXXX", "👛", "Кошельки", "https://logo.clearbit.com/yurta.kz", "KZ"),
                 svc("QPLUS",        "Номер счёта",             "123456789",    "💰", "Кошельки", null),
-                svc("Kaspi Gold",   "Номер телефона",           "+7XXXXXXXXXX", "🏦", "Кошельки", "https://logo.clearbit.com/kaspi.kz")
+                svc("Kaspi Gold",   "Номер телефона",           "+7XXXXXXXXXX", "🏦", "Кошельки", "https://logo.clearbit.com/kaspi.kz", "KZ")
         ));
 
         map.put("Игры", Arrays.asList(
@@ -559,7 +559,7 @@ public class PaymentsFragment extends Fragment {
         map.put("Транспорт", Arrays.asList(
                 svc("Air Astana",   "Номер бронирования", "XXXXXX",       "✈️", "Транспорт", "https://logo.clearbit.com/airastana.com"),
                 svc("FlyArystan",   "Номер бронирования", "XXXXXX",       "🛫", "Транспорт", "https://logo.clearbit.com/flyarystan.com"),
-                svc("Яндекс Такси", "Номер телефона",     "+7XXXXXXXXXX", "🚕", "Транспорт", "https://logo.clearbit.com/yandex.com")
+                svc("Яндекс Такси", "Номер телефона",     "+7XXXXXXXXXX", "🚕", "Транспорт", "https://logo.clearbit.com/yandex.com", "KZ")
         ));
 
         return map;
@@ -567,7 +567,12 @@ public class PaymentsFragment extends Fragment {
 
     private PaymentsAdapter.Service svc(String name, String label, String hint,
                                         String icon, String cat, String logoUrl) {
-        return new PaymentsAdapter.Service(name, label, hint, icon, cat, logoUrl);
+        return svc(name, label, hint, icon, cat, logoUrl, "");
+    }
+
+    private PaymentsAdapter.Service svc(String name, String label, String hint,
+                                        String icon, String cat, String logoUrl, String phoneFormat) {
+        return new PaymentsAdapter.Service(name, label, hint, icon, cat, logoUrl, phoneFormat);
     }
 
     // ── CategoryItem model ────────────────────────────────────

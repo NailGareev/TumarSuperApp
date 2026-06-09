@@ -43,6 +43,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
     private static final String ARG_HINT         = "hint";
     private static final String ARG_ACCENT_COLOR = "accent_color";
     private static final String ARG_INITIAL_ACCOUNT = "initial_account";
+    private static final String ARG_PHONE_FORMAT = "phone_format";
 
     public interface OnPaymentSuccessListener {
         void onPaymentSuccess(BigDecimal newBalance);
@@ -53,12 +54,19 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
     public static PaymentBottomSheet newInstance(String name, String icon, String category,
                                                   String accountLabel, String accountHint,
                                                   int accentColor) {
-        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, "");
+        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, "", "");
     }
 
     public static PaymentBottomSheet newInstance(String name, String icon, String category,
                                                  String accountLabel, String accountHint,
                                                  int accentColor, String initialAccount) {
+        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, initialAccount, "");
+    }
+
+    public static PaymentBottomSheet newInstance(String name, String icon, String category,
+                                                 String accountLabel, String accountHint,
+                                                 int accentColor, String initialAccount,
+                                                 String phoneFormat) {
         PaymentBottomSheet sheet = new PaymentBottomSheet();
         Bundle args = new Bundle();
         args.putString(ARG_NAME, name);
@@ -68,6 +76,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         args.putString(ARG_HINT, accountHint);
         args.putInt(ARG_ACCENT_COLOR, accentColor);
         args.putString(ARG_INITIAL_ACCOUNT, initialAccount);
+        args.putString(ARG_PHONE_FORMAT, phoneFormat);
         sheet.setArguments(args);
         return sheet;
     }
@@ -97,6 +106,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         String hint        = args.getString(ARG_HINT, "");
         int accentColor    = args.getInt(ARG_ACCENT_COLOR, 0xFF6200EE);
         String initialAccount = args.getString(ARG_INITIAL_ACCOUNT, "");
+        String phoneFormat = args.getString(ARG_PHONE_FORMAT, "");
 
         int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000;
         int accentBorder = (accentColor & 0x00FFFFFF) | 0x47000000;
@@ -128,13 +138,8 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         TextInputEditText etAccount = view.findViewById(R.id.et_sheet_account);
         TextInputEditText etAmount  = view.findViewById(R.id.et_sheet_amount);
 
-        boolean isPhoneField = label.toLowerCase(Locale.ROOT).contains("телефон");
-        boolean isKyrgyzPhone = isPhoneField && (
-                hint.startsWith("+996") ||
-                name.contains(" KG") ||
-                name.contains("O!") ||
-                name.contains("MegaCom")
-        );
+        boolean isPhoneField = !phoneFormat.isEmpty() || label.toLowerCase(Locale.ROOT).contains("телефон");
+        boolean isKyrgyzPhone = "KG".equalsIgnoreCase(phoneFormat);
         if (etAccount != null) {
             if (isPhoneField) {
                 etAccount.setInputType(InputType.TYPE_CLASS_PHONE);
@@ -340,6 +345,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
             if (digits.startsWith("996")) {
                 digits = digits.substring(3);
             }
+            // KG local part is 9 digits: +996 XXX XXXXXX.
             if (digits.length() > 9) {
                 digits = digits.substring(0, 9);
             }
@@ -366,6 +372,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
             if (digits.startsWith("996")) {
                 digits = digits.substring(3);
             }
+            // KG local part is 9 digits: +996 XXX XXXXXX.
             if (digits.length() > 9) {
                 digits = digits.substring(0, 9);
             }
