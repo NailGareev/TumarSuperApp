@@ -2,61 +2,77 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:background="#FFFFFF"
-    android:paddingStart="14dp"
-    android:paddingEnd="14dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp"
-    android:gravity="center_vertical"
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Service icon box -->
-    <FrameLayout
-        android:id="@+id/fl_svc_icon_box"
-        android:layout_width="42dp"
-        android:layout_height="42dp">
-
-        <View
-            android:id="@+id/view_svc_icon_inner"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <!-- Service info -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:gravity="center_vertical">
 
+        <!-- Service icon box -->
+        <FrameLayout
+            android:id="@+id/fl_svc_icon_box"
+            android:layout_width="42dp"
+            android:layout_height="42dp">
+
+            <View
+                android:id="@+id/view_svc_icon_inner"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <!-- Service info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_svc_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#111111" />
+
+            <TextView
+                android:id="@+id/tv_svc_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="11sp"
+                android:textColor="#777777"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Chevron -->
         <TextView
-            android:id="@+id/tv_svc_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#111111" />
+            android:text="&#8250;"
+            android:textSize="20sp"
+            android:textColor="#BBBBBB" />
 
-        <TextView
-            android:id="@+id/tv_svc_sub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="11sp"
-            android:textColor="#777777"
-            android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Chevron -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="&#8250;"
-        android:textSize="20sp"
-        android:textColor="#BBBBBB" />
+    <!-- Divider between items -->
+    <View
+        android:id="@+id/view_svc_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginStart="68dp"
+        android:background="#EEEEEE"
+        android:visibility="visible" />
 
 </LinearLayout>

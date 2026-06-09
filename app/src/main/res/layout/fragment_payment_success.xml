@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
+
+    <!-- Header: close button right-aligned -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical|end"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <FrameLayout
+            android:id="@+id/btn_close_pay_success"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="&#10005;"
+                android:textSize="14sp"
+                android:textColor="#444444" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp">
+
+            <!-- Service icon with checkmark overlay -->
+            <FrameLayout
+                android:id="@+id/pay_success_icon_container"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_marginBottom="16dp">
+
+                <!-- Main icon box -->
+                <FrameLayout
+                    android:id="@+id/fl_pay_success_icon"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_gravity="top|start">
+
+                    <View
+                        android:id="@+id/view_pay_success_icon_inner"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+
+                <!-- Green checkmark badge (bottom-right) -->
+                <FrameLayout
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_topup_success_inner">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="&#10003;"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tv_pay_success_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Оплата прошла!"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:gravity="center" />
+
+            <!-- Subtitle (service · account) -->
+            <TextView
+                android:id="@+id/tv_pay_success_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="13sp"
+                android:textColor="#777777"
+                android:gravity="center" />
+
+            <!-- Amount -->
+            <TextView
+                android:id="@+id/tv_pay_success_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="16dp"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="#111111" />
+
+            <!-- Receipt card -->
+            <LinearLayout
+                android:id="@+id/pay_receipt_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_pay_receipt_card"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginBottom="10dp">
+
+                <!-- Row: Услуга -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Услуга"
+                        android:textSize="13sp"
+                        android:textColor="#777777" />
+                    <TextView
+                        android:id="@+id/tv_pay_svc_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Row: Номер -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Номер"
+                        android:textSize="13sp"
+                        android:textColor="#777777" />
+                    <TextView
+                        android:id="@+id/tv_pay_account"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Row: Комиссия -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Комиссия"
+                        android:textSize="13sp"
+                        android:textColor="#777777" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="&#8378; 0"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Row: Зачислено -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Зачислено"
+                        android:textSize="13sp"
+                        android:textColor="#777777" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Мгновенно"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Row: Чек -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Чек"
+                        android:textSize="13sp"
+                        android:textColor="#777777" />
+                    <TextView
+                        android:id="@+id/tv_pay_receipt_no"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="&#8212;"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Balance remaining -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_pay_balance_row"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Остаток на счёте"
+                    android:textSize="12sp"
+                    android:textColor="#1A8A4A" />
+
+                <TextView
+                    android:id="@+id/tv_pay_new_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A8A4A" />
+            </LinearLayout>
+
+            <!-- Add to favorites block -->
+            <LinearLayout
+                android:id="@+id/container_add_favorite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="10dp">
+
+                <!-- Not yet favorited state -->
+                <LinearLayout
+                    android:id="@+id/ll_add_favorite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_pay_fav_add"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_pay_fav_icon"
+                        android:layout_marginEnd="12dp">
+
+                        <View
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:background="#8BC9A227" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Добавить в избранное"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#111111" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Быстрый доступ при следующей оплате"
+                            android:textSize="11sp"
+                            android:textColor="#777777" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/btn_add_favorite"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_pay_fav_icon"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="+"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#C9A227" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Favorited state (GONE initially) -->
+                <LinearLayout
+                    android:id="@+id/ll_fav_added"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_pay_fav_added"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp">
+
+                        <View
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:background="#C9A227" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Добавлено в избранное &#9733;"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#C9A227" />
+
+                        <TextView
+                            android:id="@+id/tv_fav_added_subtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="11sp"
+                            android:textColor="#B48A0A" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btn_undo_fav"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="Отменить"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="#C9A227"
+                        android:background="@drawable/bg_pay_fav_icon"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Two CTA buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <LinearLayout
+                    android:id="@+id/btn_pay_again"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="5dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/bg_pay_btn_outline"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Оплатить ещё"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#6200EE" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btn_pay_home"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="5dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/bg_topup_cta_btn"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="На главную"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

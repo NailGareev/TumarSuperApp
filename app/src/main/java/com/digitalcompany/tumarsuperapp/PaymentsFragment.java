@@ -1,9 +1,12 @@
 package com.digitalcompany.tumarsuperapp;
 
+import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -19,20 +22,30 @@ import com.digitalcompany.tumarsuperapp.adapter.PaymentsAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PaymentsFragment extends Fragment {
 
     private RecyclerView rvCategories;
-    private LinearLayout llServices;
     private RecyclerView rvPayments;
     private TextView tvPaymentsTitle;
+    private View layoutCategories;
+    private LinearLayout layoutServices;
+    private LinearLayout llFavoritesRow;
+    private LinearLayout llCountryTabs;
+    private View sectionCountryTabs;
 
     private final Map<String, List<PaymentsAdapter.Service>> categoryMap = buildCategoryMap();
 
     private OnBackPressedCallback backCallback;
+
+    // Current open category (for country tab filtering)
+    private String currentCategoryKey = "";
+    private List<PaymentsAdapter.Service> currentServices = new ArrayList<>();
 
     @Nullable
     @Override
@@ -40,12 +53,34 @@ public class PaymentsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_payments, container, false);
 
-        rvCategories    = view.findViewById(R.id.rv_categories);
-        llServices      = view.findViewById(R.id.ll_services);
-        rvPayments      = view.findViewById(R.id.rv_payments);
-        tvPaymentsTitle = view.findViewById(R.id.tv_payments_title);
+        rvCategories      = view.findViewById(R.id.rv_categories);
+        rvPayments        = view.findViewById(R.id.rv_payments);
+        tvPaymentsTitle   = view.findViewById(R.id.tv_payments_title);
+        layoutCategories  = view.findViewById(R.id.layout_categories);
+        layoutServices    = view.findViewById(R.id.layout_services);
+        llFavoritesRow    = view.findViewById(R.id.ll_favorites_row);
+        llCountryTabs     = view.findViewById(R.id.ll_country_tabs);
+        sectionCountryTabs = view.findViewById(R.id.section_country_tabs);
 
         setupCategoriesGrid();
+        setupFavoritesRow();
+
+        // Back button in header
+        view.findViewById(R.id.btn_back_payments).setOnClickListener(v -> {
+            if (layoutServices != null && layoutServices.getVisibility() == View.VISIBLE) {
+                showCategories();
+            } else {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
+
+        // Edit favorites button
+        View tvEditFav = view.findViewById(R.id.tv_edit_favorites);
+        if (tvEditFav != null) {
+            tvEditFav.setOnClickListener(v -> {
+                // Future: open favorites edit screen
+            });
+        }
 
         backCallback = new OnBackPressedCallback(false) {
             @Override
@@ -58,46 +93,295 @@ public class PaymentsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+        // Refresh favorites row each time we resume
+        setupFavoritesRow();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
+    }
+
     // ── Categories grid ───────────────────────────────────────
 
     private void setupCategoriesGrid() {
         List<CategoryItem> cats = new ArrayList<>();
-        cats.add(new CategoryItem("📱", "Мобильная связь",     "Мобильная связь"));
-        cats.add(new CategoryItem("🏠", "Коммунальные\nуслуги", "ЖКХ"));
-        cats.add(new CategoryItem("🌐", "Домашний\nинтернет",  "Интернет"));
-        cats.add(new CategoryItem("💳", "Электронные\nкошельки","Кошельки"));
-        cats.add(new CategoryItem("🎮", "Игры и\nразвлечения", "Игры"));
-        cats.add(new CategoryItem("✈️", "Авиа и\nтранспорт",   "Транспорт"));
+        cats.add(new CategoryItem("📱", "Мобильная связь",      "Мобильная связь", getAccentColor("Мобильная связь"), getAccentColorLight("Мобильная связь")));
+        cats.add(new CategoryItem("🏠", "Коммунальные\nуслуги", "ЖКХ",            getAccentColor("ЖКХ"),            getAccentColorLight("ЖКХ")));
+        cats.add(new CategoryItem("🌐", "Домашний\nинтернет",   "Интернет",        getAccentColor("Интернет"),       getAccentColorLight("Интернет")));
+        cats.add(new CategoryItem("💳", "Электронные\nкошельки","Кошельки",        getAccentColor("Кошельки"),       getAccentColorLight("Кошельки")));
+        cats.add(new CategoryItem("🎮", "Игры и\nразвлечения",  "Игры",            getAccentColor("Игры"),           getAccentColorLight("Игры")));
+        cats.add(new CategoryItem("✈️", "Авиа и\nтранспорт",    "Транспорт",       getAccentColor("Транспорт"),      getAccentColorLight("Транспорт")));
 
         rvCategories.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         rvCategories.setAdapter(new CategoriesAdapter(cats, this::openCategory));
+    }
+
+    private void setupFavoritesRow() {
+        if (llFavoritesRow == null || getContext() == null) return;
+        llFavoritesRow.removeAllViews();
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("payment_favorites", android.content.Context.MODE_PRIVATE);
+        Set<String> favSet = prefs.getStringSet("fav_set", new HashSet<>());
+
+        float density = getResources().getDisplayMetrics().density;
+        int iconSizePx = (int)(46 * density);
+        int marginPx   = (int)(12 * density);
+
+        List<String> favList = new ArrayList<>(favSet);
+        // Show max 5 favorites
+        int count = Math.min(favList.size(), 5);
+        for (int i = 0; i < count; i++) {
+            String svcName = favList.get(i);
+            // Find accent color for this service
+            int accent = 0xFF6200EE;
+            for (Map.Entry<String, List<PaymentsAdapter.Service>> entry : categoryMap.entrySet()) {
+                for (PaymentsAdapter.Service svc : entry.getValue()) {
+                    if (svc.name.equals(svcName)) {
+                        accent = getAccentColor(svc.category);
+                        break;
+                    }
+                }
+            }
+
+            final String finalSvcName = svcName;
+            final int finalAccent = accent;
+
+            LinearLayout item = new LinearLayout(requireContext());
+            item.setOrientation(LinearLayout.VERTICAL);
+            item.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMarginEnd(marginPx);
+            item.setLayoutParams(lp);
+            item.setClickable(true);
+            item.setFocusable(true);
+
+            // Icon box
+            FrameLayout iconBox = new FrameLayout(requireContext());
+            LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(iconSizePx, iconSizePx);
+            iconBox.setLayoutParams(iconLp);
+
+            int accentLight  = (finalAccent & 0x00FFFFFF) | 0x1A000000;
+            int accentBorder = (finalAccent & 0x00FFFFFF) | 0x47000000;
+            GradientDrawable gd = new GradientDrawable();
+            gd.setColor(accentLight);
+            gd.setStroke((int)(1.5f * density), accentBorder);
+            gd.setCornerRadius(12 * density);
+            iconBox.setBackground(gd);
+
+            // Find the icon emoji for this service
+            String iconEmoji = "💳";
+            for (List<PaymentsAdapter.Service> svcs : categoryMap.values()) {
+                for (PaymentsAdapter.Service svc : svcs) {
+                    if (svc.name.equals(svcName)) { iconEmoji = svc.icon; break; }
+                }
+            }
+            TextView tvIcon = new TextView(requireContext());
+            FrameLayout.LayoutParams tvLp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+            tvLp.gravity = android.view.Gravity.CENTER;
+            tvIcon.setLayoutParams(tvLp);
+            tvIcon.setTextSize(20);
+            tvIcon.setText(iconEmoji);
+            iconBox.addView(tvIcon);
+            item.addView(iconBox);
+
+            // Label
+            TextView tvLabel = new TextView(requireContext());
+            LinearLayout.LayoutParams lblLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lblLp.topMargin = (int)(4 * density);
+            tvLabel.setLayoutParams(lblLp);
+            tvLabel.setTextSize(10);
+            tvLabel.setTextColor(0xFF777777);
+            tvLabel.setMaxWidth((int)(52 * density));
+            tvLabel.setMaxLines(1);
+            tvLabel.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            tvLabel.setText(svcName);
+            item.addView(tvLabel);
+
+            item.setOnClickListener(v -> {
+                // Find and open the service
+                for (Map.Entry<String, List<PaymentsAdapter.Service>> entry : categoryMap.entrySet()) {
+                    for (PaymentsAdapter.Service svc : entry.getValue()) {
+                        if (svc.name.equals(finalSvcName)) {
+                            openPaymentSheet(svc);
+                            return;
+                        }
+                    }
+                }
+            });
+
+            llFavoritesRow.addView(item);
+        }
+
+        // "+ Добавить" placeholder if fewer than 5
+        if (count < 5) {
+            LinearLayout addItem = new LinearLayout(requireContext());
+            addItem.setOrientation(LinearLayout.VERTICAL);
+            addItem.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMarginEnd(marginPx);
+            addItem.setLayoutParams(lp);
+
+            FrameLayout addBox = new FrameLayout(requireContext());
+            LinearLayout.LayoutParams boxLp = new LinearLayout.LayoutParams(iconSizePx, iconSizePx);
+            addBox.setLayoutParams(boxLp);
+            GradientDrawable addBg = new GradientDrawable();
+            addBg.setColor(0xFFFFFFFF);
+            addBg.setStroke((int)(2 * density), 0xFFC9A227);
+            addBg.setCornerRadius(12 * density);
+            addBox.setBackground(addBg);
+
+            TextView tvPlus = new TextView(requireContext());
+            FrameLayout.LayoutParams plusLp = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+            plusLp.gravity = android.view.Gravity.CENTER;
+            tvPlus.setLayoutParams(plusLp);
+            tvPlus.setTextSize(20);
+            tvPlus.setTextColor(0xFFC9A227);
+            tvPlus.setText("+");
+            addBox.addView(tvPlus);
+            addItem.addView(addBox);
+
+            TextView tvAddLabel = new TextView(requireContext());
+            LinearLayout.LayoutParams lblLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lblLp.topMargin = (int)(4 * density);
+            tvAddLabel.setLayoutParams(lblLp);
+            tvAddLabel.setTextSize(10);
+            tvAddLabel.setTextColor(0xFF777777);
+            tvAddLabel.setText("Добавить");
+            addItem.addView(tvAddLabel);
+            llFavoritesRow.addView(addItem);
+        }
     }
 
     private void openCategory(CategoryItem cat) {
         List<PaymentsAdapter.Service> services = categoryMap.get(cat.key);
         if (services == null || services.isEmpty()) return;
 
+        currentCategoryKey = cat.key;
+        currentServices    = new ArrayList<>(services);
+
         tvPaymentsTitle.setText(cat.displayName.replace("\n", " "));
 
-        rvPayments.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rvPayments.setAdapter(new PaymentsAdapter(
-                new ArrayList<>(services), this::openPaymentSheet));
+        // Show country tabs only for Мобильная связь
+        if ("Мобильная связь".equals(cat.key)) {
+            sectionCountryTabs.setVisibility(View.VISIBLE);
+            setupCountryTabs();
+        } else {
+            sectionCountryTabs.setVisibility(View.GONE);
+            loadServicesList(currentServices);
+        }
 
-        rvCategories.setVisibility(View.GONE);
-        llServices.setVisibility(View.VISIBLE);
+        layoutCategories.setVisibility(View.GONE);
+        layoutServices.setVisibility(View.VISIBLE);
         backCallback.setEnabled(true);
+    }
+
+    private void setupCountryTabs() {
+        if (llCountryTabs == null) return;
+        llCountryTabs.removeAllViews();
+
+        float density = getResources().getDisplayMetrics().density;
+        String[] countries = {"Все", "Казахстан", "Кыргызстан"};
+
+        for (int i = 0; i < countries.length; i++) {
+            final String country = countries[i];
+            final boolean isFirst = (i == 0);
+
+            TextView chip = new TextView(requireContext());
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, (int)(32 * density));
+            lp.setMarginEnd((int)(8 * density));
+            chip.setLayoutParams(lp);
+            chip.setText(country);
+            chip.setTextSize(12);
+            chip.setPadding((int)(14*density), 0, (int)(14*density), 0);
+            chip.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            chip.setClickable(true);
+            chip.setFocusable(true);
+
+            if (isFirst) {
+                chip.setBackground(requireContext().getDrawable(R.drawable.bg_pay_chip_country_active));
+                chip.setTextColor(0xFFFFFFFF);
+            } else {
+                chip.setBackground(requireContext().getDrawable(R.drawable.bg_pay_chip_country));
+                chip.setTextColor(0xFF6200EE);
+            }
+
+            chip.setOnClickListener(v -> {
+                // Reset all chips
+                for (int j = 0; j < llCountryTabs.getChildCount(); j++) {
+                    View c = llCountryTabs.getChildAt(j);
+                    if (c instanceof TextView) {
+                        c.setBackground(requireContext().getDrawable(R.drawable.bg_pay_chip_country));
+                        ((TextView) c).setTextColor(0xFF6200EE);
+                    }
+                }
+                chip.setBackground(requireContext().getDrawable(R.drawable.bg_pay_chip_country_active));
+                chip.setTextColor(0xFFFFFFFF);
+
+                // Filter services
+                List<PaymentsAdapter.Service> filtered = new ArrayList<>();
+                for (PaymentsAdapter.Service svc : currentServices) {
+                    if ("Все".equals(country)) {
+                        filtered.add(svc);
+                    } else if ("Казахстан".equals(country)) {
+                        if (isKazakhstanService(svc.name)) filtered.add(svc);
+                    } else if ("Кыргызстан".equals(country)) {
+                        if (isKyrgyzstanService(svc.name)) filtered.add(svc);
+                    }
+                }
+                loadServicesList(filtered);
+            });
+
+            llCountryTabs.addView(chip);
+        }
+
+        // Load all by default
+        loadServicesList(currentServices);
+    }
+
+    private boolean isKazakhstanService(String name) {
+        return name.contains("Activ") || name.contains("Kcell") ||
+               name.contains("Beeline") && !name.contains("KG") ||
+               name.contains("Tele2") || name.contains("Altel");
+    }
+
+    private boolean isKyrgyzstanService(String name) {
+        return name.contains("KG") || name.contains("O!") || name.contains("MegaCom");
+    }
+
+    private void loadServicesList(List<PaymentsAdapter.Service> services) {
+        rvPayments.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvPayments.setAdapter(new PaymentsAdapter(new ArrayList<>(services), this::openPaymentSheet));
     }
 
     private void showCategories() {
         tvPaymentsTitle.setText("Платежи и услуги");
-        llServices.setVisibility(View.GONE);
-        rvCategories.setVisibility(View.VISIBLE);
+        layoutServices.setVisibility(View.GONE);
+        layoutCategories.setVisibility(View.VISIBLE);
         backCallback.setEnabled(false);
+        setupFavoritesRow(); // Refresh favorites in case they changed
     }
 
     /** Called by MainActivity to intercept the AppBar back arrow. */
     public boolean handleNavigateUp() {
-        if (llServices != null && llServices.getVisibility() == View.VISIBLE) {
+        if (layoutServices != null && layoutServices.getVisibility() == View.VISIBLE) {
             showCategories();
             return true;
         }
@@ -108,10 +392,50 @@ public class PaymentsFragment extends Fragment {
 
     private void openPaymentSheet(PaymentsAdapter.Service service) {
         if (getActivity() == null) return;
+        int accentColor = getAccentColor(service.category);
         PaymentBottomSheet sheet = PaymentBottomSheet.newInstance(
                 service.name, service.icon, service.category,
-                service.accountLabel, service.accountHint);
+                service.accountLabel, service.accountHint, accentColor);
         sheet.show(getChildFragmentManager(), "payment");
+    }
+
+    // ── Accent color helpers ──────────────────────────────────
+
+    static int getAccentColor(String category) {
+        if (category == null) return 0xFF6200EE;
+        switch (category) {
+            case "Мобильная связь": return 0xFF1A4A8A;
+            case "ЖКХ":             return 0xFFD97222;
+            case "Интернет":        return 0xFF1A8A4A;
+            case "Кошельки":        return 0xFFC9A227;
+            case "Игры":            return 0xFFCC2222;
+            case "Транспорт":       return 0xFF6B21A8;
+            default:                return 0xFF6200EE;
+        }
+    }
+
+    static int getAccentColorLight(String category) {
+        if (category == null) return 0x1A6200EE;
+        switch (category) {
+            case "Мобильная связь": return 0x1A1A4A8A;
+            case "ЖКХ":             return 0x1AD97222;
+            case "Интернет":        return 0x1A1A8A4A;
+            case "Кошельки":        return 0x1AC9A227;
+            case "Игры":            return 0x1ACC2222;
+            case "Транспорт":       return 0x1A6B21A8;
+            default:                return 0x1A6200EE;
+        }
+    }
+
+    static android.graphics.drawable.GradientDrawable makeIconBoxBg(
+            int accentLight, int accentBorder, float cornerRadiusDp,
+            android.content.res.Resources res) {
+        float px = cornerRadiusDp * res.getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+        gd.setColor(accentLight);
+        gd.setStroke((int)(1.5f * res.getDisplayMetrics().density), accentBorder);
+        gd.setCornerRadius(px);
+        return gd;
     }
 
     // ── Data ──────────────────────────────────────────────────
@@ -175,10 +499,15 @@ public class PaymentsFragment extends Fragment {
         final String icon;
         final String displayName;
         final String key;
-        CategoryItem(String icon, String displayName, String key) {
-            this.icon = icon;
-            this.displayName = displayName;
-            this.key = key;
+        final int accentColor;
+        final int accentColorLight;
+
+        CategoryItem(String icon, String displayName, String key, int accentColor, int accentColorLight) {
+            this.icon             = icon;
+            this.displayName      = displayName;
+            this.key              = key;
+            this.accentColor      = accentColor;
+            this.accentColorLight = accentColorLight;
         }
     }
 
@@ -193,7 +522,7 @@ public class PaymentsFragment extends Fragment {
         private final OnCategoryClickListener listener;
 
         CategoriesAdapter(List<CategoryItem> items, OnCategoryClickListener listener) {
-            this.items = items;
+            this.items    = items;
             this.listener = listener;
         }
 
@@ -208,20 +537,48 @@ public class PaymentsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
             CategoryItem cat = items.get(position);
-            holder.tvIcon.setText(cat.icon);
             holder.tvName.setText(cat.displayName);
             holder.itemView.setOnClickListener(v -> listener.onCategoryClick(cat));
+
+            float density = holder.itemView.getResources().getDisplayMetrics().density;
+            int accentBorder = (cat.accentColor & 0x00FFFFFF) | 0x47000000;
+            int accentMedium = (cat.accentColor & 0x00FFFFFF) | 0x35000000;
+
+            // Icon box background
+            GradientDrawable iconBoxBg = new GradientDrawable();
+            iconBoxBg.setColor(cat.accentColorLight);
+            iconBoxBg.setStroke((int)(1.5f * density), accentBorder);
+            iconBoxBg.setCornerRadius(11 * density);
+            holder.flCatIconBox.setBackground(iconBoxBg);
+
+            // Inner icon background
+            GradientDrawable innerBg = new GradientDrawable();
+            innerBg.setColor(accentMedium);
+            innerBg.setCornerRadius(6 * density);
+            holder.viewCatIconInner.setBackground(innerBg);
+
+            // Accent bar
+            GradientDrawable barBg = new GradientDrawable();
+            barBg.setColor(cat.accentColor);
+            barBg.setCornerRadius(2 * density);
+            holder.viewCatAccentBar.setBackground(barBg);
         }
 
         @Override
         public int getItemCount() { return items.size(); }
 
         static class VH extends RecyclerView.ViewHolder {
-            TextView tvIcon, tvName;
+            TextView tvName;
+            FrameLayout flCatIconBox;
+            View viewCatIconInner;
+            View viewCatAccentBar;
+
             VH(View v) {
                 super(v);
-                tvIcon = v.findViewById(R.id.tv_cat_icon);
-                tvName = v.findViewById(R.id.tv_cat_name);
+                tvName             = v.findViewById(R.id.tv_cat_name);
+                flCatIconBox       = v.findViewById(R.id.fl_cat_icon_box);
+                viewCatIconInner   = v.findViewById(R.id.view_cat_icon_inner);
+                viewCatAccentBar   = v.findViewById(R.id.view_cat_accent_bar);
             }
         }
     }

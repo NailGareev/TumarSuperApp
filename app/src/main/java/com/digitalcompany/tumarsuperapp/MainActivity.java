@@ -298,7 +298,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 || current instanceof CardManagementFragment
                 || current instanceof PromoDetailFragment
                 || current instanceof TopUpFragment
-                || current instanceof TopUpSuccessFragment;
+                || current instanceof TopUpSuccessFragment
+                || current instanceof PaymentsFragment
+                || current instanceof PaymentSuccessFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
