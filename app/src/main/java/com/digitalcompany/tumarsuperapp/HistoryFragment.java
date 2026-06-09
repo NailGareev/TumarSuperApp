@@ -79,8 +79,9 @@ public class HistoryFragment extends Fragment {
     private TextView chipCatIncome;
 
     private List<Transaction> allTransactions = new ArrayList<>();
-    private int selectedPeriodDays  = 30; // default 1 month
+    private int selectedPeriodDays  = 30;
     private String selectedCategory = CAT_ALL;
+    private String selectedType     = "ALL"; // ALL / EXPENSE / INCOME
     private int currentUserId = -1;
 
     public HistoryFragment() {}
@@ -127,6 +128,12 @@ public class HistoryFragment extends Fragment {
         chipCatPayment  = view.findViewById(R.id.chip_cat_payment);
         chipCatIncome   = view.findViewById(R.id.chip_cat_income);
         miniBarChart    = view.findViewById(R.id.mini_bar_chart);
+
+        view.findViewById(R.id.btn_history_back).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+        view.findViewById(R.id.btn_history_search).setOnClickListener(v ->
+                android.widget.Toast.makeText(requireContext(), "Поиск", android.widget.Toast.LENGTH_SHORT).show());
+        view.findViewById(R.id.btn_history_filter).setOnClickListener(v -> openFilterSheet());
 
         setupRecyclerView();
         setupPeriodChips();
@@ -289,18 +296,30 @@ public class HistoryFragment extends Fragment {
     }
 
     private boolean matchesCategory(Transaction t) {
+        String txType = t.getTransactionType();
+        boolean isIncoming = t.getRecipientId() == currentUserId;
+
+        // Type filter (ALL / EXPENSE / INCOME)
+        if ("EXPENSE".equals(selectedType)) {
+            if ("TOPUP".equals(txType)) return false;
+            if ("TRANSFER".equals(txType) && isIncoming) return false;
+        } else if ("INCOME".equals(selectedType)) {
+            if ("PAYMENT".equals(txType) || "MARKET_REFUND".equals(txType)) return false;
+            if ("TRANSFER".equals(txType) && !isIncoming) return false;
+        }
+
+        // Category filter
         if (CAT_ALL.equals(selectedCategory)) return true;
-        String type = t.getTransactionType();
         switch (selectedCategory) {
             case CAT_MARKET:
-                return "MARKET_REFUND".equals(type);
+                return "MARKET_REFUND".equals(txType);
             case CAT_TRANSFER:
-                return "TRANSFER".equals(type);
+                return "TRANSFER".equals(txType);
             case CAT_PAYMENT:
-                return "PAYMENT".equals(type);
+                return "PAYMENT".equals(txType);
             case CAT_INCOME:
-                if ("TOPUP".equals(type)) return true;
-                if ("TRANSFER".equals(type)) return t.getRecipientId() == currentUserId;
+                if ("TOPUP".equals(txType)) return true;
+                if ("TRANSFER".equals(txType)) return isIncoming;
                 return false;
             default:
                 return true;
@@ -465,6 +484,20 @@ public class HistoryFragment extends Fragment {
         }
 
         miniBarChart.setData(vals, labels);
+    }
+
+    private void openFilterSheet() {
+        HistoryFilterBottomSheet sheet = HistoryFilterBottomSheet.newInstance(
+                selectedPeriodDays, selectedCategory, selectedType);
+        sheet.setOnFilterApplyListener((days, cat, type) -> {
+            selectedPeriodDays = days;
+            selectedCategory   = cat;
+            selectedType       = type;
+            updatePeriodChipVisuals();
+            updateCategoryChipVisuals();
+            applyFilters();
+        });
+        sheet.show(getChildFragmentManager(), "HistoryFilter");
     }
 
     private void showCategoryBreakdown() {

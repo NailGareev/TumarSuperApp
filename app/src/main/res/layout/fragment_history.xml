@@ -18,14 +18,47 @@
         android:paddingEnd="14dp"
         android:background="#FFFFFF">
 
+        <FrameLayout
+            android:id="@+id/btn_history_back"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_arrow_back"
+                android:tint="#212121"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginStart="10dp"
             android:text="История операций"
-            android:textSize="18sp"
+            android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="#111111" />
+
+        <FrameLayout
+            android:id="@+id/btn_history_search"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="🔍"
+                android:textSize="15sp" />
+        </FrameLayout>
 
         <FrameLayout
             android:id="@+id/btn_history_filter"
