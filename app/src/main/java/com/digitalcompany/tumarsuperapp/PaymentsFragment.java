@@ -39,6 +39,8 @@ public class PaymentsFragment extends Fragment {
     private TextView tvPaymentsTitle;
     private View layoutCategories;
     private LinearLayout layoutServices;
+    private View sectionFavorites;
+    private View dividerFavorites;
     private LinearLayout llFavoritesRow;
     private LinearLayout llCountryTabs;
     private View sectionCountryTabs;
@@ -63,6 +65,8 @@ public class PaymentsFragment extends Fragment {
         tvPaymentsTitle   = view.findViewById(R.id.tv_payments_title);
         layoutCategories  = view.findViewById(R.id.layout_categories);
         layoutServices    = view.findViewById(R.id.layout_services);
+        sectionFavorites  = view.findViewById(R.id.section_favorites);
+        dividerFavorites  = view.findViewById(R.id.divider_favorites);
         llFavoritesRow    = view.findViewById(R.id.ll_favorites_row);
         llCountryTabs     = view.findViewById(R.id.ll_country_tabs);
         sectionCountryTabs = view.findViewById(R.id.section_country_tabs);
@@ -146,6 +150,18 @@ public class PaymentsFragment extends Fragment {
         int marginPx   = (int)(12 * density);
 
         List<String> favList = new ArrayList<>(favSet);
+        boolean hasFavorites = !favList.isEmpty();
+        if (sectionFavorites != null) {
+            sectionFavorites.setVisibility(hasFavorites ? View.VISIBLE : View.GONE);
+        }
+        if (dividerFavorites != null) {
+            dividerFavorites.setVisibility(hasFavorites ? View.VISIBLE : View.GONE);
+        }
+        if (!hasFavorites) {
+            favoritesEditMode = false;
+            return;
+        }
+
         // Show max 5 favorites
         int count = Math.min(favList.size(), 5);
         for (int i = 0; i < count; i++) {
@@ -241,48 +257,6 @@ public class PaymentsFragment extends Fragment {
             });
 
             llFavoritesRow.addView(item);
-        }
-
-        // "+ Добавить" placeholder if fewer than 5
-        if (count < 5) {
-            LinearLayout addItem = new LinearLayout(requireContext());
-            addItem.setOrientation(LinearLayout.VERTICAL);
-            addItem.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.setMarginEnd(marginPx);
-            addItem.setLayoutParams(lp);
-
-            FrameLayout addBox = new FrameLayout(requireContext());
-            LinearLayout.LayoutParams boxLp = new LinearLayout.LayoutParams(iconSizePx, iconSizePx);
-            addBox.setLayoutParams(boxLp);
-            GradientDrawable addBg = new GradientDrawable();
-            addBg.setColor(0xFFFFFFFF);
-            addBg.setStroke((int)(2 * density), 0xFFC9A227);
-            addBg.setCornerRadius(12 * density);
-            addBox.setBackground(addBg);
-
-            TextView tvPlus = new TextView(requireContext());
-            FrameLayout.LayoutParams plusLp = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-            plusLp.gravity = android.view.Gravity.CENTER;
-            tvPlus.setLayoutParams(plusLp);
-            tvPlus.setTextSize(20);
-            tvPlus.setTextColor(0xFFC9A227);
-            tvPlus.setText("+");
-            addBox.addView(tvPlus);
-            addItem.addView(addBox);
-
-            TextView tvAddLabel = new TextView(requireContext());
-            LinearLayout.LayoutParams lblLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lblLp.topMargin = (int)(4 * density);
-            tvAddLabel.setLayoutParams(lblLp);
-            tvAddLabel.setTextSize(10);
-            tvAddLabel.setTextColor(0xFF777777);
-            tvAddLabel.setText("Добавить");
-            addItem.addView(tvAddLabel);
-            llFavoritesRow.addView(addItem);
         }
     }
 
