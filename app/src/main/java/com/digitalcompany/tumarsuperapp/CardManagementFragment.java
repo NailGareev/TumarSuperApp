@@ -347,7 +347,17 @@ public class CardManagementFragment extends Fragment {
         editor.remove("card_" + last + "_cvv");
         editor.remove("card_" + last + "_blocked");
         editor.remove("card_" + last + "_custom_name");
-        editor.putInt(KEY_CARD_COUNT, Math.max(0, count - 1));
+        int newCount = Math.max(0, count - 1);
+        editor.putInt(KEY_CARD_COUNT, newCount);
+        if (newCount == 0) {
+            // Clear legacy single-card keys so bank transfer won't show stale data
+            editor.remove("card_exists");
+            editor.remove("card_number");
+            editor.remove("card_expiry");
+            editor.remove("card_cvv");
+            editor.remove("card_blocked");
+            editor.remove("card_custom_name");
+        }
         editor.commit();
         if (getContext() != null)
             Toast.makeText(requireContext(), R.string.card_deleted_toast, Toast.LENGTH_SHORT).show();

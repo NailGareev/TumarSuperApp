@@ -256,34 +256,32 @@ public class TopUpFragment extends Fragment {
     }
 
     private void loadUserCard() {
-        if (apiService == null) return;
-        progressCardLoad.setVisibility(View.VISIBLE);
-        cardDisplayContainer.setVisibility(View.GONE);
-        layoutNoCard.setVisibility(View.GONE);
+        if (getContext() == null) return;
+        progressCardLoad.setVisibility(View.GONE);
 
-        apiService.getCard().enqueue(new Callback<CardResponse>() {
-            @Override
-            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
-                if (!isAdded() || getContext() == null) return;
-                progressCardLoad.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    CardResponse.CardData card = response.body().getCard();
-                    if (card != null) {
-                        showVirtualCard(card);
-                    } else {
-                        layoutNoCard.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    layoutNoCard.setVisibility(View.VISIBLE);
-                }
+        android.content.SharedPreferences prefs = requireContext()
+                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE);
+        int count = prefs.getInt("card_count", 0);
+
+        if (count > 0) {
+            String number  = prefs.getString("card_0_number", "");
+            String expiry  = prefs.getString("card_0_expiry", "");
+            boolean blocked = prefs.getBoolean("card_0_blocked", false);
+            if (!number.isEmpty() && !blocked) {
+                tvVirtualCardNumber.setText(formatCardNumber(number));
+                tvVirtualCardExpiry.setText(expiry);
+                cardDisplayContainer.setVisibility(View.VISIBLE);
+                layoutNoCard.setVisibility(View.GONE);
+                return;
             }
-            @Override
-            public void onFailure(Call<CardResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-                progressCardLoad.setVisibility(View.GONE);
-                layoutNoCard.setVisibility(View.VISIBLE);
-            }
-        });
+        }
+        cardDisplayContainer.setVisibility(View.GONE);
+        layoutNoCard.setVisibility(View.VISIBLE);
+    }
+
+    private String formatCardNumber(String n) {
+        if (n == null || n.length() != 16) return n != null ? n : "";
+        return n.substring(0,4) + " " + n.substring(4,8) + " " + n.substring(8,12) + " " + n.substring(12);
     }
 
     private void showVirtualCard(CardResponse.CardData card) {
@@ -297,51 +295,45 @@ public class TopUpFragment extends Fragment {
     private static final String CARD_PREFS = "CardDataPrefs";
 
     private void issueCard() {
-        if (apiService == null) return;
+        if (getContext() == null) return;
         btnIssueCard.setEnabled(false);
-        btnIssueCard.setText("Выпускаем...");
 
-        apiService.issueCard().enqueue(new Callback<CardResponse>() {
-            @Override
-            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
-                if (!isAdded() || getContext() == null) return;
-                btnIssueCard.setEnabled(true);
-                btnIssueCard.setText("Выпустить карту");
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    CardResponse.CardData card = response.body().getCard();
-                    if (card != null) {
-                        layoutNoCard.setVisibility(View.GONE);
-                        showVirtualCard(card);
-                        saveCardToSharedPrefs(card);
-                        Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    String msg = response.body() != null && response.body().getMessage() != null
-                            ? response.body().getMessage() : "Ошибка сервера";
-                    Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
-                }
-            }
-            @Override
-            public void onFailure(Call<CardResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-                btnIssueCard.setEnabled(true);
-                btnIssueCard.setText("Выпустить карту");
-                Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        android.content.SharedPreferences prefs = requireContext()
+                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE);
+        int count = prefs.getInt("card_count", 0);
+        String number = generateLocalCardNumber();
+        String expiry = generateLocalExpiry();
+        String cvv    = generateLocalCvv();
+
+        prefs.edit()
+                .putString("card_" + count + "_number",      number)
+                .putString("card_" + count + "_expiry",      expiry)
+                .putString("card_" + count + "_cvv",         cvv)
+                .putBoolean("card_" + count + "_blocked",    false)
+                .putString("card_" + count + "_custom_name", "")
+                .putInt("card_count", count + 1)
+                .apply();
+
+        Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
+        btnIssueCard.setEnabled(true);
+        loadUserCard();
     }
 
-    private void saveCardToSharedPrefs(CardResponse.CardData card) {
-        if (getContext() == null || card.getCardNumber() == null) return;
-        android.content.SharedPreferences.Editor ed = getContext()
-                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE).edit();
-        ed.putBoolean("card_exists", true);
-        ed.putString("card_number", card.getCardNumber());
-        ed.putString("card_expiry", card.getExpiry());
-        ed.putString("card_cvv", card.getCvv() != null ? card.getCvv() : "");
-        ed.putBoolean("card_blocked", false);
-        ed.putString("card_custom_name", "Tumar карта");
-        ed.apply();
+    private String generateLocalCardNumber() {
+        StringBuilder sb = new StringBuilder("772233");
+        java.util.Random r = new java.util.Random();
+        for (int i = 0; i < 10; i++) sb.append(r.nextInt(10));
+        return sb.toString();
+    }
+
+    private String generateLocalExpiry() {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.YEAR, 3);
+        return new java.text.SimpleDateFormat("MM/yy", Locale.getDefault()).format(c.getTime());
+    }
+
+    private String generateLocalCvv() {
+        return String.valueOf(100 + new java.util.Random().nextInt(900));
     }
 
     private void attemptTopUp() {

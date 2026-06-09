@@ -191,21 +191,17 @@ public class CardFragment extends Fragment {
         if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.VISIBLE);
 
         if (cardViewPager != null) {
-            if (cardPagerAdapter == null) {
-                cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
-                cardViewPager.setAdapter(cardPagerAdapter);
-                if (!callbackRegistered) {
-                    cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
-                    callbackRegistered = true;
-                }
-            } else {
-                cardPagerAdapter.notifyDataSetChanged();
+            if (callbackRegistered) {
+                cardViewPager.unregisterOnPageChangeCallback(pageChangeCallback);
+                callbackRegistered = false;
             }
+            cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
+            cardViewPager.setAdapter(cardPagerAdapter);
+            cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
+            callbackRegistered = true;
 
             int page = Math.max(0, Math.min(savedPage, cardList.size() - 1));
-            if (cardViewPager.getCurrentItem() != page) {
-                cardViewPager.setCurrentItem(page, false);
-            }
+            cardViewPager.setCurrentItem(page, false);
             updateDots(page);
             updateBlockActionForPage(page);
         }
@@ -377,33 +373,7 @@ public class CardFragment extends Fragment {
             Toast.makeText(requireContext(), "Максимум 3 карты", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Only use API for the very first card; subsequent cards are always local to
-        // guarantee unique numbers (the backend issues one card per user).
-        if (count == 0 && apiService != null) {
-            apiService.issueCard().enqueue(new Callback<CardResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<CardResponse> call,
-                                       @NonNull Response<CardResponse> response) {
-                    if (!isAdded() || getContext() == null) return;
-                    if (response.isSuccessful() && response.body() != null
-                            && response.body().isSuccess()) {
-                        CardResponse.CardData card = response.body().getCard();
-                        if (card != null) {
-                            addCardToPrefs(card.getCardNumber(), card.getExpiry(), card.getCvv());
-                            return;
-                        }
-                    }
-                    addCardLocally();
-                }
-                @Override
-                public void onFailure(@NonNull Call<CardResponse> call, @NonNull Throwable t) {
-                    if (!isAdded()) return;
-                    addCardLocally();
-                }
-            });
-        } else {
-            addCardLocally();
-        }
+        addCardLocally();
     }
 
     private void addCardLocally() {
@@ -433,16 +403,14 @@ public class CardFragment extends Fragment {
         if (layoutCardDetails != null) layoutCardDetails.setVisibility(View.VISIBLE);
 
         if (cardViewPager != null) {
-            if (cardPagerAdapter == null) {
-                cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
-                cardViewPager.setAdapter(cardPagerAdapter);
-                if (!callbackRegistered) {
-                    cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
-                    callbackRegistered = true;
-                }
-            } else {
-                cardPagerAdapter.notifyDataSetChanged();
+            if (callbackRegistered) {
+                cardViewPager.unregisterOnPageChangeCallback(pageChangeCallback);
+                callbackRegistered = false;
             }
+            cardPagerAdapter = new CardPagerAdapter(cardList, this::navigateToCardManagement);
+            cardViewPager.setAdapter(cardPagerAdapter);
+            cardViewPager.registerOnPageChangeCallback(pageChangeCallback);
+            callbackRegistered = true;
             cardViewPager.setCurrentItem(newIndex, newIndex > 0);
             updateDots(newIndex);
             updateBlockActionForPage(newIndex);
