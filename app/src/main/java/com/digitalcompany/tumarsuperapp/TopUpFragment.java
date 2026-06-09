@@ -58,6 +58,7 @@ public class TopUpFragment extends Fragment {
     private ProgressBar progressCardLoad;
     private CardView cardDisplayContainer;
     private LinearLayout layoutNoCard;
+    private LinearLayout layoutAllCardsBlocked;
     private TextView tvVirtualCardNumber, tvVirtualCardExpiry, tvVirtualCardCvv;
     private MaterialButton btnIssueCard;
 
@@ -143,6 +144,7 @@ public class TopUpFragment extends Fragment {
         progressCardLoad = view.findViewById(R.id.progress_card_load);
         cardDisplayContainer = view.findViewById(R.id.card_display_container);
         layoutNoCard = view.findViewById(R.id.layout_no_card);
+        layoutAllCardsBlocked = view.findViewById(R.id.layout_all_cards_blocked);
         tvVirtualCardNumber = view.findViewById(R.id.tv_virtual_card_number);
         tvVirtualCardExpiry = view.findViewById(R.id.tv_virtual_card_expiry);
         tvVirtualCardCvv    = view.findViewById(R.id.tv_virtual_card_cvv);
@@ -264,19 +266,31 @@ public class TopUpFragment extends Fragment {
         int count = prefs.getInt("card_count", 0);
 
         if (count > 0) {
-            String number  = prefs.getString("card_0_number", "");
-            String expiry  = prefs.getString("card_0_expiry", "");
-            boolean blocked = prefs.getBoolean("card_0_blocked", false);
-            if (!number.isEmpty() && !blocked) {
-                tvVirtualCardNumber.setText(formatCardNumber(number));
-                tvVirtualCardExpiry.setText(expiry);
-                cardDisplayContainer.setVisibility(View.VISIBLE);
-                layoutNoCard.setVisibility(View.GONE);
-                return;
+            for (int i = 0; i < count; i++) {
+                String number = prefs.getString("card_" + i + "_number", "");
+                String expiry = prefs.getString("card_" + i + "_expiry", "");
+                boolean blocked = prefs.getBoolean("card_" + i + "_blocked", false);
+                if (!number.isEmpty() && !blocked) {
+                    tvVirtualCardNumber.setText(formatCardNumber(number));
+                    tvVirtualCardExpiry.setText(expiry);
+                    cardDisplayContainer.setVisibility(View.VISIBLE);
+                    layoutNoCard.setVisibility(View.GONE);
+                    if (layoutAllCardsBlocked != null)
+                        layoutAllCardsBlocked.setVisibility(View.GONE);
+                    return;
+                }
             }
+            // Все карты существуют, но все заблокированы
+            cardDisplayContainer.setVisibility(View.GONE);
+            layoutNoCard.setVisibility(View.GONE);
+            if (layoutAllCardsBlocked != null)
+                layoutAllCardsBlocked.setVisibility(View.VISIBLE);
+            return;
         }
         cardDisplayContainer.setVisibility(View.GONE);
         layoutNoCard.setVisibility(View.VISIBLE);
+        if (layoutAllCardsBlocked != null)
+            layoutAllCardsBlocked.setVisibility(View.GONE);
     }
 
     private String formatCardNumber(String n) {

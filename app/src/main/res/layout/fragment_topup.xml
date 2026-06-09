@@ -632,6 +632,45 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- All cards blocked -->
+                <LinearLayout
+                    android:id="@+id/layout_all_cards_blocked"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:visibility="gone"
+                    android:background="@drawable/bg_card_rounded"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔒"
+                        android:textSize="40sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Все карточки заблокированы"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Разблокируйте карту в разделе&#10;«Моя карта», чтобы получать переводы"
+                        android:textSize="13sp"
+                        android:textColor="#757575"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
                 <!-- No card: offer to issue -->
                 <LinearLayout
                     android:id="@+id/layout_no_card"
