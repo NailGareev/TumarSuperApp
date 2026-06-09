@@ -1,44 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="6dp"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="1dp"
-    app:cardBackgroundColor="@color/card_bg">
+    android:layout_marginStart="14dp"
+    android:layout_marginEnd="14dp"
+    android:background="@drawable/bg_history_item_single">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="16dp"
-        android:background="?attr/selectableItemBackground">
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp">
 
+        <!-- Colored icon container -->
         <FrameLayout
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:id="@+id/fl_tx_icon_bg"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/bg_icon_circle_purple">
+
             <ImageView
                 android:id="@+id/iv_transaction_icon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:tint="@color/colorPrimary"
                 tools:srcCompat="@drawable/ic_arrow_upward"
                 android:contentDescription="@null" />
         </FrameLayout>
 
+        <!-- Description + timestamp -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="12dp"
             android:layout_marginEnd="8dp"
             android:orientation="vertical">
 
@@ -46,30 +48,66 @@
                 android:id="@+id/tv_transaction_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Перевод Ивану И." />
+                tools:text="Покупка в Tumar Market" />
 
             <TextView
                 android:id="@+id/tv_transaction_timestamp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:textSize="11sp"
                 android:textColor="@color/text_secondary"
-                tools:text="5 мая 2025, 08:15" />
+                tools:text="08:15" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_transaction_amount"
+        <!-- Amount + category badge -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="-500 ₸"
-            tools:textColor="@color/expense_color" />
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_transaction_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:gravity="end"
+                tools:text="-549 990 ₸"
+                tools:textColor="@color/expense_color" />
+
+            <TextView
+                android:id="@+id/tv_transaction_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_icon_circle_purple"
+                tools:text="Market" />
+        </LinearLayout>
+
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+
+    <!-- Bottom divider (hidden for last item in group) -->
+    <View
+        android:id="@+id/view_item_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="64dp"
+        android:background="#E6E6E6"
+        android:visibility="gone" />
+
+</FrameLayout>

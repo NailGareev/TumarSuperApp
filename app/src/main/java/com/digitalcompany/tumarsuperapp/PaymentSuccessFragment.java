@@ -26,6 +26,7 @@ public class PaymentSuccessFragment extends Fragment {
     private static final String ARG_CATEGORY      = "category";
     private static final String ARG_NEW_BALANCE   = "new_balance";
     private static final String ARG_ACCENT_COLOR  = "accent_color";
+    private static final String ARG_RECEIPT_NO    = "receipt_no";
 
     private static final String PREFS_FAVORITES   = "payment_favorites";
     private static final String KEY_FAV_SET       = "fav_set";
@@ -34,6 +35,12 @@ public class PaymentSuccessFragment extends Fragment {
     public static PaymentSuccessFragment newInstance(
             String serviceName, String account, String amount,
             String category, String newBalance, int accentColor) {
+        return newInstance(serviceName, account, amount, category, newBalance, accentColor, null);
+    }
+
+    public static PaymentSuccessFragment newInstance(
+            String serviceName, String account, String amount,
+            String category, String newBalance, int accentColor, String receiptNo) {
         PaymentSuccessFragment f = new PaymentSuccessFragment();
         Bundle args = new Bundle();
         args.putString(ARG_SERVICE_NAME, serviceName);
@@ -42,6 +49,7 @@ public class PaymentSuccessFragment extends Fragment {
         args.putString(ARG_CATEGORY, category);
         args.putString(ARG_NEW_BALANCE, newBalance);
         args.putInt(ARG_ACCENT_COLOR, accentColor);
+        args.putString(ARG_RECEIPT_NO, receiptNo);
         f.setArguments(args);
         return f;
     }
@@ -79,6 +87,7 @@ public class PaymentSuccessFragment extends Fragment {
         String category    = args != null ? args.getString(ARG_CATEGORY, "")     : "";
         String newBalance  = args != null ? args.getString(ARG_NEW_BALANCE, "—") : "—";
         int accentColor    = args != null ? args.getInt(ARG_ACCENT_COLOR, 0xFF6200EE) : 0xFF6200EE;
+        String receiptNo   = args != null ? args.getString(ARG_RECEIPT_NO, null) : null;
 
         // Derive light / border colors
         int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000; // 10% alpha
@@ -114,6 +123,10 @@ public class PaymentSuccessFragment extends Fragment {
         view.<TextView>findViewById(R.id.tv_pay_new_balance).setText("₸ " + newBalance);
         TextView tvFee = view.findViewById(R.id.tv_pay_fee);
         if (tvFee != null) tvFee.setText("₸ 0");
+        TextView tvReceiptNo = view.findViewById(R.id.tv_pay_receipt_no);
+        if (tvReceiptNo != null) {
+            tvReceiptNo.setText(receiptNo != null ? receiptNo : "—");
+        }
 
         // Buttons
         view.findViewById(R.id.btn_close_pay_success).setOnClickListener(v -> navigateHome());

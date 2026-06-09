@@ -262,8 +262,9 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
                         if (successListener != null) successListener.onPaymentSuccess(newBal);
 
                         // Navigate to PaymentSuccessFragment
+                        String receiptNo = generateReceiptNo();
                         PaymentSuccessFragment pf = PaymentSuccessFragment.newInstance(
-                                name, finalAccount, formattedAmount, category, newBalStr, accentColor);
+                                name, finalAccount, formattedAmount, category, newBalStr, accentColor, receiptNo);
                         dismiss();
                         requireActivity().getSupportFragmentManager()
                                 .beginTransaction()
@@ -315,6 +316,12 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
                 ((TextView) chip).setTextColor(isActive ? 0xFFFFFFFF : 0xFF6200EE);
             }
         }
+    }
+
+    private static String generateReceiptNo() {
+        long ts = System.currentTimeMillis();
+        int suffix = (int) (ts % 900000) + 100000; // 6 digits
+        return "TXN-" + suffix;
     }
 
     private String formatAmount(BigDecimal amount) {
