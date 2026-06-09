@@ -138,7 +138,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         TextInputEditText etAccount = view.findViewById(R.id.et_sheet_account);
         TextInputEditText etAmount  = view.findViewById(R.id.et_sheet_amount);
 
-        boolean isPhoneField = !phoneFormat.isEmpty() || label.toLowerCase(Locale.ROOT).contains("телефон");
+        boolean isPhoneField = !phoneFormat.isEmpty() || hint.startsWith("+7") || hint.startsWith("+996");
         boolean isKyrgyzPhone = "KG".equalsIgnoreCase(phoneFormat);
         if (etAccount != null) {
             if (isPhoneField) {
@@ -342,7 +342,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
             formatting = true;
 
             String digits = s.toString().replaceAll("[^0-9]", "");
-            if (digits.startsWith("996")) {
+            if (digits.startsWith("996") && digits.length() >= 3) {
                 digits = digits.substring(3);
             }
             // KG local part is 9 digits: +996 XXX XXXXXX.
@@ -369,7 +369,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         static String raw(TextInputEditText et) {
             String text = et != null && et.getText() != null ? et.getText().toString() : "";
             String digits = text.replaceAll("[^0-9]", "");
-            if (digits.startsWith("996")) {
+            if (digits.startsWith("996") && digits.length() >= 3) {
                 digits = digits.substring(3);
             }
             // KG local part is 9 digits: +996 XXX XXXXXX.
