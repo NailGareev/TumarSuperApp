@@ -203,6 +203,10 @@ public class CardFragment extends Fragment {
             int page = Math.max(0, Math.min(savedPage, cardList.size() - 1));
             cardViewPager.setCurrentItem(page, false);
             updateDots(page);
+            cardViewPager.post(() -> {
+                if (!isAdded() || cardViewPager == null) return;
+                updateDots(cardViewPager.getCurrentItem());
+            });
             updateBlockActionForPage(page);
         }
 
@@ -257,6 +261,7 @@ public class CardFragment extends Fragment {
         if (carouselDotsContainer == null || getContext() == null) return;
         carouselDotsContainer.removeAllViews();
         int count = cardList.size();
+        carouselDotsContainer.setVisibility(count > 1 ? View.VISIBLE : View.GONE);
         if (count <= 1) return;
         float density = getResources().getDisplayMetrics().density;
         for (int i = 0; i < count; i++) {
@@ -413,6 +418,10 @@ public class CardFragment extends Fragment {
             callbackRegistered = true;
             cardViewPager.setCurrentItem(newIndex, newIndex > 0);
             updateDots(newIndex);
+            cardViewPager.post(() -> {
+                if (!isAdded() || cardViewPager == null) return;
+                updateDots(cardViewPager.getCurrentItem());
+            });
             updateBlockActionForPage(newIndex);
         }
 

@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.Set;
 
 public class PaymentsFragment extends Fragment {
+    private static final String PREFS_FAVORITES = "payment_favorites";
+    private static final String KEY_FAV_SET = "fav_set";
+    private static final String KEY_FAV_ACCOUNT_PREFIX = "fav_account_";
+
 
     private RecyclerView rvCategories;
     private RecyclerView rvPayments;
@@ -42,6 +46,7 @@ public class PaymentsFragment extends Fragment {
     private final Map<String, List<PaymentsAdapter.Service>> categoryMap = buildCategoryMap();
 
     private OnBackPressedCallback backCallback;
+    private boolean favoritesEditMode = false;
 
     // Current open category (for country tab filtering)
     private String currentCategoryKey = "";
@@ -75,11 +80,14 @@ public class PaymentsFragment extends Fragment {
         });
 
         // Edit favorites button
-        View tvEditFav = view.findViewById(R.id.tv_edit_favorites);
+        TextView tvEditFav = view.findViewById(R.id.tv_edit_favorites);
         if (tvEditFav != null) {
             tvEditFav.setOnClickListener(v -> {
-                // Future: open favorites edit screen
+                favoritesEditMode = !favoritesEditMode;
+                updateEditFavoritesLabel(tvEditFav);
+                setupFavoritesRow();
             });
+            updateEditFavoritesLabel(tvEditFav);
         }
 
         backCallback = new OnBackPressedCallback(false) {
@@ -130,8 +138,8 @@ public class PaymentsFragment extends Fragment {
         if (llFavoritesRow == null || getContext() == null) return;
         llFavoritesRow.removeAllViews();
 
-        SharedPreferences prefs = requireContext().getSharedPreferences("payment_favorites", android.content.Context.MODE_PRIVATE);
-        Set<String> favSet = prefs.getStringSet("fav_set", new HashSet<>());
+        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_FAVORITES, android.content.Context.MODE_PRIVATE);
+        Set<String> favSet = prefs.getStringSet(KEY_FAV_SET, new HashSet<>());
 
         float density = getResources().getDisplayMetrics().density;
         int iconSizePx = (int)(46 * density);
@@ -205,16 +213,31 @@ public class PaymentsFragment extends Fragment {
             tvLabel.setText(svcName);
             item.addView(tvLabel);
 
+            if (favoritesEditMode) {
+                TextView tvRemove = new TextView(requireContext());
+                FrameLayout.LayoutParams removeLp = new FrameLayout.LayoutParams(
+                        (int) (16 * density), (int) (16 * density));
+                removeLp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
+                tvRemove.setLayoutParams(removeLp);
+                tvRemove.setText("×");
+                tvRemove.setGravity(android.view.Gravity.CENTER);
+                tvRemove.setTextSize(12);
+                tvRemove.setTextColor(0xFFFFFFFF);
+                tvRemove.setBackgroundResource(R.drawable.bg_dot_active);
+                iconBox.addView(tvRemove);
+            }
+
             item.setOnClickListener(v -> {
-                // Find and open the service
-                for (Map.Entry<String, List<PaymentsAdapter.Service>> entry : categoryMap.entrySet()) {
-                    for (PaymentsAdapter.Service svc : entry.getValue()) {
-                        if (svc.name.equals(finalSvcName)) {
-                            openPaymentSheet(svc);
-                            return;
-                        }
-                    }
+                if (favoritesEditMode) {
+                    removeFavorite(finalSvcName);
+                    setupFavoritesRow();
+                    return;
                 }
+
+                PaymentsAdapter.Service svc = findServiceByName(finalSvcName);
+                if (svc == null) return;
+                String savedAccount = prefs.getString(KEY_FAV_ACCOUNT_PREFIX + finalSvcName, "");
+                openPaymentSheet(svc, savedAccount);
             });
 
             llFavoritesRow.addView(item);
@@ -385,12 +408,40 @@ public class PaymentsFragment extends Fragment {
     // ── Payment bottom sheet ──────────────────────────────────
 
     private void openPaymentSheet(PaymentsAdapter.Service service) {
+        openPaymentSheet(service, "");
+    }
+
+    private void openPaymentSheet(PaymentsAdapter.Service service, String initialAccount) {
         if (getActivity() == null) return;
         int accentColor = getAccentColor(service.category);
         PaymentBottomSheet sheet = PaymentBottomSheet.newInstance(
                 service.name, service.icon, service.category,
-                service.accountLabel, service.accountHint, accentColor);
+                service.accountLabel, service.accountHint, accentColor, initialAccount);
         sheet.show(getChildFragmentManager(), "payment");
+    }
+
+    private PaymentsAdapter.Service findServiceByName(String serviceName) {
+        for (Map.Entry<String, List<PaymentsAdapter.Service>> entry : categoryMap.entrySet()) {
+            for (PaymentsAdapter.Service svc : entry.getValue()) {
+                if (svc.name.equals(serviceName)) return svc;
+            }
+        }
+        return null;
+    }
+
+    private void removeFavorite(String serviceName) {
+        if (getContext() == null) return;
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_FAVORITES, android.content.Context.MODE_PRIVATE);
+        Set<String> favs = new HashSet<>(prefs.getStringSet(KEY_FAV_SET, new HashSet<>()));
+        favs.remove(serviceName);
+        prefs.edit()
+                .putStringSet(KEY_FAV_SET, favs)
+                .remove(KEY_FAV_ACCOUNT_PREFIX + serviceName)
+                .apply();
+    }
+
+    private void updateEditFavoritesLabel(TextView tvEditFav) {
+        tvEditFav.setText(favoritesEditMode ? "Готово" : "Изменить →");
     }
 
     // ── Accent color helpers ──────────────────────────────────

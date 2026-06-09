@@ -28,6 +28,7 @@ public class PaymentSuccessFragment extends Fragment {
 
     private static final String PREFS_FAVORITES   = "payment_favorites";
     private static final String KEY_FAV_SET       = "fav_set";
+    private static final String KEY_FAV_ACCOUNT_PREFIX = "fav_account_";
 
     public static PaymentSuccessFragment newInstance(
             String serviceName, String account, String amount,
@@ -118,13 +119,13 @@ public class PaymentSuccessFragment extends Fragment {
         });
 
         // Favorites logic
-        setupFavorites(view, serviceName, category);
+        setupFavorites(view, serviceName, category, account);
 
         // Entrance animations
         playEnterAnimations(view);
     }
 
-    private void setupFavorites(View view, String serviceName, String category) {
+    private void setupFavorites(View view, String serviceName, String category, String account) {
         View llAddFav   = view.findViewById(R.id.ll_add_favorite);
         View llFavAdded = view.findViewById(R.id.ll_fav_added);
         TextView tvFavAddedSub = view.findViewById(R.id.tv_fav_added_subtitle);
@@ -139,7 +140,7 @@ public class PaymentSuccessFragment extends Fragment {
         }
 
         btnAdd.setOnClickListener(v -> {
-            addFavorite(serviceName);
+            addFavorite(serviceName, account);
             llAddFav.setVisibility(View.GONE);
             llFavAdded.setVisibility(View.VISIBLE);
             if (tvFavAddedSub != null) tvFavAddedSub.setText(serviceName + " · " + category);
@@ -159,12 +160,15 @@ public class PaymentSuccessFragment extends Fragment {
         return favs.contains(serviceName);
     }
 
-    private void addFavorite(String serviceName) {
+    private void addFavorite(String serviceName, String account) {
         if (getContext() == null) return;
         SharedPreferences prefs = getContext().getSharedPreferences(PREFS_FAVORITES, android.content.Context.MODE_PRIVATE);
         Set<String> favs = new HashSet<>(prefs.getStringSet(KEY_FAV_SET, new HashSet<>()));
         favs.add(serviceName);
-        prefs.edit().putStringSet(KEY_FAV_SET, favs).apply();
+        prefs.edit()
+                .putStringSet(KEY_FAV_SET, favs)
+                .putString(KEY_FAV_ACCOUNT_PREFIX + serviceName, account)
+                .apply();
     }
 
     private void removeFavorite(String serviceName) {
@@ -172,7 +176,10 @@ public class PaymentSuccessFragment extends Fragment {
         SharedPreferences prefs = getContext().getSharedPreferences(PREFS_FAVORITES, android.content.Context.MODE_PRIVATE);
         Set<String> favs = new HashSet<>(prefs.getStringSet(KEY_FAV_SET, new HashSet<>()));
         favs.remove(serviceName);
-        prefs.edit().putStringSet(KEY_FAV_SET, favs).apply();
+        prefs.edit()
+                .putStringSet(KEY_FAV_SET, favs)
+                .remove(KEY_FAV_ACCOUNT_PREFIX + serviceName)
+                .apply();
     }
 
     private void playEnterAnimations(View root) {

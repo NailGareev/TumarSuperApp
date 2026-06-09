@@ -4,6 +4,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
     private static final String ARG_LABEL        = "label";
     private static final String ARG_HINT         = "hint";
     private static final String ARG_ACCENT_COLOR = "accent_color";
+    private static final String ARG_INITIAL_ACCOUNT = "initial_account";
 
     public interface OnPaymentSuccessListener {
         void onPaymentSuccess(BigDecimal newBalance);
@@ -51,6 +53,12 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
     public static PaymentBottomSheet newInstance(String name, String icon, String category,
                                                   String accountLabel, String accountHint,
                                                   int accentColor) {
+        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, "");
+    }
+
+    public static PaymentBottomSheet newInstance(String name, String icon, String category,
+                                                 String accountLabel, String accountHint,
+                                                 int accentColor, String initialAccount) {
         PaymentBottomSheet sheet = new PaymentBottomSheet();
         Bundle args = new Bundle();
         args.putString(ARG_NAME, name);
@@ -59,6 +67,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         args.putString(ARG_LABEL, accountLabel);
         args.putString(ARG_HINT, accountHint);
         args.putInt(ARG_ACCENT_COLOR, accentColor);
+        args.putString(ARG_INITIAL_ACCOUNT, initialAccount);
         sheet.setArguments(args);
         return sheet;
     }
@@ -87,6 +96,7 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         String label       = args.getString(ARG_LABEL, "Номер счёта");
         String hint        = args.getString(ARG_HINT, "");
         int accentColor    = args.getInt(ARG_ACCENT_COLOR, 0xFF6200EE);
+        String initialAccount = args.getString(ARG_INITIAL_ACCOUNT, "");
 
         int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000;
         int accentBorder = (accentColor & 0x00FFFFFF) | 0x47000000;
@@ -117,6 +127,28 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         // Account and amount edit texts (visual ones in the new layout)
         TextInputEditText etAccount = view.findViewById(R.id.et_sheet_account);
         TextInputEditText etAmount  = view.findViewById(R.id.et_sheet_amount);
+
+        boolean isPhoneField = label.toLowerCase(Locale.ROOT).contains("телефон");
+        boolean isKyrgyzPhone = isPhoneField && (
+                hint.startsWith("+996") ||
+                name.contains(" KG") ||
+                name.contains("O!") ||
+                name.contains("MegaCom")
+        );
+        if (etAccount != null) {
+            if (isPhoneField) {
+                etAccount.setInputType(InputType.TYPE_CLASS_PHONE);
+                etAccount.addTextChangedListener(isKyrgyzPhone
+                        ? new KyrgyzPhoneFormatWatcher(etAccount)
+                        : new PhoneFormatWatcher(etAccount));
+            }
+            if (initialAccount != null && !initialAccount.trim().isEmpty()) {
+                etAccount.setText(initialAccount.trim());
+                if (etAccount.getText() != null) {
+                    etAccount.setSelection(etAccount.getText().length());
+                }
+            }
+        }
 
         // Hidden TextInputLayouts (for error display compatibility)
         TextInputLayout tilAccount = view.findViewById(R.id.til_sheet_account);
@@ -167,7 +199,13 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
             // Clear previous errors
             if (tvAmountError != null) tvAmountError.setVisibility(View.GONE);
 
-            String account   = etAccount != null && etAccount.getText() != null ? etAccount.getText().toString().trim() : "";
+            String accountInput = etAccount != null && etAccount.getText() != null ? etAccount.getText().toString().trim() : "";
+            String account = accountInput;
+            if (isPhoneField) {
+                account = isKyrgyzPhone
+                        ? KyrgyzPhoneFormatWatcher.raw(etAccount)
+                        : PhoneFormatWatcher.raw(etAccount);
+            }
             String amountStr = etAmount  != null && etAmount.getText()  != null ? etAmount.getText().toString().trim()  : "";
 
             if (account.isEmpty()) {
@@ -280,5 +318,58 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         sym.setDecimalSeparator('.');
         DecimalFormat df = new DecimalFormat("#,##0.##", sym);
         return df.format(amount);
+    }
+
+    private static class KyrgyzPhoneFormatWatcher implements TextWatcher {
+        private final TextInputEditText editText;
+        private boolean formatting;
+
+        KyrgyzPhoneFormatWatcher(TextInputEditText editText) {
+            this.editText = editText;
+        }
+
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (formatting) return;
+            formatting = true;
+
+            String digits = s.toString().replaceAll("[^0-9]", "");
+            if (digits.startsWith("996")) {
+                digits = digits.substring(3);
+            }
+            if (digits.length() > 9) {
+                digits = digits.substring(0, 9);
+            }
+
+            StringBuilder sb = new StringBuilder("+996");
+            if (!digits.isEmpty()) {
+                sb.append(" ").append(digits, 0, Math.min(3, digits.length()));
+            }
+            if (digits.length() > 3) {
+                sb.append(" ").append(digits, 3, Math.min(9, digits.length()));
+            }
+
+            s.replace(0, s.length(), sb.toString());
+            if (editText.getText() != null) {
+                editText.setSelection(editText.getText().length());
+            }
+
+            formatting = false;
+        }
+
+        static String raw(TextInputEditText et) {
+            String text = et != null && et.getText() != null ? et.getText().toString() : "";
+            String digits = text.replaceAll("[^0-9]", "");
+            if (digits.startsWith("996")) {
+                digits = digits.substring(3);
+            }
+            if (digits.length() > 9) {
+                digits = digits.substring(0, 9);
+            }
+            return "+996" + digits;
+        }
     }
 }
