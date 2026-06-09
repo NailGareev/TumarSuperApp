@@ -39,6 +39,10 @@ public class PromotionsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_promotions, container, false);
+        View promosBell = rootView.findViewById(R.id.btn_promos_bell);
+        if (promosBell != null) {
+            promosBell.setOnClickListener(v -> openNotifications());
+        }
         buildFilterTabs();
         fetchPromotions();
         return rootView;
@@ -159,6 +163,17 @@ public class PromotionsFragment extends Fragment {
         tvTag.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
         tvTag.setTextColor(tagColor);
         iconBox.setBackground(ContextCompat.getDrawable(requireContext(), tagDrawable));
+    }
+
+    private void openNotifications() {
+        if (getActivity() == null) return;
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                        R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.fragment_container, new NotificationsFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     private void openPromoDetail(Promotion promo) {

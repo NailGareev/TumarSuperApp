@@ -107,6 +107,19 @@ public class ProfileFragment extends Fragment {
         fetchProfile();
 
         view.findViewById(R.id.btn_edit_profile).setOnClickListener(v -> showEditBottomSheet());
+        View profileBell = view.findViewById(R.id.btn_profile_bell);
+        if (profileBell != null) {
+            profileBell.setOnClickListener(v -> {
+                if (getActivity() == null) return;
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                                R.anim.fade_in, R.anim.fade_out)
+                        .replace(R.id.fragment_container, new NotificationsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
         view.findViewById(R.id.btn_change_avatar).setOnClickListener(v -> pickImage());
         view.findViewById(R.id.row_name).setOnClickListener(v -> showEditBottomSheet());
 
