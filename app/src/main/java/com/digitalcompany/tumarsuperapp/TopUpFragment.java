@@ -160,7 +160,34 @@ public class TopUpFragment extends Fragment {
         etCardNumber.addTextChangedListener(new CardNumberFormatter());
         etCardExpiry.addTextChangedListener(new ExpiryFormatter());
 
+        etAmount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateTopUpButtonText();
+            }
+        });
+        updateTopUpButtonText();
+
         loadCurrentBalance();
+    }
+
+    private void updateTopUpButtonText() {
+        String raw = etAmount.getText() != null ? etAmount.getText().toString().trim() : "";
+        if (raw.isEmpty()) {
+            btnTopUp.setText("Пополнить");
+            return;
+        }
+        try {
+            BigDecimal amount = new BigDecimal(raw);
+            java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("ru"));
+            fmt.setGroupingUsed(true);
+            fmt.setMaximumFractionDigits(0);
+            btnTopUp.setText("Пополнить на ₸ " + fmt.format(amount.longValue()));
+        } catch (NumberFormatException e) {
+            btnTopUp.setText("Пополнить");
+        }
     }
 
     private void selectMethod(Method method) {
@@ -360,10 +387,37 @@ public class TopUpFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     BigDecimal newBal = response.body().getNewBalance();
                     String newBalStr = newBal != null ? formatAmount(newBal) : "—";
-                    tvCurrentBalance.setText(newBalStr);
-                    etAmount.setText("");
-                    Toast.makeText(getContext(),
-                            "Баланс пополнен! Новый баланс: " + newBalStr, Toast.LENGTH_LONG).show();
+
+                    String amountStr = etAmount.getText() != null
+                            ? etAmount.getText().toString().trim() : "0";
+                    String cardLast4 = "";
+                    if (selectedMethod == Method.CARD && etCardNumber != null
+                            && etCardNumber.getText() != null) {
+                        String digits = etCardNumber.getText().toString().replaceAll("\\s", "");
+                        if (digits.length() >= 4) cardLast4 = digits.substring(digits.length() - 4);
+                    }
+                    String methodName = selectedMethod == Method.CARD
+                            ? "Банковская карта" : "Банковский перевод";
+
+                    // Format amount with spaces as thousands separator
+                    String formattedAmt;
+                    try {
+                        BigDecimal amt = new BigDecimal(amountStr);
+                        java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("ru"));
+                        fmt.setGroupingUsed(true);
+                        fmt.setMaximumFractionDigits(0);
+                        formattedAmt = fmt.format(amt.longValue());
+                    } catch (Exception ex) {
+                        formattedAmt = amountStr;
+                    }
+
+                    TopUpSuccessFragment successFragment = TopUpSuccessFragment.newInstance(
+                            formattedAmt, methodName, cardLast4, newBalStr);
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, successFragment)
+                            .addToBackStack("topup_success")
+                            .commit();
                 } else {
                     String msg = response.body() != null && response.body().getMessage() != null
                             ? response.body().getMessage() : "Ошибка пополнения";

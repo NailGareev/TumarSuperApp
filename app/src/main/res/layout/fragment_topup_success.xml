@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
+
+    <!-- Header: close button right-aligned -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical|end"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <FrameLayout
+            android:id="@+id/btn_close_success"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="✕"
+                android:textSize="14sp"
+                android:textColor="#444444" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp">
+
+            <!-- Checkmark: outer ring -->
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/bg_topup_success_outer">
+
+                <FrameLayout
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_topup_success_inner">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="✓"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Баланс пополнен!"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Зачислено на счёт"
+                android:textSize="14sp"
+                android:textColor="#777777"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/tv_success_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="24dp"
+                android:text="₸ 0"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="#111111" />
+
+            <!-- Details card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_topup_details_card"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Способ"
+                        android:textSize="13sp" android:textColor="#777777" />
+                    <TextView android:id="@+id/tv_success_method"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Банковская карта"
+                        android:textSize="13sp" android:textStyle="bold" android:textColor="#111111" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1px"
+                    android:background="#EEEEEE" android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Карта"
+                        android:textSize="13sp" android:textColor="#777777" />
+                    <TextView android:id="@+id/tv_success_card"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textSize="13sp" android:textStyle="bold" android:textColor="#111111" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1px"
+                    android:background="#EEEEEE" android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Комиссия"
+                        android:textSize="13sp" android:textColor="#777777" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="₸ 0"
+                        android:textSize="13sp" android:textStyle="bold" android:textColor="#111111" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1px"
+                    android:background="#EEEEEE" android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Время"
+                        android:textSize="13sp" android:textColor="#777777" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Сейчас"
+                        android:textSize="13sp" android:textStyle="bold" android:textColor="#111111" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- New balance -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_topup_new_balance"
+                android:padding="12dp"
+                android:layout_marginBottom="28dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Новый баланс"
+                    android:textSize="13sp"
+                    android:textColor="#1A8A4A" />
+
+                <TextView
+                    android:id="@+id/tv_success_new_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A8A4A" />
+            </LinearLayout>
+
+            <!-- CTA button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_go_home"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="На главную"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#6200EE"
+                app:strokeColor="#8B3EC8"
+                app:strokeWidth="2dp"
+                app:cornerRadius="14dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
