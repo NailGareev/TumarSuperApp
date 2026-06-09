@@ -250,16 +250,12 @@ public class CategoryHistoryFragment extends Fragment {
         progressLp.topMargin = (int)(6 * d);
         progress.setLayoutParams(progressLp);
         progress.setMax(100);
+        android.graphics.drawable.GradientDrawable fill = new android.graphics.drawable.GradientDrawable();
+        fill.setColor(color);
+        fill.setCornerRadius(3 * d);
+        progress.setProgressDrawable(new android.graphics.drawable.ClipDrawable(fill,
+                android.view.Gravity.START, android.graphics.drawable.ClipDrawable.HORIZONTAL));
         progress.setProgress(pct);
-        android.graphics.drawable.ClipDrawable clip = (android.graphics.drawable.ClipDrawable) progress.getProgressDrawable();
-        if (clip != null) {
-            android.graphics.drawable.GradientDrawable fill = new android.graphics.drawable.GradientDrawable();
-            fill.setColor(color);
-            fill.setCornerRadius(3 * d);
-            progress.setProgressDrawable(new android.graphics.drawable.ClipDrawable(fill,
-                    android.view.Gravity.START, android.graphics.drawable.ClipDrawable.HORIZONTAL));
-            progress.setProgress(pct);
-        }
 
         // Count label
         TextView tvCount = new TextView(requireContext());
