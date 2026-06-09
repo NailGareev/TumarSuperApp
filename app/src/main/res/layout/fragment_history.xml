@@ -250,11 +250,18 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- Mini bar chart (weekly spending) -->
+                <com.digitalcompany.tumarsuperapp.MiniBarChartView
+                    android:id="@+id/mini_bar_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1px"
                     android:background="#E6E6E6"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp" />
 
                 <TextView

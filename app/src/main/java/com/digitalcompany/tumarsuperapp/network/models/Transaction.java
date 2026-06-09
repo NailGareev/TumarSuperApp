@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.util.Date; // Или используйте String, если timestamp приходит как строка
 
-public class Transaction {
+public class Transaction implements java.io.Serializable {
 
     @SerializedName("id")
     private int id;

@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F4F4F6">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:background="#FFFFFF">
+
+        <FrameLayout
+            android:id="@+id/btn_back_receipt"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_arrow_back"
+                android:tint="#212121"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="Фискальный чек"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#111111" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1px" android:background="#E6E6E6" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <!-- Perforated top edge -->
+            <com.digitalcompany.tumarsuperapp.PerforatedEdgeView
+                android:layout_width="match_parent"
+                android:layout_height="22dp" />
+
+            <!-- Receipt body -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFFFFF"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <!-- Merchant header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🧧"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_merchant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="11sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <!-- Dotted separator -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#DDDDDD" />
+
+                <!-- Item row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/tv_receipt_item_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="13sp"
+                        android:textColor="#333333" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_item_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <!-- Dotted separator -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#DDDDDD" />
+
+                <!-- Commission row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Комиссия"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 ₸"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <!-- Total row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="ИТОГО"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_total"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <!-- Dotted separator -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#DDDDDD" />
+
+                <!-- Payment method -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Способ оплаты"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tumar Pay"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <!-- Transaction ID -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="ID операции"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_tx_id"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#111111" />
+                </LinearLayout>
+
+                <!-- Dotted separator -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="#DDDDDD" />
+
+                <!-- Fiscal block -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ФНО 910.00"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="#444444" />
+
+                    <TextView
+                        android:id="@+id/tv_receipt_fiscal_no"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:textSize="10sp"
+                        android:textColor="#777777" />
+
+                    <!-- QR placeholder -->
+                    <FrameLayout
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#F0F0F0">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="QR"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#AAAAAA" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Чек подтверждён ОФД"
+                        android:textSize="10sp"
+                        android:textColor="#999999" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Perforated bottom edge -->
+            <com.digitalcompany.tumarsuperapp.PerforatedEdgeView
+                android:layout_width="match_parent"
+                android:layout_height="22dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:id="@+id/btn_share_receipt"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="Поделиться"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:gravity="center"
+            android:background="@drawable/bg_pay_btn_outline"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_download_pdf"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="Скачать PDF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:background="@drawable/bg_topup_cta_btn"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+</LinearLayout>

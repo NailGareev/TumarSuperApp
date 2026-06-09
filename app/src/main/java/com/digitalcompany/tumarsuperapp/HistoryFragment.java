@@ -23,6 +23,7 @@ import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.Transaction;
 import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
+import com.digitalcompany.tumarsuperapp.MiniBarChartView;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -61,6 +62,7 @@ public class HistoryFragment extends Fragment {
     private TextView tvSummaryIncome;
     private TextView tvSummaryExpense;
     private LinearLayout cardSummary;
+    private MiniBarChartView miniBarChart;
 
     // Period chips
     private TextView chipPeriod1w;
@@ -124,6 +126,7 @@ public class HistoryFragment extends Fragment {
         chipCatTransfer = view.findViewById(R.id.chip_cat_transfer);
         chipCatPayment  = view.findViewById(R.id.chip_cat_payment);
         chipCatIncome   = view.findViewById(R.id.chip_cat_income);
+        miniBarChart    = view.findViewById(R.id.mini_bar_chart);
 
         setupRecyclerView();
         setupPeriodChips();
@@ -144,6 +147,16 @@ public class HistoryFragment extends Fragment {
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
         rvTransactions.setAdapter(historyAdapter);
         rvTransactions.setNestedScrollingEnabled(false);
+        historyAdapter.setOnTransactionClickListener(tx -> {
+            if (!isAdded()) return;
+            TransactionDetailFragment detail =
+                    TransactionDetailFragment.newInstance(tx, currentUserId);
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, detail)
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     private void setupPeriodChips() {
@@ -404,6 +417,54 @@ public class HistoryFragment extends Fragment {
 
         tvSummaryIncome.setText("+ " + fmt.format(totalIncome.longValue()) + " ₸");
         tvSummaryExpense.setText("- " + fmt.format(totalExpense.longValue()) + " ₸");
+
+        updateBarChart(filtered);
+    }
+
+    private void updateBarChart(List<Transaction> periodFiltered) {
+        if (miniBarChart == null) return;
+
+        // Build last 7 weeks of expense totals
+        TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+        Calendar now = Calendar.getInstance(tz);
+        int numWeeks = 7;
+        float[] vals = new float[numWeeks];
+        String[] labels = new String[numWeeks];
+
+        SimpleDateFormat dayFmt = new SimpleDateFormat("d", new Locale("ru"));
+        dayFmt.setTimeZone(tz);
+
+        for (int w = 0; w < numWeeks; w++) {
+            Calendar weekStart = Calendar.getInstance(tz);
+            weekStart.setTime(now.getTime());
+            weekStart.add(Calendar.WEEK_OF_YEAR, -(numWeeks - 1 - w));
+            weekStart.set(Calendar.DAY_OF_WEEK, weekStart.getFirstDayOfWeek());
+            weekStart.set(Calendar.HOUR_OF_DAY, 0);
+            weekStart.set(Calendar.MINUTE, 0);
+            weekStart.set(Calendar.SECOND, 0);
+
+            Calendar weekEnd = Calendar.getInstance(tz);
+            weekEnd.setTime(weekStart.getTime());
+            weekEnd.add(Calendar.WEEK_OF_YEAR, 1);
+
+            BigDecimal weekExpense = BigDecimal.ZERO;
+            for (Transaction t : allTransactions) {
+                if (t.getTimestamp() == null || t.getAmount() == null) continue;
+                Date ts = t.getTimestamp();
+                if (!ts.before(weekStart.getTime()) && ts.before(weekEnd.getTime())) {
+                    String type = t.getTransactionType();
+                    if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
+                        weekExpense = weekExpense.add(t.getAmount().abs());
+                    } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
+                        weekExpense = weekExpense.add(t.getAmount().abs());
+                    }
+                }
+            }
+            vals[w] = weekExpense.floatValue();
+            labels[w] = dayFmt.format(weekStart.getTime());
+        }
+
+        miniBarChart.setData(vals, labels);
     }
 
     private void showCategoryBreakdown() {
@@ -437,10 +498,23 @@ public class HistoryFragment extends Fragment {
             }
         }
 
-        CategoryBreakdownBottomSheet sheet = CategoryBreakdownBottomSheet.newInstance(
+        String periodLabel = periodDaysToLabel(selectedPeriodDays);
+        CategoryHistoryFragment cat = CategoryHistoryFragment.newInstance(
                 topupTotal, topupCount, payTotal, payCount,
-                outTotal, outCount, inTotal, inCount);
-        sheet.show(getChildFragmentManager(), "CategoryBreakdown");
+                outTotal, outCount, inTotal, inCount, periodLabel);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, cat)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private String periodDaysToLabel(int days) {
+        if (days == 7)   return "1 неделя";
+        if (days == 30)  return "1 месяц";
+        if (days == 90)  return "3 месяца";
+        if (days == 180) return "6 месяцев";
+        return "1 год";
     }
 
     private void showEmpty() {

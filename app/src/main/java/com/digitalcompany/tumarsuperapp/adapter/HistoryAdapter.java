@@ -39,11 +39,20 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    public interface OnTransactionClickListener {
+        void onTransactionClick(Transaction tx);
+    }
+
     private List<Object> items = new ArrayList<>();
     private final int currentUserId;
+    private OnTransactionClickListener clickListener;
 
     public HistoryAdapter(int currentUserId) {
         this.currentUserId = currentUserId;
+    }
+
+    public void setOnTransactionClickListener(OnTransactionClickListener listener) {
+        this.clickListener = listener;
     }
 
     public void setItems(List<Object> items) {
@@ -82,8 +91,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             boolean prevIsHeader = position == 0 || items.get(position - 1) instanceof DateGroup;
             boolean nextIsHeader = position == items.size() - 1
                     || items.get(position + 1) instanceof DateGroup;
-            ((TransactionViewHolder) holder).bind(
-                    (Transaction) items.get(position), currentUserId, prevIsHeader, nextIsHeader);
+            Transaction tx = (Transaction) items.get(position);
+            ((TransactionViewHolder) holder).bind(tx, currentUserId, prevIsHeader, nextIsHeader);
+            holder.itemView.setOnClickListener(v -> {
+                if (clickListener != null) clickListener.onTransactionClick(tx);
+            });
         }
     }
 
