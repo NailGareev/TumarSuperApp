@@ -64,6 +64,7 @@ public class TopUpFragment extends Fragment {
     // Method selector cards
     private CardView methodCard, methodBank;
     private TextView tvMethodCardTitle, tvMethodCardSub, tvMethodBankTitle, tvMethodBankSub;
+    private View ctaBar;
 
     // New radio / icon views
     private View viewRadioCard, viewRadioBank, viewIconCard, viewIconBank;
@@ -128,6 +129,7 @@ public class TopUpFragment extends Fragment {
 
         viewRadioCard = view.findViewById(R.id.view_radio_card);
         viewRadioBank = view.findViewById(R.id.view_radio_bank);
+        ctaBar = view.findViewById(R.id.cta_bar);
         viewIconCard = view.findViewById(R.id.view_method_icon_card);
         viewIconBank = view.findViewById(R.id.view_method_icon_bank);
 
@@ -209,6 +211,7 @@ public class TopUpFragment extends Fragment {
             if (viewIconBank != null) viewIconBank.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.VISIBLE);
             sectionBankTransfer.setVisibility(View.GONE);
+            if (ctaBar != null) ctaBar.setVisibility(View.VISIBLE);
         } else {
             methodBank.setCardBackgroundColor(0xFF1E0A36);
             methodCard.setCardBackgroundColor(0xFFFFFFFF);
@@ -226,6 +229,7 @@ public class TopUpFragment extends Fragment {
             if (viewIconCard != null) viewIconCard.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.GONE);
             sectionBankTransfer.setVisibility(View.VISIBLE);
+            if (ctaBar != null) ctaBar.setVisibility(View.GONE);
             loadUserCard();
         }
     }
