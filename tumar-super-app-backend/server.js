@@ -11,6 +11,10 @@ const bcrypt = require('bcryptjs');     // Для хэширования и ср
 const cors = require('cors');           // Для разрешения кросс-доменных запросов от Android
 const jwt = require('jsonwebtoken');    // Для создания и проверки JWT токенов
 const crypto = require('crypto');       // Для шифрования данных карты
+const https = require('https');         // Для запросов к НБ РК
+const path = require('path');           // Для работы с путями файлов
+const fs = require('fs');               // Для работы с файловой системой
+const multer = require('multer');       // Для загрузки файлов
 
 // Создаем экземпляр Express приложения
 const app = express();
@@ -48,10 +52,33 @@ function decryptField(ciphertext) {
     return dec;
 }
 
+// --- Настройка папки img/ для фото профилей ---
+const imgDir = path.join(__dirname, 'img');
+if (!fs.existsSync(imgDir)) { fs.mkdirSync(imgDir, { recursive: true }); }
+
+// --- Настройка multer для загрузки аватаров ---
+const avatarStorage = multer.diskStorage({
+    destination: (req, file, cb) => { cb(null, imgDir); },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+        cb(null, 'avatar_' + req.user.userId + '_' + Date.now() + ext);
+    }
+});
+const uploadAvatar = multer({
+    storage: avatarStorage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowed.includes(ext)) { cb(null, true); } else { cb(new Error('Only JPG/PNG/WebP images are allowed')); }
+    }
+});
+
 // --- Настройка Middleware ---
 app.use(cors()); // Разрешаем запросы с других доменов (например, от Android приложения)
 app.use(express.json()); // Позволяем Express разбирать тело запроса в формате JSON
 app.use(express.urlencoded({ extended: true })); // Позволяем разбирать данные форм
+app.use('/img', express.static(imgDir)); // Раздаём фото профилей
 
 // --- Настройка пула соединений к MySQL ---
 const pool = mysql.createPool({
@@ -175,7 +202,9 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
     try {
         connection = await pool.getConnection();
         const sql = `
-            SELECT u.phone, b.balance, b.currency
+            SELECT u.first_name, u.last_name, u.email, u.phone, u.avatar_url,
+                   b.balance, b.currency,
+                   (SELECT COUNT(*) FROM transactions WHERE sender_id = u.id) AS operation_count
             FROM users u
             LEFT JOIN balances b ON u.id = b.user_id
             WHERE u.id = ? LIMIT 1;`;
@@ -184,17 +213,70 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
             console.warn(`Profile data not found for user ID: ${userId}`);
             return res.status(404).json({ success: false, message: 'User profile not found' });
         }
-        const profileData = results[0];
-        console.log(`Profile data retrieved for user ID ${userId}:`, profileData);
+        const p = results[0];
         res.status(200).json({
             success: true,
-            phone: profileData.phone,
-            balance: profileData.balance !== null ? profileData.balance : 0.00,
-            currency: profileData.currency !== null ? profileData.currency : 'KZT'
+            firstName: p.first_name,
+            lastName: p.last_name,
+            email: p.email,
+            phone: p.phone,
+            avatarUrl: p.avatar_url || null,
+            balance: p.balance !== null ? p.balance : 0.00,
+            currency: p.currency !== null ? p.currency : 'KZT',
+            operationCount: p.operation_count || 0
         });
     } catch (error) {
         console.error(`Error fetching profile for user ID ${userId}:`, error);
         res.status(500).json({ success: false, message: 'Internal server error fetching profile' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// PUT /api/profile - Обновление данных профиля
+app.put('/api/profile', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { firstName, lastName, email } = req.body;
+    if (!firstName || !lastName || !email) {
+        return res.status(400).json({ success: false, message: 'firstName, lastName, email are required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute(
+            'UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?',
+            [firstName.trim(), lastName.trim(), email.trim(), userId]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.json({ success: true, message: 'Profile updated' });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ success: false, message: 'Email already in use' });
+        }
+        console.error(`Error updating profile for user ID ${userId}:`, error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// POST /api/profile/avatar - Загрузка фото профиля
+app.post('/api/profile/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
+    const userId = req.user.userId;
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No image file provided' });
+    }
+    const avatarUrl = `/img/${req.file.filename}`;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.execute('UPDATE users SET avatar_url = ? WHERE id = ?', [avatarUrl, userId]);
+        res.json({ success: true, avatarUrl });
+    } catch (error) {
+        console.error(`Error saving avatar for user ID ${userId}:`, error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     } finally {
         if (connection) connection.release();
     }
@@ -817,6 +899,139 @@ app.get('/api/tours/search', async (req, res) => {
     }
 });
 
+// ─── КУРСЫ ВАЛЮТ (НБ РК) ────────────────────────────────────────────────────
+
+// GET /api/rates — отдаёт последние сохранённые курсы
+app.get('/api/rates', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT currency_code, rate, date
+             FROM currency_rates
+             WHERE date = (SELECT MAX(date) FROM currency_rates)
+               AND currency_code IN ('USD','EUR','RUB')
+             ORDER BY FIELD(currency_code,'USD','EUR','RUB')`
+        );
+        if (rows.length === 0) {
+            // Таблица пустая — подгружаем прямо сейчас
+            await fetchAndStoreRatesFromNBK();
+            const [fresh] = await connection.execute(
+                `SELECT currency_code, rate, date
+                 FROM currency_rates
+                 WHERE date = (SELECT MAX(date) FROM currency_rates)
+                   AND currency_code IN ('USD','EUR','RUB')
+                 ORDER BY FIELD(currency_code,'USD','EUR','RUB')`
+            );
+            return res.json({ success: true, rates: fresh });
+        }
+        res.json({ success: true, rates: rows });
+    } catch (err) {
+        console.error('Error fetching rates:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch rates' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// Извлечь курс валюты из XML НБ РК
+function extractRate(xml, currCode) {
+    const re = new RegExp(
+        `<title>${currCode}<\\/title>[\\s\\S]*?<description>([0-9.]+)<\\/description>`,
+        'i'
+    );
+    const m = xml.match(re);
+    return m ? parseFloat(m[1]) : null;
+}
+
+// Загрузить курсы с nationalbank.kz и сохранить в БД
+async function fetchAndStoreRatesFromNBK() {
+    const now  = new Date();
+    const dd   = String(now.getDate()).padStart(2, '0');
+    const mm   = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const url  = `https://nationalbank.kz/rss/get_rates.cfm?fdate=${dd}.${mm}.${yyyy}`;
+
+    return new Promise((resolve, reject) => {
+        https.get(url, { timeout: 10000 }, (resp) => {
+            let data = '';
+            resp.on('data', chunk => { data += chunk; });
+            resp.on('end', async () => {
+                try {
+                    const rates = {};
+                    for (const code of ['USD', 'EUR', 'RUB']) {
+                        const r = extractRate(data, code);
+                        if (r) rates[code] = r;
+                    }
+                    if (Object.keys(rates).length === 0) {
+                        return reject(new Error('No rates found in NBK response'));
+                    }
+                    let conn;
+                    try {
+                        conn = await pool.getConnection();
+                        for (const [code, rate] of Object.entries(rates)) {
+                            await conn.execute(
+                                `INSERT INTO currency_rates (currency_code, rate, date)
+                                 VALUES (?, ?, CURDATE())
+                                 ON DUPLICATE KEY UPDATE rate = VALUES(rate)`,
+                                [code, rate]
+                            );
+                        }
+                        console.log('Currency rates updated from NBK:', rates);
+                        resolve(rates);
+                    } finally {
+                        if (conn) conn.release();
+                    }
+                } catch (e) { reject(e); }
+            });
+        }).on('error', reject).on('timeout', () => reject(new Error('NBK request timeout')));
+    });
+}
+
+// Планировщик: обновление каждый день в 00:00 (Asia/Almaty, задано через process.env.TZ)
+function scheduleDailyRateUpdate() {
+    const now       = new Date();
+    const midnight  = new Date(now);
+    midnight.setHours(24, 0, 5, 0); // следующая полночь + 5 сек запаса
+    const msLeft    = midnight - now;
+
+    setTimeout(() => {
+        fetchAndStoreRatesFromNBK().catch(err =>
+            console.error('Scheduled NBK fetch failed:', err)
+        );
+        // Повторять раз в сутки
+        setInterval(() => {
+            fetchAndStoreRatesFromNBK().catch(err =>
+                console.error('Daily NBK fetch failed:', err)
+            );
+        }, 24 * 60 * 60 * 1000);
+    }, msLeft);
+
+    console.log(`Next NBK rate update scheduled in ${Math.round(msLeft / 60000)} min`);
+}
+
+// GET /api/promotions - Список активных акций (публичный)
+app.get('/api/promotions', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.execute(
+            `SELECT id, tag, title, subtitle, badge, hot,
+                    stat1_value, stat1_label, stat2_value, stat2_label,
+                    stat3_value, stat3_label, description, terms
+             FROM promotions
+             WHERE is_active = 1
+             ORDER BY hot DESC, created_at DESC`
+        );
+        res.json({ success: true, promotions: rows });
+    } catch (err) {
+        console.error('Get promotions error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // --- Запуск сервера ---
 app.listen(port, async () => {
     try {
@@ -828,7 +1043,58 @@ app.listen(port, async () => {
                 `ALTER TABLE transactions MODIFY COLUMN transaction_type ENUM('TRANSFER','TOPUP','PAYMENT','MARKET_REFUND') NOT NULL DEFAULT 'TRANSFER'`
             );
         } catch (e) { /* already includes MARKET_REFUND */ }
+
+        // Add avatar_url column to users table if missing
+        try {
+            await connection.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL COMMENT 'URL фото профиля'`);
+        } catch (e) { /* already exists */ }
+
+        // Create promotions table if not exists
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS promotions (
+                id          INT           AUTO_INCREMENT PRIMARY KEY,
+                tag         VARCHAR(50)   NOT NULL,
+                title       VARCHAR(255)  NOT NULL,
+                subtitle    VARCHAR(500)  NOT NULL,
+                badge       VARCHAR(100)  NOT NULL,
+                hot         TINYINT(1)    NOT NULL DEFAULT 0,
+                stat1_value VARCHAR(50)   NOT NULL,
+                stat1_label VARCHAR(50)   NOT NULL,
+                stat2_value VARCHAR(50)   NOT NULL,
+                stat2_label VARCHAR(50)   NOT NULL,
+                stat3_value VARCHAR(50)   NOT NULL,
+                stat3_label VARCHAR(50)   NOT NULL,
+                description TEXT          NOT NULL,
+                terms       TEXT          NOT NULL,
+                is_active   TINYINT(1)    NOT NULL DEFAULT 1,
+                created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create currency_rates table if not exists
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS currency_rates (
+                id            INT AUTO_INCREMENT PRIMARY KEY,
+                currency_code VARCHAR(3)     NOT NULL,
+                rate          DECIMAL(12, 4) NOT NULL,
+                date          DATE           NOT NULL,
+                updated_at    TIMESTAMP      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_currency_date (currency_code, date)
+            )
+        `);
         connection.release();
+
+        // Initial fetch if table is empty
+        const [existing] = await pool.execute('SELECT COUNT(*) AS cnt FROM currency_rates');
+        if (existing[0].cnt === 0) {
+            fetchAndStoreRatesFromNBK().catch(err =>
+                console.error('Initial NBK fetch failed:', err)
+            );
+        }
+
+        // Schedule daily update at midnight Almaty time
+        scheduleDailyRateUpdate();
+
         console.log(`Server listening at http://localhost:${port}`);
     } catch (err) {
         console.error('!!! FAILED TO CONNECT TO DATABASE on startup: !!!', err);

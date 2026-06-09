@@ -40,13 +40,12 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private boolean uiInitialized = false;
     private int currentTabId = R.id.navigation_home;
 
-    // Слушатель для BottomNavigationView (без изменений)
+    // Слушатель для BottomNavigationView
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = item -> {
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
         currentTabId = itemId; // update BEFORE popBackStackImmediate fires onBackStackChanged
-        boolean shouldShowAppBar = true;
         boolean loadSuccess = false;
 
         if (itemId == R.id.navigation_home) {
@@ -56,17 +55,14 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         } else if (itemId == R.id.navigation_promotions) {
             selectedFragment = new PromotionsFragment(); loadSuccess = true;
         } else if (itemId == R.id.navigation_profile) {
-            selectedFragment = new ProfileFragment(); shouldShowAppBar = false; loadSuccess = true;
+            selectedFragment = new ProfileFragment(); loadSuccess = true;
         }
-
-        if (appBarLayout != null) {
-            appBarLayout.setVisibility(shouldShowAppBar ? View.VISIBLE : View.GONE);
-        } else { Log.e(TAG, "appBarLayout равен null при обработке навигации!"); }
 
         if (selectedFragment != null && loadSuccess) {
             getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             loadFragment(selectedFragment);
             updateToolbarTitle();
+            updateAppBarVisibility();
             return true;
         }
         Log.w(TAG, "Фрагмент не выбран или загрузка не предполагалась для itemId: " + itemId);
@@ -157,16 +153,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                     || (id == R.id.navigation_profile && current instanceof ProfileFragment);
             if (!isRoot) {
                 Fragment root = null;
-                boolean showAppBar = true;
-                if (id == R.id.navigation_home)        { root = new HomeFragment(); }
-                else if (id == R.id.navigation_card)   { root = new CardFragment(); }
+                if (id == R.id.navigation_home)            { root = new HomeFragment(); }
+                else if (id == R.id.navigation_card)       { root = new CardFragment(); }
                 else if (id == R.id.navigation_promotions) { root = new PromotionsFragment(); }
-                else if (id == R.id.navigation_profile){ root = new ProfileFragment(); showAppBar = false; }
+                else if (id == R.id.navigation_profile)    { root = new ProfileFragment(); }
                 if (root != null) {
                     getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     loadFragment(root);
                     updateToolbarTitle();
-                    if (appBarLayout != null) appBarLayout.setVisibility(showAppBar ? View.VISIBLE : View.GONE);
+                    updateAppBarVisibility();
                 }
             }
         });
@@ -185,22 +180,20 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                         .replace(R.id.fragment_container, initialFragment) // Проверьте, что HomeFragment.onCreateView работает
                         .commit(); // Используем commit() для асинхронной загрузки
                 Log.d(TAG, "initializeUI: HomeFragment commit(). Установка элемента навигации через post()...");
-                // Выделяем элемент "Главная" и показываем AppBar после отрисовки
+                // Выделяем элемент "Главная" и обновляем видимость AppBar
                 navView.post(() -> {
-                    if (navView != null && appBarLayout != null) {
+                    if (navView != null) {
                         navView.setSelectedItemId(R.id.navigation_home);
-                        appBarLayout.setVisibility(View.VISIBLE);
                         updateToolbarTitle();
-                    } else { Log.e(TAG,"Ошибка в navView.post: navView или appBarLayout == null"); }
+                        updateAppBarVisibility();
+                    } else { Log.e(TAG,"Ошибка в navView.post: navView == null"); }
                 });
             } else {
                 Log.d(TAG, "initializeUI: Фрагмент уже существует. Обновление AppBar через post()...");
-                // Обновляем состояние AppBar в соответствии с текущим выбранным элементом
-                navView.post(() -> { // Выполняем после отрисовки
-                    if (navView != null && appBarLayout != null) { // Доп. проверка на null
-                        int currentItemId = navView.getSelectedItemId();
-                        appBarLayout.setVisibility(currentItemId == R.id.navigation_profile ? View.GONE : View.VISIBLE); // Проверьте ID navigation_profile
-                    } else { Log.e(TAG,"Ошибка в navView.post: navView или appBarLayout == null"); }
+                navView.post(() -> {
+                    if (navView != null) {
+                        updateAppBarVisibility();
+                    } else { Log.e(TAG,"Ошибка в navView.post: navView == null"); }
                 });
             }
         } catch (Exception e) {
@@ -262,6 +255,24 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void onBackStackChanged() {
         shouldDisplayHomeUp();
         updateToolbarTitle();
+        updateAppBarVisibility();
+    }
+
+    private void updateAppBarVisibility() {
+        if (appBarLayout == null) return;
+        boolean isProfileTab = currentTabId == R.id.navigation_profile;
+        boolean isHomeRoot = currentTabId == R.id.navigation_home
+                && getSupportFragmentManager().getBackStackEntryCount() == 0;
+        boolean isCardRoot = currentTabId == R.id.navigation_card
+                && getSupportFragmentManager().getBackStackEntryCount() == 0;
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        boolean isPromotionsRoot = currentTabId == R.id.navigation_promotions
+                && getSupportFragmentManager().getBackStackEntryCount() == 0;
+        boolean isFullScreen = current instanceof TumarMarketFragment
+                || current instanceof QrScanFragment
+                || current instanceof CardManagementFragment
+                || current instanceof PromoDetailFragment;
+        appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
     public void shouldDisplayHomeUp() {
@@ -300,6 +311,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         int vis = visible ? View.VISIBLE : View.GONE;
         if (appBarLayout != null) appBarLayout.setVisibility(vis);
         if (navView != null) navView.setVisibility(vis);
+    }
+
+    public void restoreNavBars() {
+        if (navView != null) navView.setVisibility(View.VISIBLE);
+        updateAppBarVisibility();
     }
 
     // Внутренний статический класс PlaceholderFragment (оставлен без изменений)

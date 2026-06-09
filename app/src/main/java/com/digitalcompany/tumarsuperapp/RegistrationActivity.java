@@ -32,6 +32,7 @@ public class RegistrationActivity extends AppCompatActivity {
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_AUTH_TOKEN = "auth_token";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USER_NAME = "user_name";
 
     // --- View компоненты ---
     private TextInputLayout tilPhone, tilEmail, tilAge, tilFirstName, tilLastName, tilPassword;
@@ -203,7 +204,7 @@ public class RegistrationActivity extends AppCompatActivity {
                             saveRegistrationFlag();
                             // Auto-login: save auth state so the user is already logged in
                             if (registrationResponse.getToken() != null) {
-                                saveLoginState(registrationResponse.getToken(), registrationResponse.getUserId());
+                                saveLoginState(registrationResponse.getToken(), registrationResponse.getUserId(), firstName);
                             }
                             Toast.makeText(RegistrationActivity.this, "Регистрация успешна!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(RegistrationActivity.this, PinSetupActivity.class);
@@ -247,11 +248,12 @@ public class RegistrationActivity extends AppCompatActivity {
                 .edit().putBoolean(KEY_IS_REGISTERED, true).apply();
     }
 
-    private void saveLoginState(String token, Integer userId) {
+    private void saveLoginState(String token, Integer userId, String firstName) {
         SharedPreferences.Editor editor = getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE).edit();
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.putString(KEY_AUTH_TOKEN, token);
         if (userId != null) editor.putInt(KEY_USER_ID, userId);
+        if (firstName != null && !firstName.isEmpty()) editor.putString(KEY_USER_NAME, firstName);
         editor.commit();
         Log.d(TAG, "Login state saved after registration.");
     }

@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone         VARCHAR(20)  NOT NULL UNIQUE,
     age           INT          NULL,
     password_hash VARCHAR(255) NOT NULL,
+    avatar_url    VARCHAR(500) NULL        COMMENT 'URL фото профиля (хранится в img/)',
     created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Пользователи приложения'
@@ -132,6 +133,28 @@ CREATE TABLE IF NOT EXISTS tours (
     created_at       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Туры, добавляемые администратором'
+"""
+
+TABLES["promotions"] = """
+CREATE TABLE IF NOT EXISTS promotions (
+    id          INT           AUTO_INCREMENT PRIMARY KEY,
+    tag         VARCHAR(50)   NOT NULL    COMMENT 'Кэшбэк / Кредит / Партнёр',
+    title       VARCHAR(255)  NOT NULL,
+    subtitle    VARCHAR(500)  NOT NULL,
+    badge       VARCHAR(100)  NOT NULL    COMMENT 'Текст значка на детальном экране',
+    hot         TINYINT(1)    NOT NULL DEFAULT 0,
+    stat1_value VARCHAR(50)   NOT NULL,
+    stat1_label VARCHAR(50)   NOT NULL,
+    stat2_value VARCHAR(50)   NOT NULL,
+    stat2_label VARCHAR(50)   NOT NULL,
+    stat3_value VARCHAR(50)   NOT NULL,
+    stat3_label VARCHAR(50)   NOT NULL,
+    description TEXT          NOT NULL,
+    terms       TEXT          NOT NULL,
+    is_active   TINYINT(1)    NOT NULL DEFAULT 1,
+    created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Акции и специальные предложения'
 """
 
 

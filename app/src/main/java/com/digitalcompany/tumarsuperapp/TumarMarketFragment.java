@@ -503,6 +503,7 @@ public class TumarMarketFragment extends Fragment {
                     if (!isAdded()) return;
                     if (resp.isSuccessful() && resp.body() != null && resp.body().success) {
                         String orderRef = resp.body().orderRef;
+                        saveDeliveryCode(orderRef);
                         // Create order in Go market so it appears in /orders
                         createGoMarketOrder(pendingAddress, orderRef);
                         showSuccessInWebView(orderRef);
@@ -518,6 +519,12 @@ public class TumarMarketFragment extends Fragment {
                     showErrorInWebView("Ошибка сети. Проверьте подключение.");
                 }
             });
+    }
+
+    private void saveDeliveryCode(String orderRef) {
+        if (getContext() == null || orderRef == null) return;
+        getContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                .edit().putString("market_delivery_code", orderRef).apply();
     }
 
     /** Creates a corresponding order in the Go market backend after successful Tumar Pay. */
