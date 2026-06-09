@@ -4,12 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/app_bg">
+    android:background="#F4F4F6">
 
     <!-- ── Header ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:background="@drawable/bg_toolbar_surface"
+        android:elevation="2dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
@@ -21,7 +23,7 @@
             android:layout_weight="1"
             android:text="Моя карта"
             android:textColor="@color/text_primary"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <FrameLayout
@@ -29,7 +31,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_action_icon_purple"
+            android:background="@drawable/bg_toolbar_icon"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless">
@@ -48,7 +50,7 @@
             android:id="@+id/btn_card_bell"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:background="@drawable/bg_header_bell_btn"
+            android:background="@drawable/bg_toolbar_icon"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless">
@@ -57,7 +59,7 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 app:srcCompat="@drawable/ic_bell_notification"
-                app:tint="@color/text_primary" />
+                app:tint="@color/colorPrimary" />
         </FrameLayout>
     </LinearLayout>
 

@@ -7,6 +7,6 @@
         android:title="Уведомления"
         android:icon="@drawable/ic_bell_notification"
         app:showAsAction="always"
-        app:iconTint="@null" />
+        app:iconTint="@color/colorPrimary" />
 
 </menu>
