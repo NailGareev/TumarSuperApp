@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -86,7 +87,7 @@ public class PaymentSuccessFragment extends Fragment {
 
         // Service icon box
         FrameLayout flIcon = view.findViewById(R.id.fl_pay_success_icon);
-        View iconInner     = view.findViewById(R.id.view_pay_success_icon_inner);
+        ImageView iconInner = view.findViewById(R.id.iv_pay_success_icon_inner);
 
         float density = getResources().getDisplayMetrics().density;
         GradientDrawable outerBg = new GradientDrawable();
@@ -98,7 +99,11 @@ public class PaymentSuccessFragment extends Fragment {
         GradientDrawable innerBg = new GradientDrawable();
         innerBg.setColor(accentMedium);
         innerBg.setCornerRadius(10 * density);
-        iconInner.setBackground(innerBg);
+        if (iconInner != null) {
+            iconInner.setBackground(innerBg);
+            iconInner.setImageResource(PaymentsFragment.getServiceIconRes(serviceName));
+            iconInner.setColorFilter(accentColor, android.graphics.PorterDuff.Mode.SRC_IN);
+        }
 
         // Populate text fields
         view.<TextView>findViewById(R.id.tv_pay_success_title).setText("Оплата прошла!");
@@ -107,6 +112,8 @@ public class PaymentSuccessFragment extends Fragment {
         view.<TextView>findViewById(R.id.tv_pay_svc_name).setText(serviceName);
         view.<TextView>findViewById(R.id.tv_pay_account).setText(account);
         view.<TextView>findViewById(R.id.tv_pay_new_balance).setText("₸ " + newBalance);
+        TextView tvFee = view.findViewById(R.id.tv_pay_fee);
+        if (tvFee != null) tvFee.setText("₸ 0");
 
         // Buttons
         view.findViewById(R.id.btn_close_pay_success).setOnClickListener(v -> navigateHome());

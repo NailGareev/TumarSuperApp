@@ -62,11 +62,14 @@
                     android:layout_height="72dp"
                     android:layout_gravity="top|start">
 
-                    <View
-                        android:id="@+id/view_pay_success_icon_inner"
+                    <ImageView
+                        android:id="@+id/iv_pay_success_icon_inner"
                         android:layout_width="34dp"
                         android:layout_height="34dp"
-                        android:layout_gravity="center" />
+                        android:layout_gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_svc_signal"
+                        android:tint="#6200EE" />
                 </FrameLayout>
 
                 <!-- Green checkmark badge (bottom-right) -->
@@ -204,6 +207,7 @@
                         android:textSize="13sp"
                         android:textColor="#777777" />
                     <TextView
+                        android:id="@+id/tv_pay_fee"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="&#8378; 0"
