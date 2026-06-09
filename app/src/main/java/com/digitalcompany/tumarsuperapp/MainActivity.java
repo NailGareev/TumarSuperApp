@@ -296,7 +296,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         boolean isFullScreen = current instanceof TumarMarketFragment
                 || current instanceof QrScanFragment
                 || current instanceof CardManagementFragment
-                || current instanceof PromoDetailFragment;
+                || current instanceof PromoDetailFragment
+                || current instanceof TopUpFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
