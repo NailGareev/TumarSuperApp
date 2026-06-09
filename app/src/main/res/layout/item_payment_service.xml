@@ -23,11 +23,12 @@
             android:layout_width="42dp"
             android:layout_height="42dp">
 
-            <View
-                android:id="@+id/view_svc_icon_inner"
+            <ImageView
+                android:id="@+id/iv_svc_icon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:scaleType="fitCenter" />
         </FrameLayout>
 
         <!-- Service info -->

@@ -180,21 +180,15 @@ public class PaymentsFragment extends Fragment {
             gd.setCornerRadius(12 * density);
             iconBox.setBackground(gd);
 
-            // Find the icon emoji for this service
-            String iconEmoji = "💳";
-            for (List<PaymentsAdapter.Service> svcs : categoryMap.values()) {
-                for (PaymentsAdapter.Service svc : svcs) {
-                    if (svc.name.equals(svcName)) { iconEmoji = svc.icon; break; }
-                }
-            }
-            TextView tvIcon = new TextView(requireContext());
-            FrameLayout.LayoutParams tvLp = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-            tvLp.gravity = android.view.Gravity.CENTER;
-            tvIcon.setLayoutParams(tvLp);
-            tvIcon.setTextSize(20);
-            tvIcon.setText(iconEmoji);
-            iconBox.addView(tvIcon);
+            android.widget.ImageView ivIcon = new android.widget.ImageView(requireContext());
+            FrameLayout.LayoutParams ivLp = new FrameLayout.LayoutParams(
+                    (int)(24 * density), (int)(24 * density));
+            ivLp.gravity = android.view.Gravity.CENTER;
+            ivIcon.setLayoutParams(ivLp);
+            ivIcon.setImageResource(getServiceIconRes(svcName));
+            android.graphics.PorterDuffColorFilter cf = new android.graphics.PorterDuffColorFilter(finalAccent, android.graphics.PorterDuff.Mode.SRC_IN);
+            ivIcon.setColorFilter(cf);
+            iconBox.addView(ivIcon);
             item.addView(iconBox);
 
             // Label
@@ -427,6 +421,38 @@ public class PaymentsFragment extends Fragment {
         }
     }
 
+    static int getCategoryIconRes(String key) {
+        if (key == null) return R.drawable.ic_cat_mobile;
+        switch (key) {
+            case "Мобильная связь": return R.drawable.ic_cat_mobile;
+            case "ЖКХ":             return R.drawable.ic_cat_utilities;
+            case "Интернет":        return R.drawable.ic_cat_internet;
+            case "Кошельки":        return R.drawable.ic_cat_wallet;
+            case "Игры":            return R.drawable.ic_cat_games;
+            case "Транспорт":       return R.drawable.ic_cat_transport;
+            default:                return R.drawable.ic_cat_mobile;
+        }
+    }
+
+    static int getServiceIconRes(String name) {
+        if (name == null) return R.drawable.ic_svc_signal;
+        if (name.contains("Activ") || name.contains("Beeline") || name.contains("Tele2") || name.contains("Altel") || name.contains("O!") || name.contains("MegaCom")) return R.drawable.ic_svc_signal;
+        if (name.equals("АЛСЕКО")) return R.drawable.ic_svc_electricity;
+        if (name.contains("YURTA DOM")) return R.drawable.ic_svc_home;
+        if (name.equals("Водоканал")) return R.drawable.ic_svc_water;
+        if (name.equals("Теплоснабжение")) return R.drawable.ic_svc_heat;
+        if (name.contains("Internet") || name.equals("MEGANET")) return R.drawable.ic_svc_signal;
+        if (name.equals("ALMA PLUS")) return R.drawable.ic_svc_tv;
+        if (name.equals("Kazakhtelecom")) return R.drawable.ic_svc_globe;
+        if (name.contains("WALLET") || name.equals("QPLUS")) return R.drawable.ic_svc_wallet;
+        if (name.equals("Kaspi Gold")) return R.drawable.ic_svc_bank;
+        if (name.equals("STEAM") || name.equals("PlayStation") || name.equals("Xbox")) return R.drawable.ic_svc_controller;
+        if (name.equals("Netflix")) return R.drawable.ic_svc_movie;
+        if (name.equals("Air Astana") || name.equals("FlyArystan")) return R.drawable.ic_svc_plane;
+        if (name.equals("Яндекс Такси")) return R.drawable.ic_svc_taxi;
+        return R.drawable.ic_svc_signal;
+    }
+
     static android.graphics.drawable.GradientDrawable makeIconBoxBg(
             int accentLight, int accentBorder, float cornerRadiusDp,
             android.content.res.Resources res) {
@@ -551,11 +577,11 @@ public class PaymentsFragment extends Fragment {
             iconBoxBg.setCornerRadius(11 * density);
             holder.flCatIconBox.setBackground(iconBoxBg);
 
-            // Inner icon background
-            GradientDrawable innerBg = new GradientDrawable();
-            innerBg.setColor(accentMedium);
-            innerBg.setCornerRadius(6 * density);
-            holder.viewCatIconInner.setBackground(innerBg);
+            // Set icon drawable with tint
+            int iconRes = getCategoryIconRes(cat.key);
+            holder.ivCatIcon.setImageResource(iconRes);
+            android.graphics.PorterDuffColorFilter cf = new android.graphics.PorterDuffColorFilter(cat.accentColor, android.graphics.PorterDuff.Mode.SRC_IN);
+            holder.ivCatIcon.setColorFilter(cf);
 
             // Accent bar
             GradientDrawable barBg = new GradientDrawable();
@@ -570,14 +596,14 @@ public class PaymentsFragment extends Fragment {
         static class VH extends RecyclerView.ViewHolder {
             TextView tvName;
             FrameLayout flCatIconBox;
-            View viewCatIconInner;
+            android.widget.ImageView ivCatIcon;
             View viewCatAccentBar;
 
             VH(View v) {
                 super(v);
                 tvName             = v.findViewById(R.id.tv_cat_name);
                 flCatIconBox       = v.findViewById(R.id.fl_cat_icon_box);
-                viewCatIconInner   = v.findViewById(R.id.view_cat_icon_inner);
+                ivCatIcon          = v.findViewById(R.id.iv_cat_icon);
                 viewCatAccentBar   = v.findViewById(R.id.view_cat_accent_bar);
             }
         }

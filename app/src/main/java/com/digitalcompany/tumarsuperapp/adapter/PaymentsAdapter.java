@@ -78,7 +78,6 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
         // Apply accent colors via GradientDrawable
         int accentColor  = PaymentsFragment.getAccentColor(svc.category);
         int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000; // 10% alpha
-        int accentMedium = (accentColor & 0x00FFFFFF) | 0x35000000; // 21% alpha
         int accentBorder = (accentColor & 0x00FFFFFF) | 0x47000000; // 28% alpha
 
         float density = holder.itemView.getResources().getDisplayMetrics().density;
@@ -90,11 +89,11 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
         iconBoxBg.setCornerRadius(12 * density);
         holder.flSvcIconBox.setBackground(iconBoxBg);
 
-        // Inner icon
-        GradientDrawable innerBg = new GradientDrawable();
-        innerBg.setColor(accentMedium);
-        innerBg.setCornerRadius(6 * density);
-        holder.viewSvcIconInner.setBackground(innerBg);
+        // Set service icon
+        int iconRes = PaymentsFragment.getServiceIconRes(svc.name);
+        holder.ivSvcIcon.setImageResource(iconRes);
+        android.graphics.PorterDuffColorFilter cf = new android.graphics.PorterDuffColorFilter(accentColor, android.graphics.PorterDuff.Mode.SRC_IN);
+        holder.ivSvcIcon.setColorFilter(cf);
 
         // Divider: show for all but last item
         if (holder.divider != null) {
@@ -117,16 +116,16 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
     public static class ServiceVH extends RecyclerView.ViewHolder {
         TextView tvName, tvSub;
         FrameLayout flSvcIconBox;
-        View viewSvcIconInner;
+        android.widget.ImageView ivSvcIcon;
         View divider;
 
         ServiceVH(View v) {
             super(v);
-            tvName          = v.findViewById(R.id.tv_svc_name);
-            tvSub           = v.findViewById(R.id.tv_svc_sub);
-            flSvcIconBox    = v.findViewById(R.id.fl_svc_icon_box);
-            viewSvcIconInner = v.findViewById(R.id.view_svc_icon_inner);
-            divider         = v.findViewById(R.id.view_svc_divider);
+            tvName       = v.findViewById(R.id.tv_svc_name);
+            tvSub        = v.findViewById(R.id.tv_svc_sub);
+            flSvcIconBox = v.findViewById(R.id.fl_svc_icon_box);
+            ivSvcIcon    = v.findViewById(R.id.iv_svc_icon);
+            divider      = v.findViewById(R.id.view_svc_divider);
         }
     }
 }
