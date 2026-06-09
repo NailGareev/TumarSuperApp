@@ -80,6 +80,22 @@ public class TopUpFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_topup, container, false);
@@ -114,9 +130,6 @@ public class TopUpFragment extends Fragment {
         viewRadioBank = view.findViewById(R.id.view_radio_bank);
         viewIconCard = view.findViewById(R.id.view_method_icon_card);
         viewIconBank = view.findViewById(R.id.view_method_icon_bank);
-
-        view.findViewById(R.id.btn_back_topup).setOnClickListener(v ->
-                requireActivity().getSupportFragmentManager().popBackStack());
 
         sectionBankTransfer = view.findViewById(R.id.section_bank_transfer);
         progressCardLoad = view.findViewById(R.id.progress_card_load);
