@@ -24,13 +24,13 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:layout_gravity="center"
-                android:text="&#8592;"
-                android:textSize="18sp"
-                android:textColor="#212121" />
+                android:src="@drawable/ic_arrow_back"
+                android:tint="#212121"
+                android:contentDescription="Назад" />
         </FrameLayout>
 
         <TextView

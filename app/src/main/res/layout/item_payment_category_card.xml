@@ -18,11 +18,12 @@
         android:layout_width="38dp"
         android:layout_height="38dp">
 
-        <View
-            android:id="@+id/view_cat_icon_inner"
+        <ImageView
+            android:id="@+id/iv_cat_icon"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:scaleType="fitCenter" />
     </FrameLayout>
 
     <LinearLayout
