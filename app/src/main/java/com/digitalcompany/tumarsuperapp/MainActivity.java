@@ -304,7 +304,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 || current instanceof HistoryFragment
                 || current instanceof CategoryHistoryFragment
                 || current instanceof TransactionDetailFragment
-                || current instanceof ReceiptFragment;
+                || current instanceof ReceiptFragment
+                || current instanceof TransferFragment
+                || current instanceof TransferSuccessFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 

@@ -1,5 +1,7 @@
 package com.digitalcompany.tumarsuperapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -16,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
@@ -24,9 +26,6 @@ import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.TransferRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -44,41 +43,34 @@ public class TransferFragment extends Fragment {
 
     private TransferMode currentMode = TransferMode.PHONE;
     private String selectedCurrency = "USD";
+    private boolean recipientFound = false;
+    private boolean transferring = false;
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
     private LinearLayout tabPhone, tabCard, tabInternational;
-    private TextView tabPhoneTitle, tabPhoneSub;
-    private TextView tabCardTitle, tabCardSub;
-    private TextView tabIntlTitle, tabIntlSub;
+    private TextView tabPhoneTitle, tabCardTitle, tabIntlTitle;
 
     // ── Sections ──────────────────────────────────────────────────────────────
-    private LinearLayout sectionPhone, sectionCard, sectionInternational;
+    private LinearLayout sectionPhone, sectionCard, sectionInternational, sectionRecent;
 
     // ── Phone inputs ──────────────────────────────────────────────────────────
-    private TextInputLayout tilRecipientPhone;
-    private TextInputEditText etRecipientPhone;
-    private TextInputLayout tilPhoneComment;
-    private TextInputEditText etPhoneComment;
+    private EditText etRecipientPhone, etPhoneComment;
 
     // ── Recipient lookup ──────────────────────────────────────────────────────
-    private CardView cardRecipientInfo, cardRecipientNotFound;
-    private LinearLayout cardLookupLoading;
+    private LinearLayout cardRecipientInfo, cardRecipientNotFound, cardLookupLoading;
     private TextView tvRecipientName;
-    private boolean recipientFound = false;
 
     // ── Card inputs ───────────────────────────────────────────────────────────
-    private TextInputLayout tilRecipientCard;
-    private TextInputEditText etRecipientCard;
+    private EditText etRecipientCard;
 
     // ── International inputs ──────────────────────────────────────────────────
-    private TextInputLayout tilIntlCountry, tilIntlRecipient, tilIntlIban, tilIntlSwift, tilIntlPurpose;
-    private TextInputEditText etIntlCountry, etIntlRecipient, etIntlIban, etIntlSwift, etIntlPurpose;
+    private EditText etIntlCountry, etIntlRecipient, etIntlIban, etIntlSwift, etIntlPurpose;
     private TextView chipUsd, chipEur, chipRub, chipGbp;
 
     // ── Shared ────────────────────────────────────────────────────────────────
-    private TextInputLayout tilTransferAmount;
-    private TextInputEditText etTransferAmount;
-    private MaterialButton btnConfirmTransfer;
+    private EditText etTransferAmount;
+    private LinearLayout llBtnConfirm;
+    private TextView tvCtaLabel, tvAvailableBalance;
     private ProgressBar progressBarTransfer;
 
     private ApiService apiService;
@@ -104,26 +96,30 @@ public class TransferFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Back button
+        view.findViewById(R.id.btn_transfer_back).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+
+        // Balance
+        tvAvailableBalance = view.findViewById(R.id.tv_available_balance);
+        loadBalance();
+
         // Tabs
         tabPhone = view.findViewById(R.id.tab_phone);
         tabCard = view.findViewById(R.id.tab_card);
         tabInternational = view.findViewById(R.id.tab_international);
         tabPhoneTitle = view.findViewById(R.id.tab_phone_title);
-        tabPhoneSub = view.findViewById(R.id.tab_phone_sub);
         tabCardTitle = view.findViewById(R.id.tab_card_title);
-        tabCardSub = view.findViewById(R.id.tab_card_sub);
         tabIntlTitle = view.findViewById(R.id.tab_intl_title);
-        tabIntlSub = view.findViewById(R.id.tab_intl_sub);
 
         // Sections
         sectionPhone = view.findViewById(R.id.section_phone);
         sectionCard = view.findViewById(R.id.section_card);
         sectionInternational = view.findViewById(R.id.section_international);
+        sectionRecent = view.findViewById(R.id.section_recent);
 
         // Phone
-        tilRecipientPhone = view.findViewById(R.id.til_recipient_phone);
         etRecipientPhone = view.findViewById(R.id.et_recipient_phone);
-        tilPhoneComment = view.findViewById(R.id.til_phone_comment);
         etPhoneComment = view.findViewById(R.id.et_phone_comment);
         cardRecipientInfo = view.findViewById(R.id.card_recipient_info);
         cardRecipientNotFound = view.findViewById(R.id.card_recipient_not_found);
@@ -131,19 +127,13 @@ public class TransferFragment extends Fragment {
         tvRecipientName = view.findViewById(R.id.tv_recipient_name);
 
         // Card
-        tilRecipientCard = view.findViewById(R.id.til_recipient_card);
         etRecipientCard = view.findViewById(R.id.et_recipient_card);
 
         // International
-        tilIntlCountry = view.findViewById(R.id.til_intl_country);
         etIntlCountry = view.findViewById(R.id.et_intl_country);
-        tilIntlRecipient = view.findViewById(R.id.til_intl_recipient);
         etIntlRecipient = view.findViewById(R.id.et_intl_recipient);
-        tilIntlIban = view.findViewById(R.id.til_intl_iban);
         etIntlIban = view.findViewById(R.id.et_intl_iban);
-        tilIntlSwift = view.findViewById(R.id.til_intl_swift);
         etIntlSwift = view.findViewById(R.id.et_intl_swift);
-        tilIntlPurpose = view.findViewById(R.id.til_intl_purpose);
         etIntlPurpose = view.findViewById(R.id.et_intl_purpose);
         chipUsd = view.findViewById(R.id.chip_usd);
         chipEur = view.findViewById(R.id.chip_eur);
@@ -151,10 +141,10 @@ public class TransferFragment extends Fragment {
         chipGbp = view.findViewById(R.id.chip_gbp);
 
         // Shared
-        tilTransferAmount = view.findViewById(R.id.til_transfer_amount);
         etTransferAmount = view.findViewById(R.id.et_transfer_amount);
-        btnConfirmTransfer = view.findViewById(R.id.btn_confirm_transfer);
         progressBarTransfer = view.findViewById(R.id.progressBarTransfer);
+        llBtnConfirm = view.findViewById(R.id.btn_confirm_transfer);
+        tvCtaLabel = view.findViewById(R.id.tv_cta_label);
 
         // Tab clicks
         tabPhone.setOnClickListener(v -> switchMode(TransferMode.PHONE));
@@ -171,10 +161,11 @@ public class TransferFragment extends Fragment {
         etRecipientPhone.addTextChangedListener(new PhoneFormatWatcher(etRecipientPhone) {
             @Override
             public void afterTextChanged(Editable s) {
-                super.afterTextChanged(s); // apply formatting first
-                tilRecipientPhone.setError(null);
+                super.afterTextChanged(s);
+                clearInputError(etRecipientPhone);
                 hideLookupCards();
                 recipientFound = false;
+                updateCtaLabel();
                 if (PhoneFormatWatcher.isComplete(etRecipientPhone)) {
                     scheduleLookup(PhoneFormatWatcher.raw(etRecipientPhone));
                 } else {
@@ -186,12 +177,33 @@ public class TransferFragment extends Fragment {
         // Card auto-format
         etRecipientCard.addTextChangedListener(new CardNumberFormatter());
 
-        // Quick amount chips
-        view.findViewById(R.id.chip_1000).setOnClickListener(v -> etTransferAmount.setText("1000"));
-        view.findViewById(R.id.chip_5000).setOnClickListener(v -> etTransferAmount.setText("5000"));
-        view.findViewById(R.id.chip_10000).setOnClickListener(v -> etTransferAmount.setText("10000"));
+        // Amount watcher — update CTA label
+        etTransferAmount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                clearInputError(etTransferAmount);
+                updateCtaLabel();
+            }
+        });
 
-        btnConfirmTransfer.setOnClickListener(v -> attemptTransfer());
+        // Quick amount chips
+        view.findViewById(R.id.chip_1000).setOnClickListener(v -> setAmount("1000"));
+        view.findViewById(R.id.chip_5000).setOnClickListener(v -> setAmount("5000"));
+        view.findViewById(R.id.chip_10000).setOnClickListener(v -> setAmount("10000"));
+        view.findViewById(R.id.chip_25000).setOnClickListener(v -> setAmount("25000"));
+
+        llBtnConfirm.setOnClickListener(v -> attemptTransfer());
+
+        // Initial state
+        switchMode(TransferMode.PHONE);
+        selectCurrency("USD");
+    }
+
+    private void setAmount(String amount) {
+        etTransferAmount.setText(amount);
+        etTransferAmount.setSelection(amount.length());
+        updateCtaLabel();
     }
 
     @Override
@@ -209,62 +221,115 @@ public class TransferFragment extends Fragment {
         clearAllErrors();
 
         // Reset all tabs to inactive
-        tabPhone.setBackgroundResource(R.drawable.bg_tab_inactive);
-        tabCard.setBackgroundResource(R.drawable.bg_tab_inactive);
-        tabInternational.setBackgroundResource(R.drawable.bg_tab_inactive);
-        setTabColors(tabPhoneTitle, tabPhoneSub, false);
-        setTabColors(tabCardTitle, tabCardSub, false);
-        setTabColors(tabIntlTitle, tabIntlSub, false);
+        tabPhone.setBackground(null);
+        tabCard.setBackground(null);
+        tabInternational.setBackground(null);
+        tabPhoneTitle.setTextColor(0xFF777777);
+        tabCardTitle.setTextColor(0xFF777777);
+        tabIntlTitle.setTextColor(0xFF777777);
 
         // Hide all sections
         sectionPhone.setVisibility(View.GONE);
         sectionCard.setVisibility(View.GONE);
         sectionInternational.setVisibility(View.GONE);
+        if (sectionRecent != null) sectionRecent.setVisibility(View.GONE);
 
         // Activate selected tab
+        int activeColor = 0xFF6200EE;
         switch (mode) {
             case PHONE:
-                tabPhone.setBackgroundResource(R.drawable.bg_tab_active);
-                setTabColors(tabPhoneTitle, tabPhoneSub, true);
+                tabPhone.setBackgroundResource(R.drawable.bg_segment_active);
+                tabPhoneTitle.setTextColor(activeColor);
                 sectionPhone.setVisibility(View.VISIBLE);
+                if (sectionRecent != null) sectionRecent.setVisibility(View.VISIBLE);
                 break;
             case CARD:
-                tabCard.setBackgroundResource(R.drawable.bg_tab_active);
-                setTabColors(tabCardTitle, tabCardSub, true);
+                tabCard.setBackgroundResource(R.drawable.bg_segment_active);
+                tabCardTitle.setTextColor(activeColor);
                 sectionCard.setVisibility(View.VISIBLE);
                 break;
             case INTERNATIONAL:
-                tabInternational.setBackgroundResource(R.drawable.bg_tab_active);
-                setTabColors(tabIntlTitle, tabIntlSub, true);
+                tabInternational.setBackgroundResource(R.drawable.bg_segment_active);
+                tabIntlTitle.setTextColor(activeColor);
                 sectionInternational.setVisibility(View.VISIBLE);
                 break;
         }
-    }
-
-    private void setTabColors(TextView title, TextView sub, boolean active) {
-        title.setTextColor(active ? 0xFFFFFFFF : 0xFF6200EE);
-        sub.setTextColor(active ? 0xCCFFFFFF : 0xFF757575);
+        updateCtaLabel();
     }
 
     // ── Currency selection ────────────────────────────────────────────────────
 
     private void selectCurrency(String currency) {
         selectedCurrency = currency;
-        chipUsd.setBackgroundResource("USD".equals(currency) ? R.drawable.bg_tab_active : R.drawable.bg_tab_inactive);
-        chipEur.setBackgroundResource("EUR".equals(currency) ? R.drawable.bg_tab_active : R.drawable.bg_tab_inactive);
-        chipRub.setBackgroundResource("RUB".equals(currency) ? R.drawable.bg_tab_active : R.drawable.bg_tab_inactive);
-        chipGbp.setBackgroundResource("GBP".equals(currency) ? R.drawable.bg_tab_active : R.drawable.bg_tab_inactive);
-        chipUsd.setTextColor("USD".equals(currency) ? 0xFFFFFFFF : 0xFF6200EE);
-        chipEur.setTextColor("EUR".equals(currency) ? 0xFFFFFFFF : 0xFF6200EE);
-        chipRub.setTextColor("RUB".equals(currency) ? 0xFFFFFFFF : 0xFF6200EE);
-        chipGbp.setTextColor("GBP".equals(currency) ? 0xFFFFFFFF : 0xFF6200EE);
+        int activeText = 0xFFFFFFFF;
+        int inactiveText = 0xFF6200EE;
+        chipUsd.setBackgroundResource("USD".equals(currency) ? R.drawable.bg_chip_purple_active : R.drawable.bg_chip_purple);
+        chipEur.setBackgroundResource("EUR".equals(currency) ? R.drawable.bg_chip_purple_active : R.drawable.bg_chip_purple);
+        chipRub.setBackgroundResource("RUB".equals(currency) ? R.drawable.bg_chip_purple_active : R.drawable.bg_chip_purple);
+        chipGbp.setBackgroundResource("GBP".equals(currency) ? R.drawable.bg_chip_purple_active : R.drawable.bg_chip_purple);
+        chipUsd.setTextColor("USD".equals(currency) ? activeText : inactiveText);
+        chipEur.setTextColor("EUR".equals(currency) ? activeText : inactiveText);
+        chipRub.setTextColor("RUB".equals(currency) ? activeText : inactiveText);
+        chipGbp.setTextColor("GBP".equals(currency) ? activeText : inactiveText);
+        updateCtaLabel();
+    }
+
+    // ── CTA label ─────────────────────────────────────────────────────────────
+
+    private void updateCtaLabel() {
+        if (tvCtaLabel == null) return;
+        String amountStr = etTransferAmount != null && etTransferAmount.getText() != null
+                ? etTransferAmount.getText().toString().trim() : "";
+
+        switch (currentMode) {
+            case PHONE:
+                if (!amountStr.isEmpty() && recipientFound && tvRecipientName != null
+                        && tvRecipientName.getText().length() > 0) {
+                    tvCtaLabel.setText("Перевести ₸ " + amountStr + " → " + tvRecipientName.getText());
+                } else {
+                    tvCtaLabel.setText("Перевести");
+                }
+                break;
+            case CARD:
+                tvCtaLabel.setText(amountStr.isEmpty() ? "Перевести" : "Перевести ₸ " + amountStr);
+                break;
+            case INTERNATIONAL:
+                tvCtaLabel.setText(amountStr.isEmpty() ? "Перевести"
+                        : "Перевести " + selectedCurrency + " " + amountStr);
+                break;
+        }
+    }
+
+    // ── Balance loading ───────────────────────────────────────────────────────
+
+    private void loadBalance() {
+        if (getContext() == null || tvAvailableBalance == null) return;
+        try {
+            SharedPreferences prefs = requireActivity().getSharedPreferences("CardDataPrefs", Context.MODE_PRIVATE);
+            for (int i = 0; i < 5; i++) {
+                String balance = prefs.getString("card_" + i + "_balance", null);
+                String blocked = prefs.getString("card_" + i + "_is_blocked", "false");
+                if (balance != null && !"true".equals(blocked)) {
+                    try {
+                        long bal = (long) Double.parseDouble(balance);
+                        tvAvailableBalance.setText(String.format("₸ %,d", bal).replace(',', ' '));
+                    } catch (NumberFormatException e) {
+                        tvAvailableBalance.setText("₸ " + balance);
+                    }
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Balance load error: " + e.getMessage());
+        }
+        tvAvailableBalance.setText("₸ —");
     }
 
     // ── Phone lookup ──────────────────────────────────────────────────────────
 
     private void scheduleLookup(String phone) {
         cancelPendingLookup();
-        cardLookupLoading.setVisibility(View.VISIBLE);
+        if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.VISIBLE);
         lookupRunnable = () -> lookupUser(phone);
         lookupHandler.postDelayed(lookupRunnable, LOOKUP_DEBOUNCE_MS);
     }
@@ -287,23 +352,25 @@ public class TransferFragment extends Fragment {
             @Override
             public void onResponse(Call<UserLookupResponse> call, Response<UserLookupResponse> response) {
                 if (!isAdded() || getContext() == null || call.isCanceled()) return;
-                cardLookupLoading.setVisibility(View.GONE);
+                if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     recipientFound = true;
-                    tvRecipientName.setText(response.body().getDisplayName());
-                    cardRecipientInfo.setVisibility(View.VISIBLE);
-                    cardRecipientNotFound.setVisibility(View.GONE);
+                    if (tvRecipientName != null) tvRecipientName.setText(response.body().getDisplayName());
+                    if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.VISIBLE);
+                    if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.GONE);
+                    updateCtaLabel();
                 } else {
                     recipientFound = false;
-                    cardRecipientInfo.setVisibility(View.GONE);
-                    cardRecipientNotFound.setVisibility(View.VISIBLE);
+                    if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.GONE);
+                    if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.VISIBLE);
+                    updateCtaLabel();
                 }
             }
 
             @Override
             public void onFailure(Call<UserLookupResponse> call, Throwable t) {
                 if (!isAdded() || call.isCanceled()) return;
-                cardLookupLoading.setVisibility(View.GONE);
+                if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
                 Log.w(TAG, "Lookup failed: " + t.getMessage());
             }
         });
@@ -318,7 +385,8 @@ public class TransferFragment extends Fragment {
     // ── Transfer ──────────────────────────────────────────────────────────────
 
     private void attemptTransfer() {
-        tilTransferAmount.setError(null);
+        if (transferring) return;
+        clearInputError(etTransferAmount);
         String amountStr = etTransferAmount.getText() != null
                 ? etTransferAmount.getText().toString().trim() : "";
 
@@ -326,21 +394,18 @@ public class TransferFragment extends Fragment {
         boolean amountInvalid = false;
 
         if (amountStr.isEmpty()) {
-            tilTransferAmount.setError("Введите сумму перевода");
-            etTransferAmount.requestFocus();
+            showInputError(etTransferAmount, "Введите сумму перевода");
             amountInvalid = true;
         } else {
             try {
                 amount = new BigDecimal(amountStr).setScale(2, RoundingMode.HALF_UP);
                 if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                    tilTransferAmount.setError("Сумма должна быть больше нуля");
-                    etTransferAmount.requestFocus();
+                    showInputError(etTransferAmount, "Сумма должна быть больше нуля");
                     amountInvalid = true;
                     amount = null;
                 }
             } catch (NumberFormatException e) {
-                tilTransferAmount.setError("Введите корректное число");
-                etTransferAmount.requestFocus();
+                showInputError(etTransferAmount, "Введите корректное число");
                 amountInvalid = true;
             }
         }
@@ -353,21 +418,18 @@ public class TransferFragment extends Fragment {
     }
 
     private void transferByPhone(BigDecimal amount, boolean amountInvalid) {
-        tilRecipientPhone.setError(null);
+        clearInputError(etRecipientPhone);
         String phone = PhoneFormatWatcher.raw(etRecipientPhone);
         boolean invalid = amountInvalid;
 
         if (phone.isEmpty()) {
-            tilRecipientPhone.setError("Введите номер телефона получателя");
-            etRecipientPhone.requestFocus();
+            showInputError(etRecipientPhone, "Введите номер телефона получателя");
             invalid = true;
         } else if (!phone.startsWith("+7") || phone.length() != 12) {
-            tilRecipientPhone.setError("Формат: +7XXXXXXXXXX");
-            etRecipientPhone.requestFocus();
+            showInputError(etRecipientPhone, "Формат: +7XXXXXXXXXX");
             invalid = true;
         } else if (!recipientFound) {
-            tilRecipientPhone.setError("Клиент Tumar Bank не найден");
-            etRecipientPhone.requestFocus();
+            showInputError(etRecipientPhone, "Клиент Tumar Bank не найден");
             invalid = true;
         }
 
@@ -375,7 +437,15 @@ public class TransferFragment extends Fragment {
 
         String comment = text(etPhoneComment);
         showLoading(true);
-        if (apiService == null) { Toast.makeText(getContext(), "Ошибка сети", Toast.LENGTH_SHORT).show(); showLoading(false); return; }
+        if (apiService == null) {
+            Toast.makeText(getContext(), "Ошибка сети", Toast.LENGTH_SHORT).show();
+            showLoading(false);
+            return;
+        }
+
+        final String recipientName = tvRecipientName != null
+                ? tvRecipientName.getText().toString() : "Получатель";
+        final String amountDisplay = amount.toPlainString();
 
         apiService.transferFunds(new TransferRequest(phone, amount, comment)).enqueue(new Callback<TransferResponse>() {
             @Override
@@ -383,12 +453,7 @@ public class TransferFragment extends Fragment {
                 showLoading(false);
                 if (!isAdded() || getContext() == null) return;
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Toast.makeText(getContext(), "Перевод выполнен успешно!", Toast.LENGTH_LONG).show();
-                    etRecipientPhone.setText("");
-                    etTransferAmount.setText("");
-                    etPhoneComment.setText("");
-                    hideLookupCards();
-                    recipientFound = false;
+                    navigateToSuccess(recipientName, amountDisplay, "PHONE");
                 } else {
                     String msg = response.body() != null && response.body().getMessage() != null
                             ? response.body().getMessage() : "Не удалось выполнить перевод";
@@ -406,17 +471,15 @@ public class TransferFragment extends Fragment {
     }
 
     private void transferByCard(BigDecimal amount, boolean amountInvalid) {
-        tilRecipientCard.setError(null);
+        clearInputError(etRecipientCard);
         String card = text(etRecipientCard).replaceAll("\\s", "");
         boolean invalid = amountInvalid;
 
         if (card.isEmpty()) {
-            tilRecipientCard.setError("Введите номер карты");
-            etRecipientCard.requestFocus();
+            showInputError(etRecipientCard, "Введите номер карты");
             invalid = true;
         } else if (!card.matches("\\d{16}")) {
-            tilRecipientCard.setError("Номер карты должен содержать 16 цифр");
-            etRecipientCard.requestFocus();
+            showInputError(etRecipientCard, "Номер карты должен содержать 16 цифр");
             invalid = true;
         }
 
@@ -436,49 +499,61 @@ public class TransferFragment extends Fragment {
         boolean invalid = amountInvalid;
 
         if (country.isEmpty()) {
-            tilIntlCountry.setError("Укажите страну назначения");
-            etIntlCountry.requestFocus();
+            showInputError(etIntlCountry, "Укажите страну назначения");
             invalid = true;
         }
         if (recipient.isEmpty()) {
-            tilIntlRecipient.setError("Введите ФИО получателя");
-            if (!invalid) etIntlRecipient.requestFocus();
+            showInputError(etIntlRecipient, "Введите ФИО получателя");
             invalid = true;
         } else if (!recipient.matches("[A-Za-z\\s-]+")) {
-            tilIntlRecipient.setError("Только латинские буквы");
-            if (!invalid) etIntlRecipient.requestFocus();
+            showInputError(etIntlRecipient, "Только латинские буквы");
             invalid = true;
         }
         if (iban.isEmpty()) {
-            tilIntlIban.setError("Введите IBAN или номер счёта");
-            if (!invalid) etIntlIban.requestFocus();
+            showInputError(etIntlIban, "Введите IBAN или номер счёта");
             invalid = true;
         }
         if (swift.isEmpty()) {
-            tilIntlSwift.setError("Введите SWIFT/BIC код банка");
-            if (!invalid) etIntlSwift.requestFocus();
+            showInputError(etIntlSwift, "Введите SWIFT/BIC код банка");
             invalid = true;
         } else if (swift.length() < 8 || swift.length() > 11) {
-            tilIntlSwift.setError("SWIFT/BIC: 8 или 11 символов");
-            if (!invalid) etIntlSwift.requestFocus();
+            showInputError(etIntlSwift, "SWIFT/BIC: 8 или 11 символов");
             invalid = true;
         }
 
         if (invalid || amount == null) return;
 
-        // Show confirmation summary
         String summary = String.format(
                 "Международный перевод:\n%s %s\nПолучатель: %s\nСчёт: %s\nБанк: %s\nСтрана: %s\n\n— Функция в разработке",
-                amount.toPlainString(), selectedCurrency,
-                recipient, iban.length() > 8 ? iban.substring(0, 4) + "..." + iban.substring(iban.length() - 4) : iban,
-                swift, country
-        );
+                amount.toPlainString(), selectedCurrency, recipient,
+                iban.length() > 8 ? iban.substring(0, 4) + "..." + iban.substring(iban.length() - 4) : iban,
+                swift, country);
         Toast.makeText(getContext(), summary, Toast.LENGTH_LONG).show();
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────────
+
+    private void navigateToSuccess(String recipientName, String amount, String method) {
+        if (!isAdded()) return;
+        // Clear form state
+        etRecipientPhone.setText("");
+        etTransferAmount.setText("");
+        if (etPhoneComment != null) etPhoneComment.setText("");
+        hideLookupCards();
+        recipientFound = false;
+        updateCtaLabel();
+
+        TransferSuccessFragment fragment = TransferSuccessFragment.newInstance(recipientName, amount, method);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private String text(TextInputEditText et) {
+    private String text(EditText et) {
         return et.getText() != null ? et.getText().toString().trim() : "";
     }
 
@@ -488,23 +563,46 @@ public class TransferFragment extends Fragment {
     }
 
     private void showLoading(boolean loading) {
-        if (progressBarTransfer != null) progressBarTransfer.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (btnConfirmTransfer != null) btnConfirmTransfer.setEnabled(!loading);
+        transferring = loading;
+        if (progressBarTransfer != null)
+            progressBarTransfer.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (llBtnConfirm != null) {
+            llBtnConfirm.setEnabled(!loading);
+            llBtnConfirm.setAlpha(loading ? 0.6f : 1.0f);
+        }
+    }
+
+    private void showInputError(EditText et, String msg) {
+        if (et != null) {
+            et.setBackgroundResource(R.drawable.bg_transfer_input_error);
+            et.requestFocus();
+        }
+        if (getContext() != null)
+            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+    }
+
+    private void clearInputError(EditText et) {
+        if (et == null) return;
+        if (et == etTransferAmount) {
+            et.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        } else {
+            et.setBackgroundResource(R.drawable.bg_topup_input_field);
+        }
     }
 
     private void clearAllErrors() {
-        tilRecipientPhone.setError(null);
-        tilRecipientCard.setError(null);
-        tilTransferAmount.setError(null);
+        clearInputError(etRecipientPhone);
+        clearInputError(etRecipientCard);
+        clearInputError(etTransferAmount);
         clearIntlErrors();
     }
 
     private void clearIntlErrors() {
-        tilIntlCountry.setError(null);
-        tilIntlRecipient.setError(null);
-        tilIntlIban.setError(null);
-        tilIntlSwift.setError(null);
-        tilIntlPurpose.setError(null);
+        clearInputError(etIntlCountry);
+        clearInputError(etIntlRecipient);
+        clearInputError(etIntlIban);
+        clearInputError(etIntlSwift);
+        if (etIntlPurpose != null) clearInputError(etIntlPurpose);
     }
 
     // ── Card number formatter ─────────────────────────────────────────────────
