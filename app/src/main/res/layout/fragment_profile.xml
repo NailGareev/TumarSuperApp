@@ -13,26 +13,67 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Toolbar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_toolbar_surface"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Профиль"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:id="@+id/btn_edit_profile"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_toolbar_icon"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/ic_edit_24dp"
+                    app:tint="@color/colorPrimary"
+                    tools:ignore="ContentDescription" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/btn_profile_bell"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_toolbar_icon"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/ic_bell_notification"
+                    app:tint="@color/colorPrimary"
+                    tools:ignore="ContentDescription" />
+            </FrameLayout>
+        </LinearLayout>
+
         <!-- Hero Header (148dp) -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="148dp"
             android:background="@drawable/bg_profile_hero">
-
-            <!-- Settings/Edit button (top-right) -->
-            <ImageView
-                android:id="@+id/btn_edit_profile"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="top|end"
-                android:layout_margin="12dp"
-                android:background="@drawable/bg_settings_btn"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="6dp"
-                app:srcCompat="@drawable/ic_edit_24dp"
-                app:tint="#FFFFFF"
-                tools:ignore="ContentDescription" />
 
             <!-- Avatar + Name + Phone -->
             <LinearLayout

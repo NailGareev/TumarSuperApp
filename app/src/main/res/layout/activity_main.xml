@@ -15,17 +15,18 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_auth_header"
-        app:elevation="0dp">
+        android:background="@drawable/bg_toolbar_surface"
+        android:elevation="2dp"
+        app:elevation="2dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/transparent"
-            app:titleTextColor="@android:color/white"
-            app:subtitleTextColor="#CCFFFFFF"
-            app:navigationIconTint="@android:color/white"
+            android:background="@drawable/bg_toolbar_surface"
+            app:titleTextColor="@color/text_primary"
+            app:subtitleTextColor="@color/text_secondary"
+            app:navigationIconTint="@color/text_primary"
             />
     </com.google.android.material.appbar.AppBarLayout>
 
