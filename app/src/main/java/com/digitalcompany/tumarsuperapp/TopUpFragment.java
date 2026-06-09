@@ -65,6 +65,9 @@ public class TopUpFragment extends Fragment {
     private CardView methodCard, methodBank;
     private TextView tvMethodCardTitle, tvMethodCardSub, tvMethodBankTitle, tvMethodBankSub;
 
+    // New radio / icon views
+    private View viewRadioCard, viewRadioBank, viewIconCard, viewIconBank;
+
     private ApiService apiService;
 
     public TopUpFragment() {}
@@ -107,6 +110,14 @@ public class TopUpFragment extends Fragment {
         tilCardCvv = view.findViewById(R.id.til_card_cvv);
         etCardCvv = view.findViewById(R.id.et_card_cvv);
 
+        viewRadioCard = view.findViewById(R.id.view_radio_card);
+        viewRadioBank = view.findViewById(R.id.view_radio_bank);
+        viewIconCard = view.findViewById(R.id.view_method_icon_card);
+        viewIconBank = view.findViewById(R.id.view_method_icon_bank);
+
+        view.findViewById(R.id.btn_back_topup).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+
         sectionBankTransfer = view.findViewById(R.id.section_bank_transfer);
         progressCardLoad = view.findViewById(R.id.progress_card_load);
         cardDisplayContainer = view.findViewById(R.id.card_display_container);
@@ -136,29 +147,37 @@ public class TopUpFragment extends Fragment {
     private void selectMethod(Method method) {
         selectedMethod = method;
         if (method == Method.CARD) {
-            methodCard.setCardBackgroundColor(0xFF6200EE);
-            methodBank.setCardBackgroundColor(resolveCardBg());
+            methodCard.setCardBackgroundColor(0xFF1E0A36);
+            methodBank.setCardBackgroundColor(0xFFFFFFFF);
             if (tvMethodCardTitle != null) {
                 tvMethodCardTitle.setTextColor(0xFFFFFFFF);
-                tvMethodCardSub.setTextColor(0xCCFFFFFF);
+                tvMethodCardSub.setTextColor(0x80FFFFFF);
             }
             if (tvMethodBankTitle != null) {
                 tvMethodBankTitle.setTextColor(0xFF212121);
                 tvMethodBankSub.setTextColor(0xFF757575);
             }
+            if (viewRadioCard != null) viewRadioCard.setBackgroundResource(R.drawable.bg_topup_radio_selected);
+            if (viewRadioBank != null) viewRadioBank.setBackgroundResource(R.drawable.bg_topup_radio_normal);
+            if (viewIconCard != null) viewIconCard.setBackgroundResource(R.drawable.bg_topup_method_icon_selected);
+            if (viewIconBank != null) viewIconBank.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.VISIBLE);
             sectionBankTransfer.setVisibility(View.GONE);
         } else {
-            methodBank.setCardBackgroundColor(0xFF6200EE);
-            methodCard.setCardBackgroundColor(resolveCardBg());
+            methodBank.setCardBackgroundColor(0xFF1E0A36);
+            methodCard.setCardBackgroundColor(0xFFFFFFFF);
             if (tvMethodBankTitle != null) {
                 tvMethodBankTitle.setTextColor(0xFFFFFFFF);
-                tvMethodBankSub.setTextColor(0xCCFFFFFF);
+                tvMethodBankSub.setTextColor(0x80FFFFFF);
             }
             if (tvMethodCardTitle != null) {
                 tvMethodCardTitle.setTextColor(0xFF212121);
                 tvMethodCardSub.setTextColor(0xFF757575);
             }
+            if (viewRadioBank != null) viewRadioBank.setBackgroundResource(R.drawable.bg_topup_radio_selected);
+            if (viewRadioCard != null) viewRadioCard.setBackgroundResource(R.drawable.bg_topup_radio_normal);
+            if (viewIconBank != null) viewIconBank.setBackgroundResource(R.drawable.bg_topup_method_icon_selected);
+            if (viewIconCard != null) viewIconCard.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.GONE);
             sectionBankTransfer.setVisibility(View.VISIBLE);
             loadUserCard();
