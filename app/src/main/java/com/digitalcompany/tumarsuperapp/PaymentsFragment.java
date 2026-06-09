@@ -434,7 +434,7 @@ public class PaymentsFragment extends Fragment {
         }
     }
 
-    static int getServiceIconRes(String name) {
+    public static int getServiceIconRes(String name) {
         if (name == null) return R.drawable.ic_svc_signal;
         if (name.contains("Activ") || name.contains("Beeline") || name.contains("Tele2") || name.contains("Altel") || name.contains("O!") || name.contains("MegaCom")) return R.drawable.ic_svc_signal;
         if (name.equals("АЛСЕКО")) return R.drawable.ic_svc_electricity;
