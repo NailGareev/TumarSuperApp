@@ -401,7 +401,7 @@ public class PaymentsFragment extends Fragment {
 
     // ── Accent color helpers ──────────────────────────────────
 
-    static int getAccentColor(String category) {
+    public static int getAccentColor(String category) {
         if (category == null) return 0xFF6200EE;
         switch (category) {
             case "Мобильная связь": return 0xFF1A4A8A;
