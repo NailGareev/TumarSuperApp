@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     // UI Элементы
     private BottomNavigationView navView;
+    private FrameLayout bottomNavContainer;
+    private FrameLayout btnQrCenter;
     private MaterialToolbar topAppBar;
     private AppBarLayout appBarLayout;
 
@@ -45,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             = item -> {
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
+        if (itemId == R.id.navigation_qr) {
+            openQrScanner();
+            return false;
+        }
         currentTabId = itemId; // update BEFORE popBackStackImmediate fires onBackStackChanged
         boolean loadSuccess = false;
 
@@ -124,14 +130,18 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
         Log.d(TAG, "initializeUI: Поиск View...");
         navView = findViewById(R.id.nav_view);           // Проверьте ID в макете
+        bottomNavContainer = findViewById(R.id.bottom_nav_container);
+        btnQrCenter = findViewById(R.id.btn_qr_center);
         topAppBar = findViewById(R.id.topAppBar);         // Проверьте ID в макете
         appBarLayout = findViewById(R.id.appBarLayout);   // Проверьте ID в макете
 
         // Проверка, что основные элементы найдены (Важно!)
-        if (navView == null || topAppBar == null || appBarLayout == null) {
+        if (navView == null || bottomNavContainer == null || btnQrCenter == null || topAppBar == null || appBarLayout == null) {
             // Логируем, какой именно элемент не найден
             String missingViews = "";
             if (navView == null) missingViews += "navView ";
+            if (bottomNavContainer == null) missingViews += "bottomNavContainer ";
+            if (btnQrCenter == null) missingViews += "btnQrCenter ";
             if (topAppBar == null) missingViews += "topAppBar ";
             if (appBarLayout == null) missingViews += "appBarLayout ";
             Log.e(TAG, "!!! initializeUI: КРИТИЧЕСКАЯ ОШИБКА - View не найдены: [" + missingViews.trim() + "] !!!");
@@ -143,8 +153,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         // Устанавливаем слушателей
         Log.d(TAG, "initializeUI: Установка слушателей...");
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        btnQrCenter.setOnClickListener(v -> openQrScanner());
         navView.setOnNavigationItemReselectedListener(item -> {
             int id = item.getItemId();
+            if (id == R.id.navigation_qr) {
+                openQrScanner();
+                return;
+            }
             currentTabId = id;
             Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             boolean isRoot = (id == R.id.navigation_home && current instanceof HomeFragment)
@@ -239,6 +254,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         loadFragment(new HomeFragment());
     }
 
+    private void openQrScanner() {
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                        R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.fragment_container, new QrScanFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
     // Метод для загрузки фрагментов в контейнер (без изменений)
     private void loadFragment(Fragment fragment) {
         Log.d(TAG, "Загрузка фрагмента: " + fragment.getClass().getSimpleName());
@@ -310,11 +334,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void setSystemNavVisible(boolean visible) {
         int vis = visible ? View.VISIBLE : View.GONE;
         if (appBarLayout != null) appBarLayout.setVisibility(vis);
-        if (navView != null) navView.setVisibility(vis);
+        if (bottomNavContainer != null) bottomNavContainer.setVisibility(vis);
     }
 
     public void restoreNavBars() {
-        if (navView != null) navView.setVisibility(View.VISIBLE);
+        if (bottomNavContainer != null) bottomNavContainer.setVisibility(View.VISIBLE);
         updateAppBarVisibility();
     }
 

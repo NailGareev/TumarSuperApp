@@ -36,16 +36,73 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_view"
+    <FrameLayout
+        android:id="@+id/bottom_nav_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/card_bg"
-        app:itemActiveIndicatorStyle="@null"
-        app:itemIconTint="@color/colorPrimary"
-        app:itemTextColor="@color/colorPrimary"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
-        app:elevation="12dp" />
+        android:layout_height="104dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bg_bottom_nav_surface"
+            android:paddingTop="14dp"
+            android:paddingBottom="8dp"
+            app:elevation="10dp"
+            app:itemActiveIndicatorStyle="@null"
+            app:itemIconSize="20dp"
+            app:itemIconTint="@color/bottom_nav_item_tint"
+            app:itemTextAppearanceActive="@style/BottomNavWireframeText"
+            app:itemTextAppearanceInactive="@style/BottomNavWireframeText"
+            app:itemTextColor="@color/bottom_nav_item_tint"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_nav_menu" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="87dp"
+            android:background="#E8E8E8" />
+
+        <FrameLayout
+            android:id="@+id/btn_qr_center"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:layout_gravity="top|center_horizontal"
+            android:background="@drawable/bg_qr_fab_outer"
+            android:clickable="true"
+            android:elevation="16dp"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="7dp"
+            android:contentDescription="@string/title_qr">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_qr_fab_inner">
+
+                <View
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_qr_inner_square" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="74dp"
+            android:fontFamily="casual"
+            android:text="@string/title_qr"
+            android:textColor="@color/colorPrimary"
+            android:textSize="14sp" />
+    </FrameLayout>
 
 </LinearLayout>
