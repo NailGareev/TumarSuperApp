@@ -419,6 +419,9 @@ public class TopUpFragment extends Fragment {
                             formattedAmt, methodName, cardLast4, newBalStr);
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
+                            .setCustomAnimations(
+                                    R.anim.slide_up_enter, R.anim.fade_out,
+                                    R.anim.fade_in,        R.anim.fade_out)
                             .replace(R.id.fragment_container, successFragment)
                             .addToBackStack("topup_success")
                             .commit();

@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="#FAFAFA">
 
-    <!-- Header: close button right-aligned -->
+    <!-- Header: only close button, right-aligned. No back arrow. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="52dp"
@@ -49,8 +49,9 @@
             android:paddingTop="16dp"
             android:paddingBottom="32dp">
 
-            <!-- Checkmark: outer ring -->
+            <!-- Checkmark outer ring -->
             <FrameLayout
+                android:id="@+id/checkmark_container"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:background="@drawable/bg_topup_success_outer">
@@ -73,6 +74,7 @@
             </FrameLayout>
 
             <TextView
+                android:id="@+id/tv_success_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -83,6 +85,7 @@
                 android:gravity="center" />
 
             <TextView
+                android:id="@+id/tv_success_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -104,6 +107,7 @@
 
             <!-- Details card -->
             <LinearLayout
+                android:id="@+id/details_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -111,10 +115,8 @@
                 android:padding="16dp"
                 android:layout_marginBottom="16dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="Способ"
                         android:textSize="13sp" android:textColor="#777777" />
@@ -128,10 +130,8 @@
                     android:background="#EEEEEE" android:layout_marginTop="10dp"
                     android:layout_marginBottom="10dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="Карта"
                         android:textSize="13sp" android:textColor="#777777" />
@@ -145,10 +145,8 @@
                     android:background="#EEEEEE" android:layout_marginTop="10dp"
                     android:layout_marginBottom="10dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="Комиссия"
                         android:textSize="13sp" android:textColor="#777777" />
@@ -161,10 +159,8 @@
                     android:background="#EEEEEE" android:layout_marginTop="10dp"
                     android:layout_marginBottom="10dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="Время"
                         android:textSize="13sp" android:textColor="#777777" />
@@ -176,6 +172,7 @@
 
             <!-- New balance -->
             <LinearLayout
+                android:id="@+id/new_balance_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -201,7 +198,7 @@
                     android:textColor="#1A8A4A" />
             </LinearLayout>
 
-            <!-- CTA button -->
+            <!-- CTA -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_go_home"
                 android:layout_width="match_parent"

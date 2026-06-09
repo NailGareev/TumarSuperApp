@@ -297,7 +297,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 || current instanceof QrScanFragment
                 || current instanceof CardManagementFragment
                 || current instanceof PromoDetailFragment
-                || current instanceof TopUpFragment;
+                || current instanceof TopUpFragment
+                || current instanceof TopUpSuccessFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
