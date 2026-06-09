@@ -86,11 +86,12 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/bg_qr_fab_inner">
 
-                <View
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                <ImageView
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:layout_gravity="center"
-                    android:background="@drawable/bg_qr_inner_square" />
+                    android:contentDescription="@string/title_qr"
+                    app:srcCompat="@drawable/ic_qr_code_nav" />
             </FrameLayout>
         </FrameLayout>
 
