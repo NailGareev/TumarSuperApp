@@ -17,6 +17,12 @@
     </style>
 
 
+    <style name="TopUpAmountInput" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@android:color/transparent</item>
+        <item name="hintEnabled">false</item>
+        <item name="android:minHeight">0dp</item>
+    </style>
+
     <style name="BottomNavWireframeText">
         <item name="android:fontFamily">casual</item>
         <item name="android:textSize">12sp</item>
