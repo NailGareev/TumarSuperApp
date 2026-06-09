@@ -450,7 +450,7 @@
                         android:id="@+id/et_card_number"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number"
+                        android:inputType="phone"
                         android:maxLength="19"
                         android:textSize="17sp"
                         android:letterSpacing="0.05" />
@@ -474,7 +474,7 @@
                             android:id="@+id/et_card_expiry"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="number"
+                            android:inputType="phone"
                             android:maxLength="5"
                             android:textSize="17sp" />
                     </com.google.android.material.textfield.TextInputLayout>
