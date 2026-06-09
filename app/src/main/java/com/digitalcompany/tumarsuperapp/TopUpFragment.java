@@ -131,6 +131,12 @@ public class TopUpFragment extends Fragment {
         viewIconCard = view.findViewById(R.id.view_method_icon_card);
         viewIconBank = view.findViewById(R.id.view_method_icon_bank);
 
+        View btnBack = view.findViewById(R.id.btn_back_topup);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getSupportFragmentManager().popBackStack());
+        }
+
         sectionBankTransfer = view.findViewById(R.id.section_bank_transfer);
         progressCardLoad = view.findViewById(R.id.progress_card_load);
         cardDisplayContainer = view.findViewById(R.id.card_display_container);
