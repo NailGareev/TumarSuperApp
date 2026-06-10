@@ -129,6 +129,17 @@ public class ProfileFragment extends Fragment {
             startActivity(intent);
         });
 
+        view.findViewById(R.id.row_biometrics).setOnClickListener(v -> {
+            if (getActivity() == null) return;
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                            R.anim.fade_in, R.anim.fade_out)
+                    .replace(R.id.fragment_container, new BiometricSettingsFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         LinearLayout btnLogout = view.findViewById(R.id.btn_logout);
         btnLogout.setOnClickListener(v -> {
             if (getActivity() != null) {
