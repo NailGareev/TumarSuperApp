@@ -2,6 +2,7 @@ package com.digitalcompany.tumarsuperapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,12 +25,22 @@ import androidx.fragment.app.Fragment;
 
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.Transaction;
+import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
 import com.digitalcompany.tumarsuperapp.network.models.TransferRequest;
 import com.digitalcompany.tumarsuperapp.network.models.TransferResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserLookupResponse;
+import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +50,8 @@ public class TransferFragment extends Fragment {
 
     private static final String TAG = "TransferFragment";
     private static final long LOOKUP_DEBOUNCE_MS = 600;
+    private static final String USER_PREFS = "UserPrefs";
+    private static final String KEY_USER_ID = "user_id";
 
     private enum TransferMode { PHONE, CARD, INTERNATIONAL }
 
@@ -45,6 +59,7 @@ public class TransferFragment extends Fragment {
     private String selectedCurrency = "USD";
     private boolean recipientFound = false;
     private boolean transferring = false;
+    private int currentUserId = -1;
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
     private LinearLayout tabPhone, tabCard, tabInternational;
@@ -52,6 +67,7 @@ public class TransferFragment extends Fragment {
 
     // ── Sections ──────────────────────────────────────────────────────────────
     private LinearLayout sectionPhone, sectionCard, sectionInternational, sectionRecent;
+    private View dividerRecent;
 
     // ── Phone inputs ──────────────────────────────────────────────────────────
     private EditText etRecipientPhone, etPhoneComment;
@@ -83,8 +99,12 @@ public class TransferFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getActivity() != null)
+        if (getActivity() != null) {
             apiService = ApiClient.getApiService(getActivity().getApplicationContext());
+            currentUserId = getActivity()
+                    .getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
+                    .getInt(KEY_USER_ID, -1);
+        }
     }
 
     @Override
@@ -117,6 +137,11 @@ public class TransferFragment extends Fragment {
         sectionCard = view.findViewById(R.id.section_card);
         sectionInternational = view.findViewById(R.id.section_international);
         sectionRecent = view.findViewById(R.id.section_recent);
+        dividerRecent = view.findViewById(R.id.divider_recent);
+
+        // Hide recent by default — will show after loading if data exists
+        if (sectionRecent != null) sectionRecent.setVisibility(View.GONE);
+        if (dividerRecent != null) dividerRecent.setVisibility(View.GONE);
 
         // Phone
         etRecipientPhone = view.findViewById(R.id.et_recipient_phone);
@@ -177,7 +202,7 @@ public class TransferFragment extends Fragment {
         // Card auto-format
         etRecipientCard.addTextChangedListener(new CardNumberFormatter());
 
-        // Amount watcher — update CTA label
+        // Amount watcher
         etTransferAmount.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -198,18 +223,32 @@ public class TransferFragment extends Fragment {
         // Initial state
         switchMode(TransferMode.PHONE);
         selectCurrency("USD");
+
+        // Load recent transfer contacts
+        loadRecentContacts();
     }
 
-    private void setAmount(String amount) {
-        etTransferAmount.setText(amount);
-        etTransferAmount.setSelection(amount.length());
-        updateCtaLabel();
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         cancelPendingLookup();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
+    }
+
+    private void setAmount(String amount) {
+        etTransferAmount.setText(amount);
+        etTransferAmount.setSelection(amount.length());
+        updateCtaLabel();
     }
 
     // ── Tab switching ─────────────────────────────────────────────────────────
@@ -220,7 +259,7 @@ public class TransferFragment extends Fragment {
         recipientFound = false;
         clearAllErrors();
 
-        // Reset all tabs to inactive
+        // Reset all tabs
         tabPhone.setBackground(null);
         tabCard.setBackground(null);
         tabInternational.setBackground(null);
@@ -233,15 +272,21 @@ public class TransferFragment extends Fragment {
         sectionCard.setVisibility(View.GONE);
         sectionInternational.setVisibility(View.GONE);
         if (sectionRecent != null) sectionRecent.setVisibility(View.GONE);
+        if (dividerRecent != null) dividerRecent.setVisibility(View.GONE);
 
-        // Activate selected tab
+        // Activate selected
         int activeColor = 0xFF6200EE;
         switch (mode) {
             case PHONE:
                 tabPhone.setBackgroundResource(R.drawable.bg_segment_active);
                 tabPhoneTitle.setTextColor(activeColor);
                 sectionPhone.setVisibility(View.VISIBLE);
-                if (sectionRecent != null) sectionRecent.setVisibility(View.VISIBLE);
+                // Show recent section only if it has content
+                if (sectionRecent != null && sectionRecent.getTag() != null
+                        && Boolean.TRUE.equals(sectionRecent.getTag())) {
+                    sectionRecent.setVisibility(View.VISIBLE);
+                    if (dividerRecent != null) dividerRecent.setVisibility(View.VISIBLE);
+                }
                 break;
             case CARD:
                 tabCard.setBackgroundResource(R.drawable.bg_segment_active);
@@ -300,29 +345,164 @@ public class TransferFragment extends Fragment {
         }
     }
 
-    // ── Balance loading ───────────────────────────────────────────────────────
+    // ── Balance loading via API ───────────────────────────────────────────────
 
     private void loadBalance() {
-        if (getContext() == null || tvAvailableBalance == null) return;
-        try {
-            SharedPreferences prefs = requireActivity().getSharedPreferences("CardDataPrefs", Context.MODE_PRIVATE);
-            for (int i = 0; i < 5; i++) {
-                String balance = prefs.getString("card_" + i + "_balance", null);
-                String blocked = prefs.getString("card_" + i + "_is_blocked", "false");
-                if (balance != null && !"true".equals(blocked)) {
+        if (apiService == null || tvAvailableBalance == null) return;
+        apiService.getUserProfile().enqueue(new Callback<UserProfileResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserProfileResponse> call,
+                                   @NonNull Response<UserProfileResponse> response) {
+                if (!isAdded() || tvAvailableBalance == null) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    BigDecimal balance = response.body().getBalance() != null
+                            ? response.body().getBalance() : BigDecimal.ZERO;
+                    String code = response.body().getCurrency() != null
+                            ? response.body().getCurrency().toUpperCase() : "KZT";
                     try {
-                        long bal = (long) Double.parseDouble(balance);
-                        tvAvailableBalance.setText(String.format("₸ %,d", bal).replace(',', ' '));
-                    } catch (NumberFormatException e) {
-                        tvAvailableBalance.setText("₸ " + balance);
+                        NumberFormat fmt = NumberFormat.getCurrencyInstance(new Locale("kk", "KZ"));
+                        fmt.setCurrency(Currency.getInstance(code));
+                        if ("KZT".equals(code)) {
+                            fmt.setMaximumFractionDigits(0);
+                            fmt.setMinimumFractionDigits(0);
+                        }
+                        tvAvailableBalance.setText(fmt.format(balance));
+                    } catch (Exception e) {
+                        tvAvailableBalance.setText(String.format(Locale.US, "%.0f ₸", balance));
                     }
-                    return;
                 }
             }
-        } catch (Exception e) {
-            Log.w(TAG, "Balance load error: " + e.getMessage());
+            @Override
+            public void onFailure(@NonNull Call<UserProfileResponse> call, @NonNull Throwable t) {
+                Log.w(TAG, "Balance load failed: " + t.getMessage());
+            }
+        });
+    }
+
+    // ── Recent transfer contacts ──────────────────────────────────────────────
+
+    private void loadRecentContacts() {
+        if (apiService == null || sectionRecent == null) return;
+        apiService.getTransactionHistory().enqueue(new Callback<TransactionHistoryResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<TransactionHistoryResponse> call,
+                                   @NonNull Response<TransactionHistoryResponse> response) {
+                if (!isAdded() || sectionRecent == null) return;
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().getTransactions() != null) {
+                    buildRecentContacts(response.body().getTransactions());
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<TransactionHistoryResponse> call, @NonNull Throwable t) {
+                Log.w(TAG, "Recent contacts load failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void buildRecentContacts(List<Transaction> transactions) {
+        if (!isAdded() || sectionRecent == null) return;
+
+        // Collect up to 5 unique recipients from outgoing TRANSFER transactions
+        Map<Integer, Transaction> recentMap = new LinkedHashMap<>();
+        for (Transaction t : transactions) {
+            if ("TRANSFER".equals(t.getTransactionType())
+                    && t.getSenderId() == currentUserId
+                    && !recentMap.containsKey(t.getRecipientId())) {
+                recentMap.put(t.getRecipientId(), t);
+                if (recentMap.size() >= 5) break;
+            }
         }
-        tvAvailableBalance.setText("₸ —");
+
+        if (recentMap.isEmpty()) {
+            // No recent transfers — keep section hidden
+            return;
+        }
+
+        // Build the avatar row
+        LinearLayout avatarRow = sectionRecent.findViewById(R.id.recent_avatar_row);
+        if (avatarRow == null) return;
+
+        avatarRow.removeAllViews();
+        int[] colors = {0xFF6422A8, 0xFF1A4A8A, 0xFF1A8A4A, 0xFFD97222, 0xFF8A1A6A};
+        int idx = 0;
+        for (Transaction t : recentMap.values()) {
+            String firstName = t.getRecipientFirstName() != null ? t.getRecipientFirstName() : "";
+            String lastName  = t.getRecipientLastName()  != null ? t.getRecipientLastName()  : "";
+            String initials  = buildInitials(firstName, lastName);
+            String name      = firstName.isEmpty() ? "—" : firstName;
+
+            LinearLayout contactCol = buildContactColumn(initials, name, colors[idx % colors.length]);
+            avatarRow.addView(contactCol);
+            idx++;
+        }
+
+        // Tag section as "has content" so switchMode can show it
+        sectionRecent.setTag(Boolean.TRUE);
+
+        // Only show if currently on Phone tab
+        if (currentMode == TransferMode.PHONE) {
+            sectionRecent.setVisibility(View.VISIBLE);
+            if (dividerRecent != null) dividerRecent.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private LinearLayout buildContactColumn(String initials, String name, int color) {
+        Context ctx = requireContext();
+        float dp = ctx.getResources().getDisplayMetrics().density;
+
+        LinearLayout col = new LinearLayout(ctx);
+        col.setOrientation(LinearLayout.VERTICAL);
+        col.setGravity(android.view.Gravity.CENTER);
+        LinearLayout.LayoutParams colParams = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        col.setLayoutParams(colParams);
+
+        // Avatar circle
+        FrameLayout avatar = new FrameLayout(ctx);
+        int avatarSize = (int) (46 * dp);
+        LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(avatarSize, avatarSize);
+        avatarParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+        avatar.setLayoutParams(avatarParams);
+
+        // Colored circle background
+        android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
+        circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        circle.setColor(color);
+        avatar.setBackground(circle);
+
+        TextView tvInitials = new TextView(ctx);
+        FrameLayout.LayoutParams tiParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        tiParams.gravity = android.view.Gravity.CENTER;
+        tvInitials.setLayoutParams(tiParams);
+        tvInitials.setText(initials);
+        tvInitials.setTextSize(13);
+        tvInitials.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvInitials.setTextColor(Color.WHITE);
+        avatar.addView(tvInitials);
+        col.addView(avatar);
+
+        // Name label
+        TextView tvName = new TextView(ctx);
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        nameParams.topMargin = (int) (4 * dp);
+        nameParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+        tvName.setLayoutParams(nameParams);
+        tvName.setText(name);
+        tvName.setTextSize(10);
+        tvName.setTextColor(0xFF444444);
+        tvName.setGravity(android.view.Gravity.CENTER);
+        col.addView(tvName);
+
+        return col;
+    }
+
+    private String buildInitials(String first, String last) {
+        String f = first.isEmpty() ? "" : String.valueOf(first.charAt(0)).toUpperCase();
+        String l = last.isEmpty()  ? "" : String.valueOf(last.charAt(0)).toUpperCase();
+        return f + l;
     }
 
     // ── Phone lookup ──────────────────────────────────────────────────────────
@@ -366,7 +546,6 @@ public class TransferFragment extends Fragment {
                     updateCtaLabel();
                 }
             }
-
             @Override
             public void onFailure(Call<UserLookupResponse> call, Throwable t) {
                 if (!isAdded() || call.isCanceled()) return;
@@ -460,7 +639,6 @@ public class TransferFragment extends Fragment {
                     Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
                 }
             }
-
             @Override
             public void onFailure(Call<TransferResponse> call, Throwable t) {
                 showLoading(false);
@@ -492,39 +670,22 @@ public class TransferFragment extends Fragment {
 
     private void transferInternational(BigDecimal amount, boolean amountInvalid) {
         clearIntlErrors();
-        String country = text(etIntlCountry);
+        String country   = text(etIntlCountry);
         String recipient = text(etIntlRecipient);
-        String iban = text(etIntlIban).replaceAll("\\s", "");
-        String swift = text(etIntlSwift).trim();
-        boolean invalid = amountInvalid;
+        String iban      = text(etIntlIban).replaceAll("\\s", "");
+        String swift     = text(etIntlSwift).trim();
+        boolean invalid  = amountInvalid;
 
-        if (country.isEmpty()) {
-            showInputError(etIntlCountry, "Укажите страну назначения");
-            invalid = true;
-        }
-        if (recipient.isEmpty()) {
-            showInputError(etIntlRecipient, "Введите ФИО получателя");
-            invalid = true;
-        } else if (!recipient.matches("[A-Za-z\\s-]+")) {
-            showInputError(etIntlRecipient, "Только латинские буквы");
-            invalid = true;
-        }
-        if (iban.isEmpty()) {
-            showInputError(etIntlIban, "Введите IBAN или номер счёта");
-            invalid = true;
-        }
-        if (swift.isEmpty()) {
-            showInputError(etIntlSwift, "Введите SWIFT/BIC код банка");
-            invalid = true;
-        } else if (swift.length() < 8 || swift.length() > 11) {
-            showInputError(etIntlSwift, "SWIFT/BIC: 8 или 11 символов");
-            invalid = true;
-        }
+        if (country.isEmpty()) { showInputError(etIntlCountry, "Укажите страну назначения"); invalid = true; }
+        if (recipient.isEmpty()) { showInputError(etIntlRecipient, "Введите ФИО получателя"); invalid = true; }
+        else if (!recipient.matches("[A-Za-z\\s-]+")) { showInputError(etIntlRecipient, "Только латинские буквы"); invalid = true; }
+        if (iban.isEmpty()) { showInputError(etIntlIban, "Введите IBAN или номер счёта"); invalid = true; }
+        if (swift.isEmpty()) { showInputError(etIntlSwift, "Введите SWIFT/BIC код банка"); invalid = true; }
+        else if (swift.length() < 8 || swift.length() > 11) { showInputError(etIntlSwift, "SWIFT/BIC: 8 или 11 символов"); invalid = true; }
 
         if (invalid || amount == null) return;
 
-        String summary = String.format(
-                "Международный перевод:\n%s %s\nПолучатель: %s\nСчёт: %s\nБанк: %s\nСтрана: %s\n\n— Функция в разработке",
+        String summary = String.format("Международный перевод:\n%s %s\nПолучатель: %s\nСчёт: %s\nБанк: %s\nСтрана: %s\n\n— Функция в разработке",
                 amount.toPlainString(), selectedCurrency, recipient,
                 iban.length() > 8 ? iban.substring(0, 4) + "..." + iban.substring(iban.length() - 4) : iban,
                 swift, country);
@@ -535,7 +696,6 @@ public class TransferFragment extends Fragment {
 
     private void navigateToSuccess(String recipientName, String amount, String method) {
         if (!isAdded()) return;
-        // Clear form state
         etRecipientPhone.setText("");
         etTransferAmount.setText("");
         if (etPhoneComment != null) etPhoneComment.setText("");
@@ -584,7 +744,7 @@ public class TransferFragment extends Fragment {
     private void clearInputError(EditText et) {
         if (et == null) return;
         if (et == etTransferAmount) {
-            et.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            et.setBackgroundColor(Color.TRANSPARENT);
         } else {
             et.setBackgroundResource(R.drawable.bg_topup_input_field);
         }

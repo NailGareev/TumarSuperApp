@@ -1,7 +1,5 @@
 package com.digitalcompany.tumarsuperapp;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +11,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+
+import com.digitalcompany.tumarsuperapp.network.ApiClient;
+import com.digitalcompany.tumarsuperapp.network.ApiService;
+import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Currency;
+import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class TransferSuccessFragment extends Fragment {
 
@@ -36,6 +47,22 @@ public class TransferSuccessFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_transfer_success, container, false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
     }
 
     @Override
@@ -84,7 +111,7 @@ public class TransferSuccessFragment extends Fragment {
             }
         }
 
-        // Balance
+        // Balance from API
         TextView tvBalance = view.findViewById(R.id.tv_success_balance);
         if (tvBalance != null) loadBalance(tvBalance);
 
@@ -113,24 +140,34 @@ public class TransferSuccessFragment extends Fragment {
 
     private void loadBalance(TextView tvBalance) {
         if (getContext() == null) return;
-        try {
-            SharedPreferences prefs = requireActivity().getSharedPreferences("CardDataPrefs", Context.MODE_PRIVATE);
-            for (int i = 0; i < 5; i++) {
-                String balance = prefs.getString("card_" + i + "_balance", null);
-                String blocked = prefs.getString("card_" + i + "_is_blocked", "false");
-                if (balance != null && !"true".equals(blocked)) {
+        ApiService apiService = ApiClient.getApiService(requireContext().getApplicationContext());
+        apiService.getUserProfile().enqueue(new Callback<UserProfileResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UserProfileResponse> call,
+                                   @NonNull Response<UserProfileResponse> response) {
+                if (!isAdded() || tvBalance == null) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    BigDecimal balance = response.body().getBalance() != null
+                            ? response.body().getBalance() : BigDecimal.ZERO;
+                    String code = response.body().getCurrency() != null
+                            ? response.body().getCurrency().toUpperCase() : "KZT";
                     try {
-                        long bal = (long) Double.parseDouble(balance);
-                        tvBalance.setText(String.format("₸ %,d", bal).replace(',', ' '));
-                    } catch (NumberFormatException e) {
-                        tvBalance.setText("₸ " + balance);
+                        NumberFormat fmt = NumberFormat.getCurrencyInstance(new Locale("kk", "KZ"));
+                        fmt.setCurrency(Currency.getInstance(code));
+                        if ("KZT".equals(code)) {
+                            fmt.setMaximumFractionDigits(0);
+                            fmt.setMinimumFractionDigits(0);
+                        }
+                        tvBalance.setText(fmt.format(balance));
+                    } catch (Exception e) {
+                        tvBalance.setText(String.format(Locale.US, "%.0f ₸", balance));
                     }
-                    return;
                 }
             }
-        } catch (Exception e) {
-            Log.w(TAG, "Balance load error: " + e.getMessage());
-        }
-        tvBalance.setText("₸ —");
+            @Override
+            public void onFailure(@NonNull Call<UserProfileResponse> call, @NonNull Throwable t) {
+                Log.w(TAG, "Balance load failed: " + t.getMessage());
+            }
+        });
     }
 }
