@@ -32,14 +32,12 @@
                 android:background="@drawable/bg_pay_hist_back_btn"
                 android:clickable="true"
                 android:focusable="true">
-                <!-- rounded corners via programmatic roundedRect - just use a rounded bg -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:layout_gravity="center"
-                    android:text="←"
-                    android:textSize="16sp"
-                    android:textColor="#CCFFFFFF" />
+                    app:srcCompat="@drawable/ic_arrow_back"
+                    app:tint="#CCFFFFFF" />
             </FrameLayout>
 
             <TextView

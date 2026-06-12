@@ -150,6 +150,20 @@ public class HistoryFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity)
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity)
+            ((MainActivity) getActivity()).restoreNavBars();
+    }
+
     private void setupRecyclerView() {
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
         rvTransactions.setAdapter(historyAdapter);

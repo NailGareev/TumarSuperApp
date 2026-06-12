@@ -191,7 +191,7 @@ public class PaymentHistoryFragment extends Fragment {
                         && response.body().getTransactions() != null) {
                     allPayments.clear();
                     for (Transaction t : response.body().getTransactions()) {
-                        if ("PAYMENT".equals(t.getTransactionType())) {
+                        if ("PAYMENT".equalsIgnoreCase(t.getTransactionType())) {
                             allPayments.add(t);
                         }
                     }
