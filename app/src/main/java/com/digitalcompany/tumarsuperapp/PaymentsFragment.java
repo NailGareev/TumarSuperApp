@@ -74,6 +74,21 @@ public class PaymentsFragment extends Fragment {
         setupCategoriesGrid();
         setupFavoritesRow();
 
+        // History CTA button
+        View historyBtn = view.findViewById(R.id.btn_payment_history_cta);
+        if (historyBtn != null) {
+            historyBtn.setOnClickListener(v -> {
+                if (getActivity() == null) return;
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                                R.anim.fade_in, R.anim.fade_out)
+                        .replace(R.id.fragment_container, new PaymentHistoryFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
         // Back button in header
         view.findViewById(R.id.btn_back_payments).setOnClickListener(v -> {
             if (layoutServices != null && layoutServices.getVisibility() == View.VISIBLE) {
