@@ -309,7 +309,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 || current instanceof TransferSuccessFragment
                 || current instanceof PaymentHistoryFragment
                 || current instanceof BiometricSettingsFragment
-                || current instanceof AddFingerprintFragment;
+                || current instanceof AddFingerprintFragment
+                || current instanceof NotificationsFragment
+                || current instanceof TransferChatFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 
