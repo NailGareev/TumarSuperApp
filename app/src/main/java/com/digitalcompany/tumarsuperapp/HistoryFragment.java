@@ -281,7 +281,8 @@ public class HistoryFragment extends Fragment {
 
         List<Transaction> periodFiltered = new ArrayList<>();
         for (Transaction t : allTransactions) {
-            if (t.getTimestamp() != null && !t.getTimestamp().before(cutoffDate)) {
+            // Include if within period OR if timestamp is missing (don't silently discard)
+            if (t.getTimestamp() == null || !t.getTimestamp().before(cutoffDate)) {
                 periodFiltered.add(t);
             }
         }
@@ -310,14 +311,19 @@ public class HistoryFragment extends Fragment {
     private boolean matchesCategory(Transaction t) {
         String txType = t.getTransactionType();
         boolean isIncoming = t.getRecipientId() == currentUserId;
+        boolean isMarketPayment = "PAYMENT".equals(txType)
+                && t.getDescription() != null
+                && t.getDescription().contains("Tumar Market");
 
         // Type filter (ALL / EXPENSE / INCOME)
         if ("EXPENSE".equals(selectedType)) {
             if ("TOPUP".equals(txType)) return false;
             if ("TRANSFER".equals(txType) && isIncoming) return false;
+            if ("MARKET_REFUND".equals(txType)) return false; // refunds are not expenses
         } else if ("INCOME".equals(selectedType)) {
-            if ("PAYMENT".equals(txType) || "MARKET_REFUND".equals(txType)) return false;
+            if ("PAYMENT".equals(txType)) return false; // purchases are not income
             if ("TRANSFER".equals(txType) && !isIncoming) return false;
+            // MARKET_REFUND (incoming refund) is allowed through as income
         }
 
         // Category filter
@@ -325,17 +331,15 @@ public class HistoryFragment extends Fragment {
         switch (selectedCategory) {
             case CAT_MARKET:
                 if ("MARKET_REFUND".equals(txType)) return true;
-                if ("PAYMENT".equals(txType)) {
-                    String desc = t.getDescription();
-                    return desc != null && desc.contains("Tumar Market");
-                }
-                return false;
+                return isMarketPayment;
             case CAT_TRANSFER:
                 return "TRANSFER".equals(txType);
             case CAT_PAYMENT:
-                return "PAYMENT".equals(txType);
+                // Payments category shows only non-market payments
+                return "PAYMENT".equals(txType) && !isMarketPayment;
             case CAT_INCOME:
                 if ("TOPUP".equals(txType)) return true;
+                if ("MARKET_REFUND".equals(txType)) return true;
                 if ("TRANSFER".equals(txType)) return isIncoming;
                 return false;
             default:
@@ -372,7 +376,7 @@ public class HistoryFragment extends Fragment {
 
             String label;
             if (t.getTimestamp() == null) {
-                label = "";
+                label = "Без даты";
             } else {
                 Calendar txCal = Calendar.getInstance(tz);
                 txCal.setTime(t.getTimestamp());

@@ -394,7 +394,7 @@ app.post('/api/transfer', authenticateToken, async (req, res) => {
 
         // 6. Записываем транзакцию в историю
         const transferDesc = (description && description.trim()) ? description.trim().substring(0, 200) : null;
-        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, ?, ?, ?, ?, ?)';
+        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())';
         await connection.execute(transactionSql, [senderId, recipientId, parsedAmount, senderCurrency, 'TRANSFER', transferDesc]);
         console.log(`Transaction recorded: ${senderId} -> ${recipientId}, Amount: ${parsedAmount} ${senderCurrency}`);
 
@@ -498,7 +498,7 @@ app.post('/api/pay', authenticateToken, async (req, res) => {
 
         const description = `${service}: ${accountNumber}`;
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, NULL, ?, ?, ?, ?, NOW())',
             [userId, parsedAmount, balances[0].currency || 'KZT', 'PAYMENT', description]
         );
 
@@ -709,7 +709,7 @@ app.post('/api/market/pay', authenticateToken, async (req, res) => {
             [parsedAmount, userId]);
 
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, NULL, ?, ?, ?, ?, NOW())',
             [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market']);
 
         await ensureMarketPurchasesTable(connection);
@@ -791,7 +791,7 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
             [amount, userId]);
 
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, NOW())',
             [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market']);
 
         await connection.commit();
@@ -837,7 +837,7 @@ app.post('/api/market/return/process-refund', async (req, res) => {
             'UPDATE balances SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?',
             [parsedAmount, buyerId]);
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, NOW())',
             [buyerId, parsedAmount, currency, 'MARKET_REFUND', 'Возврат товара — Tumar Market']);
 
         await connection.commit();
