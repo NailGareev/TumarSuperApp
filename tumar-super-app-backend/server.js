@@ -1259,6 +1259,14 @@ app.listen(port, async () => {
             );
         } catch (e) { /* already includes MARKET_REFUND */ }
 
+        // Allow NULL sender_id so MARKET_REFUND transactions (incoming refunds) can be stored
+        try {
+            await connection.execute(
+                `ALTER TABLE transactions MODIFY COLUMN sender_id INT(11) NULL DEFAULT NULL`
+            );
+            console.log('transactions.sender_id now allows NULL');
+        } catch (e) { /* already nullable */ }
+
         // Add avatar_url column to users table if missing
         try {
             await connection.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL COMMENT 'URL фото профиля'`);

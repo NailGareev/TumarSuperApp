@@ -254,6 +254,16 @@ public class HistoryFragment extends Fragment {
                         && response.body().isSuccess()
                         && response.body().getTransactions() != null) {
                     allTransactions = new ArrayList<>(response.body().getTransactions());
+                    int marketCount = 0;
+                    for (Transaction t : allTransactions) {
+                        String type = t.getTransactionType();
+                        String desc = t.getDescription();
+                        if ("MARKET_REFUND".equals(type)
+                                || ("PAYMENT".equals(type) && desc != null && desc.contains("Tumar Market"))) {
+                            marketCount++;
+                        }
+                    }
+                    Log.d(TAG, "Загружено транзакций: " + allTransactions.size() + ", из них Market: " + marketCount);
                     applyFilters();
                 } else {
                     Log.w(TAG, "Не удалось загрузить историю: " + response.code());
@@ -403,11 +413,11 @@ public class HistoryFragment extends Fragment {
                 lastDateLabel = label;
             }
 
-            // Accumulate daily expense total
+            // Accumulate daily expense total (only outgoing payments and transfers)
             if (t.getAmount() != null) {
                 String type = t.getTransactionType();
                 BigDecimal amt = t.getAmount().abs();
-                if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
+                if ("PAYMENT".equals(type)) {
                     dayTotal = dayTotal.add(amt);
                 } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
                     dayTotal = dayTotal.add(amt);
@@ -441,9 +451,9 @@ public class HistoryFragment extends Fragment {
             String type = t.getTransactionType();
             BigDecimal amt = t.getAmount().abs();
 
-            if ("TOPUP".equals(type)) {
+            if ("TOPUP".equals(type) || "MARKET_REFUND".equals(type)) {
                 totalIncome = totalIncome.add(amt);
-            } else if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
+            } else if ("PAYMENT".equals(type)) {
                 totalExpense = totalExpense.add(amt);
             } else if ("TRANSFER".equals(type)) {
                 if (t.getRecipientId() == currentUserId) totalIncome  = totalIncome.add(amt);
@@ -493,7 +503,7 @@ public class HistoryFragment extends Fragment {
                 Date ts = t.getTimestamp();
                 if (!ts.before(weekStart.getTime()) && ts.before(weekEnd.getTime())) {
                     String type = t.getTransactionType();
-                    if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
+                    if ("PAYMENT".equals(type)) {
                         weekExpense = weekExpense.add(t.getAmount().abs());
                     } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
                         weekExpense = weekExpense.add(t.getAmount().abs());
