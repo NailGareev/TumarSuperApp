@@ -37,6 +37,9 @@ public class TravelFragment extends Fragment {
         indicatorHot        = view.findViewById(R.id.tab_hot_indicator);
         indicatorPopular    = view.findViewById(R.id.tab_popular_indicator);
 
+        view.findViewById(R.id.btn_travel_back).setOnClickListener(v ->
+                requireActivity().onBackPressed());
+
         setupCategories(view);
         setupTabs(view);
         setupRecyclerView(view);
