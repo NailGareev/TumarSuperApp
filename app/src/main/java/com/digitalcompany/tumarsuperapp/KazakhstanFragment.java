@@ -45,6 +45,22 @@ public class KazakhstanFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
+    }
+
     private class DestinationAdapter extends RecyclerView.Adapter<DestinationAdapter.VH> {
 
         @NonNull

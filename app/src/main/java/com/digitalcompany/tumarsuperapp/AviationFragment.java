@@ -219,6 +219,9 @@ public class AviationFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_aviation, container, false);
 
+        view.findViewById(R.id.btn_avia_back).setOnClickListener(v ->
+                requireActivity().onBackPressed());
+
         tvFrom       = view.findViewById(R.id.tv_from);
         tvTo         = view.findViewById(R.id.tv_to);
         tvDateDepart = view.findViewById(R.id.tv_date_depart);
@@ -234,6 +237,22 @@ public class AviationFragment extends Fragment {
         view.findViewById(R.id.btn_search_flights).setOnClickListener(v -> handleSearch());
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
     }
 
     // ── City picker ───────────────────────────────────────────────────────

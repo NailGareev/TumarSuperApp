@@ -7,28 +7,104 @@
     android:orientation="vertical"
     android:background="@color/app_bg">
 
-    <!-- Header -->
+    <!-- Header — dark purple gradient -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="130dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:background="@drawable/bg_auth_header">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="18dp"
+        android:background="@drawable/bg_travel_avia_header">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Back + title row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="✈"
-            android:textSize="32sp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <FrameLayout
+                android:id="@+id/btn_avia_back"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_travel_header_btn"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="←"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="18sp" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Поиск авиабилетов"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Trip type chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Поиск авиабилетов"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:scrollbars="none">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Туда-обратно"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_travel_search_bar" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="В одну сторону"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_travel_header_btn" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Мультигород"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:background="@drawable/bg_travel_header_btn" />
+            </LinearLayout>
+        </HorizontalScrollView>
     </LinearLayout>
 
     <!-- Form -->

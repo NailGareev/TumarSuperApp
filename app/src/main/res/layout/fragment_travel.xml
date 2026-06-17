@@ -1,198 +1,347 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_bg">
+    android:orientation="vertical"
+    android:background="#F4F4F6">
 
+    <!-- Hero header — dark purple gradient -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="18dp"
+        android:background="@drawable/bg_travel_hub_header">
 
-        <!-- Banner -->
-        <FrameLayout
+        <!-- Top row: label + bookmark -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="14dp">
 
-            <ImageView
-                android:id="@+id/iv_travel_banner"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/banner1"
-                android:contentDescription="@null" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="TUMAR TRAVEL"
+                android:textColor="#80FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#44000000" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="bottom"
-                android:padding="20dp">
-
+            <FrameLayout
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/bg_travel_header_btn">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Откройте мир"
-                    android:textColor="#FFFFFF"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Лучшие туры и билеты для вас"
-                    android:textColor="#DDFFFFFF"
+                    android:layout_gravity="center"
+                    android:text="♡"
+                    android:textColor="#99FFFFFF"
                     android:textSize="14sp" />
-            </LinearLayout>
-        </FrameLayout>
-
-        <!-- Categories -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp"
-            android:baselineAligned="false">
-
-            <LinearLayout
-                android:id="@+id/cat_avia"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_travel_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✈" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Авиа" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/cat_railway"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_travel_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🚆" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="ЖД" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/cat_tours"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_travel_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🌴" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Туры" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/cat_kazakhstan"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_travel_category"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏔" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="KZ" android:textColor="@color/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
-            </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Tab bar -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="12dp">
-
-            <Button
-                android:id="@+id/tab_recommended"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Рекомендации"
-                android:textSize="13sp"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/travel_accent_red"
-                app:cornerRadius="22dp" />
-
-            <Button
-                android:id="@+id/tab_hot"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:text="🔥 Горящие"
-                android:textSize="13sp"
-                android:textColor="@color/text_secondary"
-                android:backgroundTint="#EEEEEE"
-                app:cornerRadius="22dp" />
-        </LinearLayout>
-
-        <!-- Loading indicator -->
-        <ProgressBar
-            android:id="@+id/progress_tours"
+        <!-- Title -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="32dp"
-            android:visibility="gone" />
+            android:text="Куда летим?"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
 
-        <!-- Empty state -->
+        <!-- Subtitle -->
         <TextView
-            android:id="@+id/tv_tours_empty"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="32dp"
-            android:gravity="center"
-            android:text="Туры не найдены"
-            android:textColor="@color/text_secondary"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:text="Лучшие туры и билеты для вас"
+            android:textColor="#8CFFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Tour grid -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_tours"
+        <!-- Search bar -->
+        <LinearLayout
+            android:id="@+id/travel_search_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="16dp"
-            android:clipToPadding="false" />
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_travel_search_bar"
+            android:clickable="true"
+            android:focusable="true">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔍"
+                android:textSize="15sp"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Куда хотите поехать?"
+                android:textColor="#73FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+
+    <!-- Category pills row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/cat_avia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✈ Авиа"
+                    android:textColor="#6B21A8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_travel_pill"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/cat_railway"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚆 ЖД"
+                    android:textColor="#6B21A8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_travel_pill"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/cat_tours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌴 Туры"
+                    android:textColor="#6B21A8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_travel_pill"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/cat_kazakhstan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🇰🇿 KZ"
+                    android:textColor="#6B21A8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="@drawable/bg_travel_pill"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E6E6E6" />
+    </LinearLayout>
+
+    <!-- Tab bar with underline indicators -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- Tab: Рекомендации -->
+        <LinearLayout
+            android:id="@+id/tab_container_recommended"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tab_recommended"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Рекомендации"
+                android:textColor="#6B21A8"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/tab_recommended_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="2.5dp"
+                android:background="#6B21A8"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <!-- Tab: Горящие -->
+        <LinearLayout
+            android:id="@+id/tab_container_hot"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tab_hot"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Горящие 🔥"
+                android:textColor="#777777"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/tab_hot_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="2.5dp"
+                android:background="#6B21A8"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Tab: Популярное -->
+        <LinearLayout
+            android:id="@+id/tab_container_popular"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tab_popular"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Популярное"
+                android:textColor="#777777"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/tab_popular_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="2.5dp"
+                android:background="#6B21A8"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E6E6E6" />
+
+    <!-- Scrollable tour cards -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ProgressBar
+                android:id="@+id/progress_tours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="32dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_tours_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="32dp"
+                android:gravity="center"
+                android:text="Туры не найдены"
+                android:textColor="#757575"
+                android:textSize="15sp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_tours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

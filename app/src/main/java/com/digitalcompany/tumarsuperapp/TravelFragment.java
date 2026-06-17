@@ -1,14 +1,9 @@
 package com.digitalcompany.tumarsuperapp;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,28 +18,11 @@ import java.util.List;
 
 public class TravelFragment extends Fragment {
 
-    private static final int[] BANNER_RES = {
-            R.drawable.banner1, R.drawable.banner2, R.drawable.banner3
-    };
-
-    private ImageView ivBanner;
-    private Button tabRecommended, tabHot;
-    private ProgressBar progressTours;
-    private TextView tvToursEmpty;
+    private TextView tvTabRecommended, tvTabHot, tvTabPopular;
+    private View indicatorRecommended, indicatorHot, indicatorPopular;
     private TourCardAdapter adapter;
 
     private final List<TourCard> allTours = new ArrayList<>();
-
-    private int currentBanner = 0;
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Runnable rotateBanner = new Runnable() {
-        @Override public void run() {
-            if (ivBanner == null) return;
-            currentBanner = (currentBanner + 1) % BANNER_RES.length;
-            ivBanner.setImageResource(BANNER_RES[currentBanner]);
-            handler.postDelayed(this, 3000);
-        }
-    };
 
     @Nullable
     @Override
@@ -52,19 +30,35 @@ public class TravelFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_travel, container, false);
 
-        ivBanner      = view.findViewById(R.id.iv_travel_banner);
-        tabRecommended = view.findViewById(R.id.tab_recommended);
-        tabHot        = view.findViewById(R.id.tab_hot);
-        progressTours = view.findViewById(R.id.progress_tours);
-        tvToursEmpty  = view.findViewById(R.id.tv_tours_empty);
+        tvTabRecommended    = view.findViewById(R.id.tab_recommended);
+        tvTabHot            = view.findViewById(R.id.tab_hot);
+        tvTabPopular        = view.findViewById(R.id.tab_popular);
+        indicatorRecommended = view.findViewById(R.id.tab_recommended_indicator);
+        indicatorHot        = view.findViewById(R.id.tab_hot_indicator);
+        indicatorPopular    = view.findViewById(R.id.tab_popular_indicator);
 
         setupCategories(view);
-        setupTabs();
+        setupTabs(view);
         setupRecyclerView(view);
         loadHardcodedTours();
 
-        handler.postDelayed(rotateBanner, 3000);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
     }
 
     private void setupCategories(View root) {
@@ -81,24 +75,27 @@ public class TravelFragment extends Fragment {
                 navigateTo(new KazakhstanFragment(), "kz"));
     }
 
-    private void setupTabs() {
-        tabRecommended.setOnClickListener(v -> {
-            setTabActive(tabRecommended, tabHot);
-            adapter.setItems(allTours);
-        });
-        tabHot.setOnClickListener(v -> {
-            setTabActive(tabHot, tabRecommended);
-            adapter.setItems(hotTours());
-        });
+    private void setupTabs(View root) {
+        root.findViewById(R.id.tab_container_recommended).setOnClickListener(v -> selectTab(0));
+        root.findViewById(R.id.tab_container_hot).setOnClickListener(v -> selectTab(1));
+        root.findViewById(R.id.tab_container_popular).setOnClickListener(v -> selectTab(2));
     }
 
-    private void setTabActive(Button active, Button inactive) {
-        active.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFFE53935));
-        active.setTextColor(0xFFFFFFFF);
-        inactive.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(0xFFEEEEEE));
-        inactive.setTextColor(0xFF757575);
+    private void selectTab(int tab) {
+        int active   = 0xFF6B21A8;
+        int inactive = 0xFF777777;
+        tvTabRecommended.setTextColor(tab == 0 ? active : inactive);
+        tvTabHot.setTextColor(tab == 1 ? active : inactive);
+        tvTabPopular.setTextColor(tab == 2 ? active : inactive);
+        indicatorRecommended.setVisibility(tab == 0 ? View.VISIBLE : View.GONE);
+        indicatorHot.setVisibility(tab == 1 ? View.VISIBLE : View.GONE);
+        indicatorPopular.setVisibility(tab == 2 ? View.VISIBLE : View.GONE);
+
+        switch (tab) {
+            case 0: adapter.setItems(allTours);     break;
+            case 1: adapter.setItems(hotTours());   break;
+            case 2: adapter.setItems(popularTours()); break;
+        }
     }
 
     private void setupRecyclerView(View root) {
@@ -111,9 +108,6 @@ public class TravelFragment extends Fragment {
     }
 
     private void loadHardcodedTours() {
-        progressTours.setVisibility(View.GONE);
-        tvToursEmpty.setVisibility(View.GONE);
-
         allTours.clear();
         allTours.add(new TourCard("Анталья, Турция", "Concorde De Luxe Resort", 5,
                 450000, 37500, 12, 30, 642000,
@@ -161,10 +155,14 @@ public class TravelFragment extends Fragment {
 
     private List<TourCard> hotTours() {
         List<TourCard> hot = new ArrayList<>();
-        for (TourCard c : allTours) {
-            if (c.isHot) hot.add(c);
-        }
+        for (TourCard c : allTours) if (c.isHot) hot.add(c);
         return hot;
+    }
+
+    private List<TourCard> popularTours() {
+        List<TourCard> popular = new ArrayList<>();
+        for (TourCard c : allTours) if (c.discountPercent >= 25) popular.add(c);
+        return popular;
     }
 
     private void openTourDetail(TourCard card) {
@@ -180,12 +178,5 @@ public class TravelFragment extends Fragment {
                 .replace(R.id.fragment_container, fragment, tag)
                 .addToBackStack(tag)
                 .commit();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacks(rotateBanner);
-        ivBanner = null;
     }
 }

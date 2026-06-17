@@ -293,7 +293,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         boolean isPromotionsRoot = currentTabId == R.id.navigation_promotions
                 && getSupportFragmentManager().getBackStackEntryCount() == 0;
-        boolean isFullScreen = current instanceof TumarMarketFragment
+        boolean isFullScreen = current instanceof TravelFragment
+                || current instanceof AviationFragment
+                || current instanceof TrainSearchFragment
+                || current instanceof TourSearchFragment
+                || current instanceof KazakhstanFragment
+                || current instanceof FlightWebFragment
+                || current instanceof TumarMarketFragment
                 || current instanceof QrScanFragment
                 || current instanceof CardManagementFragment
                 || current instanceof PromoDetailFragment

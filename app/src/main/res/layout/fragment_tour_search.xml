@@ -11,32 +11,42 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header -->
+        <!-- Header — green gradient -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="4dp"
+            android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:background="@color/travel_dark">
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp"
+            android:background="@drawable/bg_travel_tour_header">
 
-            <ImageButton
+            <FrameLayout
                 android:id="@+id/btn_back"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_arrow_back"
-                android:tint="#FFFFFF"
-                android:contentDescription="Назад" />
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_travel_header_btn"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="←"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="18sp" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Поиск туров"
+                android:text="🌴  Поиск туров"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
