@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -48,9 +49,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class NotificationsFragment extends Fragment {
 
@@ -192,10 +190,10 @@ public class NotificationsFragment extends Fragment {
         rvTransfers.setVisibility(View.GONE);
         emptyTransfers.setVisibility(View.GONE);
 
-        apiService.getChatConversations().enqueue(new Callback<ChatConversationsResponse>() {
+        apiService.getChatConversations().enqueue(new retrofit2.Callback<ChatConversationsResponse>() {
             @Override
-            public void onResponse(@NonNull Call<ChatConversationsResponse> call,
-                                   @NonNull Response<ChatConversationsResponse> response) {
+            public void onResponse(@NonNull retrofit2.Call<ChatConversationsResponse> call,
+                                   @NonNull retrofit2.Response<ChatConversationsResponse> response) {
                 if (!isAdded() || getContext() == null) return;
                 progressTransfers.setVisibility(View.GONE);
 
@@ -223,7 +221,7 @@ public class NotificationsFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(@NonNull Call<ChatConversationsResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull retrofit2.Call<ChatConversationsResponse> call, @NonNull Throwable t) {
                 if (!isAdded() || getContext() == null) return;
                 progressTransfers.setVisibility(View.GONE);
                 emptyTransfers.setVisibility(View.VISIBLE);
@@ -257,10 +255,10 @@ public class NotificationsFragment extends Fragment {
         String appToken = prefs.getString(KEY_TOKEN, null);
         if (appToken == null) { showEmptyMarket(); return; }
 
-        apiService.getUserProfile().enqueue(new Callback<UserProfileResponse>() {
+        apiService.getUserProfile().enqueue(new retrofit2.Callback<UserProfileResponse>() {
             @Override
-            public void onResponse(@NonNull Call<UserProfileResponse> call,
-                                   @NonNull Response<UserProfileResponse> response) {
+            public void onResponse(@NonNull retrofit2.Call<UserProfileResponse> call,
+                                   @NonNull retrofit2.Response<UserProfileResponse> response) {
                 if (!isAdded() || getContext() == null) return;
                 if (!response.isSuccessful() || response.body() == null) { showEmptyMarket(); return; }
                 String phone = response.body().getPhone();
@@ -268,7 +266,7 @@ public class NotificationsFragment extends Fragment {
                 autoLoginMarket(phone);
             }
             @Override
-            public void onFailure(@NonNull Call<UserProfileResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull retrofit2.Call<UserProfileResponse> call, @NonNull Throwable t) {
                 showEmptyMarket();
             }
         });
