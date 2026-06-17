@@ -99,7 +99,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Написать комментарий…"
-            android:hintTextColor="#BDBDBD"
             android:textSize="14sp"
             android:textColor="#212121"
             android:background="@drawable/bg_chat_input_field"
