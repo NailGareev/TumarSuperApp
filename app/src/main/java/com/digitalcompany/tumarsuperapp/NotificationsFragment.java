@@ -110,6 +110,11 @@ public class NotificationsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Back button
+        view.findViewById(R.id.btn_notifications_back).setOnClickListener(v -> {
+            if (getActivity() != null) getActivity().onBackPressed();
+        });
+
         // Tabs
         tabTransfers = view.findViewById(R.id.tab_transfers);
         tabMarket    = view.findViewById(R.id.tab_market);
