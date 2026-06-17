@@ -93,13 +93,17 @@ public class NotificationsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        hideAppBar();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
     }
 
-    private void hideAppBar() {
-        if (getActivity() == null) return;
-        View bar = getActivity().findViewById(R.id.appBarLayout);
-        if (bar != null) bar.setVisibility(View.GONE);
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
     }
 
     @Override

@@ -93,9 +93,16 @@ public class TransferChatFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (getActivity() != null) {
-            View bar = getActivity().findViewById(R.id.appBarLayout);
-            if (bar != null) bar.setVisibility(View.GONE);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
         }
     }
 
