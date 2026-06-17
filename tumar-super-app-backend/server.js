@@ -549,8 +549,16 @@ app.post('/api/topup', authenticateToken, async (req, res) => {
         }
 
         const [rows] = await connection.execute(
-            'SELECT balance FROM balances WHERE user_id = ?',
+            'SELECT balance, currency FROM balances WHERE user_id = ?',
             [userId]
+        );
+
+        const currency = (rows[0].currency || 'KZT').toUpperCase();
+        await connection.execute(
+            `INSERT INTO transactions
+                (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp)
+             VALUES (NULL, ?, ?, ?, 'TOPUP', 'Пополнение баланса', NOW())`,
+            [userId, parsedAmount, currency]
         );
 
         await connection.commit();
