@@ -131,8 +131,6 @@ public class HistoryFragment extends Fragment {
 
         view.findViewById(R.id.btn_history_back).setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack());
-        view.findViewById(R.id.btn_history_search).setOnClickListener(v ->
-                android.widget.Toast.makeText(requireContext(), "Поиск", android.widget.Toast.LENGTH_SHORT).show());
         view.findViewById(R.id.btn_history_filter).setOnClickListener(v -> openFilterSheet());
 
         setupRecyclerView();

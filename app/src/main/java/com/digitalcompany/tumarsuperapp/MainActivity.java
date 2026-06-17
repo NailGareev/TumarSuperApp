@@ -311,7 +311,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 || current instanceof BiometricSettingsFragment
                 || current instanceof AddFingerprintFragment
                 || current instanceof NotificationsFragment
-                || current instanceof TransferChatFragment;
+                || current instanceof TransferChatFragment
+                || current instanceof TransferHistoryFragment;
         appBarLayout.setVisibility((isProfileTab || isHomeRoot || isCardRoot || isPromotionsRoot || isFullScreen) ? View.GONE : View.VISIBLE);
     }
 

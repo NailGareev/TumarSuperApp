@@ -175,16 +175,26 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 badgeTextColor = 0xFF6B21A8;
 
             } else if ("PAYMENT".equals(type)) {
+                String raw = tx.getDescription();
+                boolean isMarket = raw != null && raw.contains("Tumar Market");
                 iconRes       = R.drawable.ic_payment;
-                iconBgRes     = R.drawable.bg_icon_circle_orange;
-                iconTintColor = 0xFFD97222;
-                String raw    = tx.getDescription();
-                description   = (raw != null && !raw.isEmpty()) ? raw : "Оплата услуг";
+                if (isMarket) {
+                    iconBgRes      = R.drawable.bg_icon_circle_purple;
+                    iconTintColor  = 0xFF6B21A8;
+                    description    = raw;
+                    badgeText      = "Market";
+                    badgeBgRes     = R.drawable.bg_icon_circle_purple;
+                    badgeTextColor = 0xFF6B21A8;
+                } else {
+                    iconBgRes      = R.drawable.bg_icon_circle_orange;
+                    iconTintColor  = 0xFFD97222;
+                    description    = (raw != null && !raw.isEmpty()) ? raw : "Оплата услуг";
+                    badgeText      = "Оплата";
+                    badgeBgRes     = R.drawable.bg_icon_circle_orange;
+                    badgeTextColor = 0xFFD97222;
+                }
                 amountPrefix  = "-";
                 amountColor   = ContextCompat.getColor(context, R.color.expense_color);
-                badgeText     = "Оплата";
-                badgeBgRes    = R.drawable.bg_icon_circle_orange;
-                badgeTextColor = 0xFFD97222;
 
             } else if ("TOPUP".equals(type)) {
                 iconRes       = R.drawable.ic_add_circle_outline;
