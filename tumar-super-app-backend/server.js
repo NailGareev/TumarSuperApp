@@ -292,7 +292,7 @@ app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
     try {
         connection = await pool.getConnection();
         const [rows] = await connection.execute(
-            'SELECT first_name, last_name FROM users WHERE phone = ? LIMIT 1',
+            'SELECT first_name, last_name, avatar_url FROM users WHERE phone = ? LIMIT 1',
             [phone]
         );
         if (rows.length === 0) {
@@ -302,7 +302,8 @@ app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
         res.status(200).json({
             success: true,
             firstName: user.first_name,
-            lastNameInitial: user.last_name ? user.last_name.charAt(0).toUpperCase() + '.' : ''
+            lastNameInitial: user.last_name ? user.last_name.charAt(0).toUpperCase() + '.' : '',
+            avatarUrl: user.avatar_url || null
         });
     } catch (error) {
         console.error('Error during phone lookup:', error);
@@ -432,9 +433,11 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
                 sender.first_name    AS sender_first_name,
                 sender.last_name     AS sender_last_name,
                 sender.phone         AS sender_phone,
+                sender.avatar_url    AS sender_avatar_url,
                 recipient.first_name AS recipient_first_name,
                 recipient.last_name  AS recipient_last_name,
-                recipient.phone      AS recipient_phone
+                recipient.phone      AS recipient_phone,
+                recipient.avatar_url AS recipient_avatar_url
             FROM transactions t
             LEFT JOIN users sender    ON t.sender_id    = sender.id
             LEFT JOIN users recipient ON t.recipient_id = recipient.id

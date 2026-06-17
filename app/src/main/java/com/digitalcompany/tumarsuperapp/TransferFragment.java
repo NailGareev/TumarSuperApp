@@ -14,10 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -74,7 +78,8 @@ public class TransferFragment extends Fragment {
 
     // ── Recipient lookup ──────────────────────────────────────────────────────
     private LinearLayout cardRecipientInfo, cardRecipientNotFound, cardLookupLoading;
-    private TextView tvRecipientName;
+    private TextView tvRecipientName, tvRecipientAvatar;
+    private ImageView ivRecipientPhoto;
 
     // ── Card inputs ───────────────────────────────────────────────────────────
     private EditText etRecipientCard;
@@ -160,6 +165,8 @@ public class TransferFragment extends Fragment {
         cardRecipientNotFound = view.findViewById(R.id.card_recipient_not_found);
         cardLookupLoading = view.findViewById(R.id.card_lookup_loading);
         tvRecipientName = view.findViewById(R.id.tv_recipient_name);
+        tvRecipientAvatar = view.findViewById(R.id.tv_recipient_avatar);
+        ivRecipientPhoto = view.findViewById(R.id.iv_recipient_photo);
 
         // Card
         etRecipientCard = view.findViewById(R.id.et_recipient_card);
@@ -463,8 +470,9 @@ public class TransferFragment extends Fragment {
             String phone     = t.getRecipientPhone()     != null ? t.getRecipientPhone()      : "";
             String initials  = buildInitials(firstName, lastName);
             String name      = firstName.isEmpty() ? (phone.isEmpty() ? "—" : phone) : firstName;
+            String avatarUrl = t.getRecipientAvatarUrl();
 
-            LinearLayout contactCol = buildContactColumn(initials, name, colors[idx % colors.length], phone);
+            LinearLayout contactCol = buildContactColumn(initials, name, colors[idx % colors.length], phone, avatarUrl);
             avatarRow.addView(contactCol);
             idx++;
         }
@@ -479,7 +487,7 @@ public class TransferFragment extends Fragment {
         }
     }
 
-    private LinearLayout buildContactColumn(String initials, String name, int color, String phone) {
+    private LinearLayout buildContactColumn(String initials, String name, int color, String phone, String avatarUrl) {
         Context ctx = requireContext();
         float dp = ctx.getResources().getDisplayMetrics().density;
 
@@ -501,7 +509,7 @@ public class TransferFragment extends Fragment {
             });
         }
 
-        // Avatar circle
+        // Avatar circle container
         FrameLayout avatar = new FrameLayout(ctx);
         int avatarSize = (int) (46 * dp);
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(avatarSize, avatarSize);
@@ -514,16 +522,34 @@ public class TransferFragment extends Fragment {
         circle.setColor(color);
         avatar.setBackground(circle);
 
+        // Initials text (shown when no photo)
         TextView tvInitials = new TextView(ctx);
         FrameLayout.LayoutParams tiParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         tiParams.gravity = android.view.Gravity.CENTER;
         tvInitials.setLayoutParams(tiParams);
-        tvInitials.setText(initials);
+        tvInitials.setText(initials.isEmpty() ? "?" : initials);
         tvInitials.setTextSize(13);
         tvInitials.setTypeface(null, android.graphics.Typeface.BOLD);
         tvInitials.setTextColor(Color.WHITE);
         avatar.addView(tvInitials);
+
+        // Photo ImageView (shown when avatarUrl available)
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            ImageView ivPhoto = new ImageView(ctx);
+            FrameLayout.LayoutParams ivParams = new FrameLayout.LayoutParams(avatarSize, avatarSize);
+            ivPhoto.setLayoutParams(ivParams);
+            ivPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            avatar.addView(ivPhoto);
+            tvInitials.setVisibility(View.GONE);
+            String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + avatarUrl;
+            Glide.with(ctx)
+                    .load(fullUrl)
+                    .transform(new CircleCrop())
+                    .placeholder(android.R.color.transparent)
+                    .into(ivPhoto);
+        }
+
         col.addView(avatar);
 
         // Name label
@@ -578,7 +604,31 @@ public class TransferFragment extends Fragment {
                 if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     recipientFound = true;
-                    if (tvRecipientName != null) tvRecipientName.setText(response.body().getDisplayName());
+                    UserLookupResponse r = response.body();
+                    if (tvRecipientName != null) tvRecipientName.setText(r.getDisplayName());
+
+                    // Avatar: photo or initials
+                    String firstName = r.getFirstName() != null ? r.getFirstName() : "";
+                    String lastInit  = r.getLastNameInitial() != null ? r.getLastNameInitial() : "";
+                    String initials  = (firstName.isEmpty() ? "" : String.valueOf(firstName.charAt(0)).toUpperCase())
+                                     + (lastInit.isEmpty()  ? "" : String.valueOf(lastInit.charAt(0)).toUpperCase());
+                    if (tvRecipientAvatar != null) tvRecipientAvatar.setText(initials.isEmpty() ? "?" : initials);
+
+                    String avatarUrl = r.getAvatarUrl();
+                    if (avatarUrl != null && !avatarUrl.isEmpty() && ivRecipientPhoto != null && isAdded()) {
+                        String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + avatarUrl;
+                        ivRecipientPhoto.setVisibility(View.VISIBLE);
+                        if (tvRecipientAvatar != null) tvRecipientAvatar.setVisibility(View.GONE);
+                        Glide.with(requireContext())
+                                .load(fullUrl)
+                                .transform(new CircleCrop())
+                                .placeholder(android.R.color.transparent)
+                                .into(ivRecipientPhoto);
+                    } else {
+                        if (ivRecipientPhoto != null) ivRecipientPhoto.setVisibility(View.GONE);
+                        if (tvRecipientAvatar != null) tvRecipientAvatar.setVisibility(View.VISIBLE);
+                    }
+
                     if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.VISIBLE);
                     if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.GONE);
                     updateCtaLabel();
@@ -602,6 +652,8 @@ public class TransferFragment extends Fragment {
         if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.GONE);
         if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.GONE);
         if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
+        if (ivRecipientPhoto != null) ivRecipientPhoto.setVisibility(View.GONE);
+        if (tvRecipientAvatar != null) tvRecipientAvatar.setVisibility(View.VISIBLE);
     }
 
     // ── Transfer ──────────────────────────────────────────────────────────────

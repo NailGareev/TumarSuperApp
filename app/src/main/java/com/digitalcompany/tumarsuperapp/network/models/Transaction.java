@@ -49,6 +49,12 @@ public class Transaction implements java.io.Serializable {
     @SerializedName("recipient_phone")
     private String recipientPhone;
 
+    @SerializedName("sender_avatar_url")
+    private String senderAvatarUrl;
+
+    @SerializedName("recipient_avatar_url")
+    private String recipientAvatarUrl;
+
     // Геттеры для доступа к полям (обязательны или сделайте поля public)
     public int getId() { return id; }
     public int getSenderId() { return senderId; }
@@ -64,6 +70,8 @@ public class Transaction implements java.io.Serializable {
     public String getRecipientFirstName() { return recipientFirstName; }
     public String getRecipientLastName() { return recipientLastName; }
     public String getRecipientPhone() { return recipientPhone; }
+    public String getSenderAvatarUrl() { return senderAvatarUrl; }
+    public String getRecipientAvatarUrl() { return recipientAvatarUrl; }
 
     // toString() для отладки (опционально)
     @Override

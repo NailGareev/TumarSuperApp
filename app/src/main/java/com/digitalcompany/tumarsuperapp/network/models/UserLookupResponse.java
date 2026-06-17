@@ -16,10 +16,14 @@ public class UserLookupResponse {
     @SerializedName("message")
     private String message;
 
+    @SerializedName("avatarUrl")
+    private String avatarUrl;
+
     public boolean isSuccess() { return success; }
     public String getFirstName() { return firstName; }
     public String getLastNameInitial() { return lastNameInitial; }
     public String getMessage() { return message; }
+    public String getAvatarUrl() { return avatarUrl; }
 
     public String getDisplayName() {
         if (firstName == null) return "";
