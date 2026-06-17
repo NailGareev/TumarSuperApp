@@ -228,11 +228,30 @@ public class TransactionDetailFragment extends Fragment {
     }
 
     private void bindButtons(View view, Transaction tx) {
-        view.findViewById(R.id.btn_repeat).setOnClickListener(v ->
-                Toast.makeText(requireContext(), "Повтор операции недоступен", Toast.LENGTH_SHORT).show());
+        view.findViewById(R.id.btn_repeat).setOnClickListener(v -> repeatTransaction(tx));
+        view.findViewById(R.id.btn_download_receipt).setOnClickListener(v -> openReceipt(tx));
+    }
 
-        view.findViewById(R.id.btn_download_receipt).setOnClickListener(v ->
-                openReceipt(tx));
+    private void repeatTransaction(Transaction tx) {
+        String type = tx.getTransactionType();
+        if ("TRANSFER".equals(type)) {
+            // Open TransferFragment pre-filled with recipient phone
+            String phone = tx.getRecipientPhone() != null ? tx.getRecipientPhone() : "";
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, TransferFragment.newInstance(phone))
+                    .addToBackStack("transfer")
+                    .commit();
+        } else if ("PAYMENT".equals(type)) {
+            // Open PaymentsFragment (covers both service payments and market purchases)
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new PaymentsFragment())
+                    .addToBackStack("payments")
+                    .commit();
+        } else {
+            Toast.makeText(requireContext(), "Повтор недоступен для этой операции", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openReceipt(Transaction tx) {

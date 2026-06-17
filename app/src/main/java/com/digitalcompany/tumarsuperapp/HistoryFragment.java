@@ -326,7 +326,12 @@ public class HistoryFragment extends Fragment {
         if (CAT_ALL.equals(selectedCategory)) return true;
         switch (selectedCategory) {
             case CAT_MARKET:
-                return "MARKET_REFUND".equals(txType);
+                if ("MARKET_REFUND".equals(txType)) return true;
+                if ("PAYMENT".equals(txType)) {
+                    String desc = t.getDescription();
+                    return desc != null && desc.contains("Tumar Market");
+                }
+                return false;
             case CAT_TRANSFER:
                 return "TRANSFER".equals(txType);
             case CAT_PAYMENT:

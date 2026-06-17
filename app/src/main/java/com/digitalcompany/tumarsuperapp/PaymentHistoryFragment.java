@@ -192,7 +192,11 @@ public class PaymentHistoryFragment extends Fragment {
                     allPayments.clear();
                     for (Transaction t : response.body().getTransactions()) {
                         if ("PAYMENT".equalsIgnoreCase(t.getTransactionType())) {
-                            allPayments.add(t);
+                            String desc = t.getDescription();
+                            // Exclude Tumar Market purchases — they belong to the market section
+                            if (desc == null || !desc.contains("Tumar Market")) {
+                                allPayments.add(t);
+                            }
                         }
                     }
                 }

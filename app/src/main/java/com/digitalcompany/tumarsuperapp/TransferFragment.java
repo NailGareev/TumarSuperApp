@@ -94,7 +94,17 @@ public class TransferFragment extends Fragment {
     private Runnable lookupRunnable;
     private Call<UserLookupResponse> pendingLookup;
 
+    private static final String ARG_PREFILL_PHONE = "prefill_phone";
+
     public TransferFragment() {}
+
+    public static TransferFragment newInstance(String prefillPhone) {
+        TransferFragment f = new TransferFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PREFILL_PHONE, prefillPhone);
+        f.setArguments(args);
+        return f;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -234,6 +244,15 @@ public class TransferFragment extends Fragment {
                         .addToBackStack("transfer_history")
                         .commit();
             });
+        }
+
+        // Pre-fill phone if opened via "повторить" from transaction detail
+        if (getArguments() != null) {
+            String prefill = getArguments().getString(ARG_PREFILL_PHONE, "");
+            if (!prefill.isEmpty() && etRecipientPhone != null) {
+                etRecipientPhone.setText(prefill);
+                etRecipientPhone.setSelection(prefill.length());
+            }
         }
 
         // Load recent transfer contacts
