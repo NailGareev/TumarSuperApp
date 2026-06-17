@@ -90,6 +90,15 @@ public class TransferChatFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() != null) {
+            View bar = getActivity().findViewById(R.id.appBarLayout);
+            if (bar != null) bar.setVisibility(View.GONE);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
