@@ -224,6 +224,18 @@ public class TransferFragment extends Fragment {
         switchMode(TransferMode.PHONE);
         selectCurrency("USD");
 
+        // "Все →" button opens full transfer history
+        View btnRecentAll = view.findViewById(R.id.btn_recent_all);
+        if (btnRecentAll != null) {
+            btnRecentAll.setOnClickListener(v -> {
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, TransferHistoryFragment.newInstance())
+                        .addToBackStack("transfer_history")
+                        .commit();
+            });
+        }
+
         // Load recent transfer contacts
         loadRecentContacts();
     }
@@ -429,10 +441,11 @@ public class TransferFragment extends Fragment {
         for (Transaction t : recentMap.values()) {
             String firstName = t.getRecipientFirstName() != null ? t.getRecipientFirstName() : "";
             String lastName  = t.getRecipientLastName()  != null ? t.getRecipientLastName()  : "";
+            String phone     = t.getRecipientPhone()     != null ? t.getRecipientPhone()      : "";
             String initials  = buildInitials(firstName, lastName);
-            String name      = firstName.isEmpty() ? "—" : firstName;
+            String name      = firstName.isEmpty() ? (phone.isEmpty() ? "—" : phone) : firstName;
 
-            LinearLayout contactCol = buildContactColumn(initials, name, colors[idx % colors.length]);
+            LinearLayout contactCol = buildContactColumn(initials, name, colors[idx % colors.length], phone);
             avatarRow.addView(contactCol);
             idx++;
         }
@@ -447,7 +460,7 @@ public class TransferFragment extends Fragment {
         }
     }
 
-    private LinearLayout buildContactColumn(String initials, String name, int color) {
+    private LinearLayout buildContactColumn(String initials, String name, int color, String phone) {
         Context ctx = requireContext();
         float dp = ctx.getResources().getDisplayMetrics().density;
 
@@ -457,6 +470,17 @@ public class TransferFragment extends Fragment {
         LinearLayout.LayoutParams colParams = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         col.setLayoutParams(colParams);
+
+        // Click fills in the phone field
+        if (!phone.isEmpty() && etRecipientPhone != null) {
+            col.setClickable(true);
+            col.setFocusable(true);
+            col.setOnClickListener(v -> {
+                switchMode(TransferMode.PHONE);
+                etRecipientPhone.setText(phone);
+                etRecipientPhone.setSelection(phone.length());
+            });
+        }
 
         // Avatar circle
         FrameLayout avatar = new FrameLayout(ctx);

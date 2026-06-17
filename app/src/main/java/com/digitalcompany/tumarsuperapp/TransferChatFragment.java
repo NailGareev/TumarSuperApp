@@ -125,7 +125,7 @@ public class TransferChatFragment extends Fragment {
         TextView tvName     = view.findViewById(R.id.tv_chat_header_name);
         TextView tvStatus   = view.findViewById(R.id.tv_chat_header_status);
         TextView tvAvatar   = view.findViewById(R.id.tv_chat_header_avatar);
-        TextView btnBack    = view.findViewById(R.id.btn_chat_back);
+        View btnBack    = view.findViewById(R.id.btn_chat_back);
 
         String displayName = buildName(otherFirstName, otherLastName);
         tvName.setText(displayName);

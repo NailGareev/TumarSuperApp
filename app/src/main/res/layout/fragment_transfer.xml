@@ -232,12 +232,15 @@
                         android:letterSpacing="0.1" />
 
                     <TextView
+                        android:id="@+id/btn_recent_all"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Все →"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="@color/colorPrimary" />
+                        android:textColor="@color/colorPrimary"
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
 
                 <!-- Avatar row -->
