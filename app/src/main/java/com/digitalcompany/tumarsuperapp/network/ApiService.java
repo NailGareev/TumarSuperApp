@@ -20,6 +20,7 @@ import com.digitalcompany.tumarsuperapp.network.models.TourListResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPayResponse;
 import com.digitalcompany.tumarsuperapp.network.models.MarketPurchasesResponse;
+import com.digitalcompany.tumarsuperapp.network.models.PendingPickupResponse;
 import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
 import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateRequest;
 import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateResponse;
@@ -124,6 +125,9 @@ public interface ApiService {
 
     @GET("api/market/orders")
     Call<MarketPurchasesResponse> getMarketOrders();
+
+    @GET("api/market/pending-pickup")
+    Call<PendingPickupResponse> getPendingPickup();
 
     @GET("api/rates")
     Call<CurrencyRatesResponse> getCurrencyRates();

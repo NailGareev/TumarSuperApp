@@ -430,6 +430,8 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
             SELECT
                 t.id, t.sender_id, t.recipient_id, t.amount, t.currency,
                 t.transaction_type, t.description, t.timestamp,
+                IFNULL(t.status, 'completed')    AS payment_status,
+                t.market_ref,
                 sender.first_name    AS sender_first_name,
                 sender.last_name     AS sender_last_name,
                 sender.phone         AS sender_phone,
@@ -708,12 +710,14 @@ app.post('/api/market/pay', authenticateToken, async (req, res) => {
             'UPDATE balances SET balance = balance - ?, updated_at = NOW() WHERE user_id = ?',
             [parsedAmount, userId]);
 
+        // Generate orderRef before INSERT so it can be stored as market_ref in the transaction
+        const orderRef = 'TM' + Date.now().toString().slice(-8);
+
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, NULL, ?, ?, ?, ?, NOW())',
-            [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market']);
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, market_ref, status, timestamp) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, NOW())',
+            [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market', orderRef, 'completed']);
 
         await ensureMarketPurchasesTable(connection);
-        const orderRef = 'TM' + Date.now().toString().slice(-8);
         await connection.execute(
             'INSERT INTO market_purchases (user_id, order_ref, amount, items_json, address) VALUES (?, ?, ?, ?, ?)',
             [userId, orderRef, parsedAmount, items || '[]', address.trim()]);
@@ -780,7 +784,15 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
         const amount = parseFloat(rows[0].amount);
 
         await connection.execute(
-            'UPDATE market_purchases SET status = "cancelled" WHERE id = ?', [rows[0].id]);
+            'UPDATE market_purchases SET status = "cancelled", pickup_code = NULL WHERE id = ?', [rows[0].id]);
+
+        // Mark the original PAYMENT transaction as cancelled
+        try {
+            await connection.execute(
+                `UPDATE transactions SET status = 'cancelled', description = 'Покупка отменена — Tumar Market'
+                 WHERE market_ref = ? AND sender_id = ? AND status = 'completed'`,
+                [order_ref, userId]);
+        } catch (e) { /* status/market_ref columns may not exist on old schema */ }
 
         const [balRows] = await connection.execute(
             'SELECT currency FROM balances WHERE user_id = ?', [userId]);
@@ -791,8 +803,8 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
             [amount, userId]);
 
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, NOW())',
-            [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market']);
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, status, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, ?, NOW())',
+            [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market', 'completed']);
 
         await connection.commit();
         res.json({ success: true, refunded: amount });
@@ -800,6 +812,92 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
         if (connection) await connection.rollback();
         console.error('Market cancel error:', err);
         res.status(500).json({ success: false, message: 'Ошибка при отмене' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === POST /api/market/seller/dispatch — Seller sends delivery code to buyer ===
+// Called by the Tumar Market seller panel when the order is dispatched.
+// Auth: seller_secret in body (shared secret for seller panel integration).
+app.post('/api/market/seller/dispatch', async (req, res) => {
+    const { order_ref, seller_secret } = req.body;
+    if (seller_secret !== (process.env.SELLER_SECRET || 'tumar_seller_2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!order_ref) {
+        return res.status(400).json({ success: false, message: 'order_ref required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            'SELECT id, status FROM market_purchases WHERE order_ref = ?', [order_ref]);
+        if (!rows.length) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (rows[0].status === 'cancelled') {
+            return res.status(400).json({ success: false, message: 'Order is cancelled' });
+        }
+        // pickup_code = orderRef itself (shown to seller at the counter)
+        await connection.execute(
+            `UPDATE market_purchases SET status = 'shipping', pickup_code = ? WHERE id = ?`,
+            [order_ref, rows[0].id]);
+        console.log(`Seller dispatched order ${order_ref} — pickup code set`);
+        res.json({ success: true, pickup_code: order_ref });
+    } catch (err) {
+        console.error('Seller dispatch error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === POST /api/market/seller/confirm-delivery — Seller confirms the buyer received the goods ===
+app.post('/api/market/seller/confirm-delivery', async (req, res) => {
+    const { order_ref, seller_secret } = req.body;
+    if (seller_secret !== (process.env.SELLER_SECRET || 'tumar_seller_2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!order_ref) {
+        return res.status(400).json({ success: false, message: 'order_ref required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        await connection.execute(
+            `UPDATE market_purchases SET status = 'delivered', pickup_code = NULL WHERE order_ref = ?`,
+            [order_ref]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Confirm delivery error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === GET /api/market/pending-pickup — Returns active delivery code for the buyer ===
+// HomeFragment calls this on resume to know if a pickup code is ready.
+app.get('/api/market/pending-pickup', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            `SELECT order_ref, pickup_code, amount FROM market_purchases
+             WHERE user_id = ? AND status = 'shipping' AND pickup_code IS NOT NULL
+             ORDER BY created_at DESC LIMIT 1`,
+            [userId]);
+        if (rows.length) {
+            res.json({ success: true, pickup_code: rows[0].pickup_code, order_ref: rows[0].order_ref, amount: rows[0].amount });
+        } else {
+            res.json({ success: true, pickup_code: null });
+        }
+    } catch (err) {
+        console.error('Pending pickup error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
     } finally {
         if (connection) connection.release();
     }
@@ -1266,6 +1364,21 @@ app.listen(port, async () => {
             );
             console.log('transactions.sender_id now allows NULL');
         } catch (e) { /* already nullable */ }
+
+        // Add market_ref column to link a PAYMENT transaction to its market order
+        try {
+            await connection.execute(`ALTER TABLE transactions ADD COLUMN market_ref VARCHAR(50) NULL DEFAULT NULL`);
+        } catch (e) { /* already exists */ }
+
+        // Add status column to mark transactions as cancelled when an order is cancelled
+        try {
+            await connection.execute(`ALTER TABLE transactions ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'completed'`);
+        } catch (e) { /* already exists */ }
+
+        // Add pickup_code column to market_purchases — set by seller when dispatching order
+        try {
+            await connection.execute(`ALTER TABLE market_purchases ADD COLUMN pickup_code VARCHAR(50) NULL DEFAULT NULL`);
+        } catch (e) { /* table may not exist yet or column already exists */ }
 
         // Add avatar_url column to users table if missing
         try {

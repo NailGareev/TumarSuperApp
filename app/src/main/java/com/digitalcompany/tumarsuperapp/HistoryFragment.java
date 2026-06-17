@@ -321,6 +321,7 @@ public class HistoryFragment extends Fragment {
     private boolean matchesCategory(Transaction t) {
         String txType = t.getTransactionType();
         boolean isIncoming = t.getRecipientId() == currentUserId;
+        boolean isCancelled = "cancelled".equals(t.getPaymentStatus());
         boolean isMarketPayment = "PAYMENT".equals(txType)
                 && t.getDescription() != null
                 && t.getDescription().contains("Tumar Market");
@@ -329,11 +330,11 @@ public class HistoryFragment extends Fragment {
         if ("EXPENSE".equals(selectedType)) {
             if ("TOPUP".equals(txType)) return false;
             if ("TRANSFER".equals(txType) && isIncoming) return false;
-            if ("MARKET_REFUND".equals(txType)) return false; // refunds are not expenses
+            if ("MARKET_REFUND".equals(txType)) return false;
+            if (isCancelled) return false; // cancelled payments are not expenses
         } else if ("INCOME".equals(selectedType)) {
-            if ("PAYMENT".equals(txType)) return false; // purchases are not income
+            if ("PAYMENT".equals(txType) && !isCancelled) return false;
             if ("TRANSFER".equals(txType) && !isIncoming) return false;
-            // MARKET_REFUND (incoming refund) is allowed through as income
         }
 
         // Category filter
@@ -341,11 +342,10 @@ public class HistoryFragment extends Fragment {
         switch (selectedCategory) {
             case CAT_MARKET:
                 if ("MARKET_REFUND".equals(txType)) return true;
-                return isMarketPayment;
+                return isMarketPayment; // includes cancelled market payments
             case CAT_TRANSFER:
                 return "TRANSFER".equals(txType);
             case CAT_PAYMENT:
-                // Payments category shows only non-market payments
                 return "PAYMENT".equals(txType) && !isMarketPayment;
             case CAT_INCOME:
                 if ("TOPUP".equals(txType)) return true;
@@ -413,11 +413,12 @@ public class HistoryFragment extends Fragment {
                 lastDateLabel = label;
             }
 
-            // Accumulate daily expense total (only outgoing payments and transfers)
+            // Accumulate daily expense total (only outgoing, non-cancelled payments and transfers)
             if (t.getAmount() != null) {
                 String type = t.getTransactionType();
+                boolean cancelled = "cancelled".equals(t.getPaymentStatus());
                 BigDecimal amt = t.getAmount().abs();
-                if ("PAYMENT".equals(type)) {
+                if ("PAYMENT".equals(type) && !cancelled) {
                     dayTotal = dayTotal.add(amt);
                 } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
                     dayTotal = dayTotal.add(amt);
@@ -449,11 +450,12 @@ public class HistoryFragment extends Fragment {
         for (Transaction t : filtered) {
             if (t.getAmount() == null) continue;
             String type = t.getTransactionType();
+            boolean isCancelled = "cancelled".equals(t.getPaymentStatus());
             BigDecimal amt = t.getAmount().abs();
 
             if ("TOPUP".equals(type) || "MARKET_REFUND".equals(type)) {
                 totalIncome = totalIncome.add(amt);
-            } else if ("PAYMENT".equals(type)) {
+            } else if ("PAYMENT".equals(type) && !isCancelled) {
                 totalExpense = totalExpense.add(amt);
             } else if ("TRANSFER".equals(type)) {
                 if (t.getRecipientId() == currentUserId) totalIncome  = totalIncome.add(amt);

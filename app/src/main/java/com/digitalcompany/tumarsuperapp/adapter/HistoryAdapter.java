@@ -177,8 +177,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else if ("PAYMENT".equals(type)) {
                 String raw = tx.getDescription();
                 boolean isMarket = raw != null && raw.contains("Tumar Market");
+                boolean isCancelled = "cancelled".equals(tx.getPaymentStatus());
                 iconRes       = R.drawable.ic_payment;
-                if (isMarket) {
+                if (isCancelled) {
+                    iconBgRes      = R.drawable.bg_icon_circle_red;
+                    iconTintColor  = 0xFFCC2222;
+                    description    = raw != null ? raw : "Покупка отменена — Tumar Market";
+                    badgeText      = "Отменен";
+                    badgeBgRes     = R.drawable.bg_icon_circle_red;
+                    badgeTextColor = 0xFFCC2222;
+                } else if (isMarket) {
                     iconBgRes      = R.drawable.bg_icon_circle_purple;
                     iconTintColor  = 0xFF6B21A8;
                     description    = raw;

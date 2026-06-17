@@ -503,7 +503,6 @@ public class TumarMarketFragment extends Fragment {
                     if (!isAdded()) return;
                     if (resp.isSuccessful() && resp.body() != null && resp.body().success) {
                         String orderRef = resp.body().orderRef;
-                        saveDeliveryCode(orderRef);
                         // Create order in Go market so it appears in /orders
                         createGoMarketOrder(pendingAddress, orderRef);
                         showSuccessInWebView(orderRef);
