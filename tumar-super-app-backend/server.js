@@ -1010,6 +1010,218 @@ function scheduleDailyRateUpdate() {
     console.log(`Next NBK rate update scheduled in ${Math.round(msLeft / 60000)} min`);
 }
 
+// ─── SMS / CHAT ──────────────────────────────────────────────────────────────
+
+async function ensureSmsTable(conn) {
+    await conn.execute(`
+        CREATE TABLE IF NOT EXISTS sms (
+            id          INT AUTO_INCREMENT PRIMARY KEY,
+            sender_id   INT NOT NULL,
+            receiver_id INT NOT NULL,
+            message     TEXT NOT NULL,
+            is_read     TINYINT(1) DEFAULT 0,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (sender_id)   REFERENCES users(id),
+            FOREIGN KEY (receiver_id) REFERENCES users(id)
+        )
+    `);
+}
+
+// GET /api/chat/conversations — список чатов (группировка по собеседнику)
+app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        const [transferPeers] = await connection.execute(`
+            SELECT DISTINCT
+                CASE WHEN sender_id = ? THEN recipient_id ELSE sender_id END AS peer_id
+            FROM transactions
+            WHERE (sender_id = ? OR recipient_id = ?) AND transaction_type = 'TRANSFER'
+        `, [userId, userId, userId]);
+
+        let smsPeers = [];
+        try {
+            [smsPeers] = await connection.execute(`
+                SELECT DISTINCT
+                    CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS peer_id
+                FROM sms WHERE sender_id = ? OR receiver_id = ?
+            `, [userId, userId, userId]);
+        } catch (e) { /* empty */ }
+
+        const peerSet = new Set();
+        [...transferPeers, ...smsPeers].forEach(r => { if (r.peer_id) peerSet.add(r.peer_id); });
+
+        if (peerSet.size === 0) return res.json({ success: true, conversations: [] });
+
+        const conversations = [];
+        for (const peerId of peerSet) {
+            const [userRows] = await connection.execute(
+                'SELECT id, first_name, last_name, phone FROM users WHERE id = ?', [peerId]);
+            if (!userRows.length) continue;
+            const peer = userRows[0];
+
+            const [lastTransfer] = await connection.execute(`
+                SELECT amount, description, timestamp, sender_id FROM transactions
+                WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+                  AND transaction_type = 'TRANSFER'
+                ORDER BY timestamp DESC LIMIT 1
+            `, [userId, peerId, peerId, userId]);
+
+            let lastSms = [], unreadRows = [{ cnt: 0 }];
+            try {
+                [lastSms] = await connection.execute(`
+                    SELECT message, created_at, sender_id FROM sms
+                    WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+                    ORDER BY created_at DESC LIMIT 1
+                `, [userId, peerId, peerId, userId]);
+                [unreadRows] = await connection.execute(`
+                    SELECT COUNT(*) AS cnt FROM sms
+                    WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
+                `, [peerId, userId]);
+            } catch (e) { /* empty */ }
+
+            const lt = lastTransfer.length ? lastTransfer[0] : null;
+            const ls = lastSms.length ? lastSms[0] : null;
+            let lastMessage = null, lastTime = null, lastAmount = null, isIncoming = false;
+
+            if (lt && ls) {
+                if (new Date(ls.created_at) >= new Date(lt.timestamp)) {
+                    lastMessage = ls.message; lastTime = ls.created_at; isIncoming = ls.sender_id === peerId;
+                } else {
+                    lastMessage = lt.description || null; lastTime = lt.timestamp;
+                    lastAmount = lt.amount; isIncoming = lt.sender_id === peerId;
+                }
+            } else if (lt) {
+                lastMessage = lt.description || null; lastTime = lt.timestamp;
+                lastAmount = lt.amount; isIncoming = lt.sender_id === peerId;
+            } else if (ls) {
+                lastMessage = ls.message; lastTime = ls.created_at; isIncoming = ls.sender_id === peerId;
+            }
+
+            conversations.push({
+                other_user_id: peer.id,
+                other_first_name: peer.first_name,
+                other_last_name: peer.last_name,
+                other_phone: peer.phone,
+                last_message: lastMessage,
+                last_time: lastTime ? new Date(lastTime).toISOString() : null,
+                last_amount: lastAmount,
+                unread_count: unreadRows[0].cnt || 0,
+                is_incoming: isIncoming
+            });
+        }
+
+        conversations.sort((a, b) =>
+            (b.last_time ? new Date(b.last_time) : 0) - (a.last_time ? new Date(a.last_time) : 0));
+
+        res.json({ success: true, conversations });
+    } catch (err) {
+        console.error('Chat conversations error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка загрузки чатов' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// GET /api/chat/messages?withUserId=X — история переписки (переводы + смс)
+app.get('/api/chat/messages', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const otherId = parseInt(req.query.withUserId);
+    if (!otherId || isNaN(otherId)) {
+        return res.status(400).json({ success: false, message: 'withUserId required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        try {
+            await connection.execute(
+                'UPDATE sms SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0',
+                [otherId, userId]);
+        } catch (e) { /* ignore */ }
+
+        const [transfers] = await connection.execute(`
+            SELECT id, sender_id, recipient_id AS receiver_id, amount, description, timestamp AS ts
+            FROM transactions
+            WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+              AND transaction_type = 'TRANSFER'
+        `, [userId, otherId, otherId, userId]);
+
+        let messages = [];
+        try {
+            [messages] = await connection.execute(`
+                SELECT id, sender_id, receiver_id, message, created_at AS ts FROM sms
+                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+            `, [userId, otherId, otherId, userId]);
+        } catch (e) { /* empty */ }
+
+        const items = [
+            ...transfers.map(t => ({
+                type: 'TRANSFER', id: t.id,
+                sender_id: t.sender_id, receiver_id: t.receiver_id,
+                amount: t.amount, description: t.description,
+                message: null, timestamp: t.ts
+            })),
+            ...messages.map(m => ({
+                type: 'SMS', id: m.id,
+                sender_id: m.sender_id, receiver_id: m.receiver_id,
+                amount: null, description: null,
+                message: m.message, timestamp: m.ts
+            }))
+        ];
+
+        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        res.json({ success: true, items });
+    } catch (err) {
+        console.error('Chat messages error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка загрузки сообщений' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// POST /api/chat/send — отправить текстовое сообщение в чате перевода
+app.post('/api/chat/send', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { receiverId, message } = req.body;
+    if (!receiverId || !message || !message.trim()) {
+        return res.status(400).json({ success: false, message: 'receiverId and message required' });
+    }
+    const trimmedMsg = message.trim().substring(0, 500);
+    const rId = parseInt(receiverId);
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        const [userRows] = await connection.execute('SELECT id FROM users WHERE id = ?', [rId]);
+        if (!userRows.length) return res.status(404).json({ success: false, message: 'Получатель не найден' });
+
+        const [transfers] = await connection.execute(`
+            SELECT id FROM transactions
+            WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+              AND transaction_type = 'TRANSFER' LIMIT 1
+        `, [userId, rId, rId, userId]);
+        if (!transfers.length) {
+            return res.status(403).json({ success: false, message: 'Нет истории переводов с этим пользователем' });
+        }
+
+        const [result] = await connection.execute(
+            'INSERT INTO sms (sender_id, receiver_id, message) VALUES (?, ?, ?)',
+            [userId, rId, trimmedMsg]);
+        res.json({ success: true, message: 'Отправлено', id: result.insertId });
+    } catch (err) {
+        console.error('Chat send error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка отправки' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // GET /api/promotions - Список активных акций (публичный)
 app.get('/api/promotions', async (req, res) => {
     let connection;
@@ -1048,6 +1260,9 @@ app.listen(port, async () => {
         try {
             await connection.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL COMMENT 'URL фото профиля'`);
         } catch (e) { /* already exists */ }
+
+        // Ensure sms table exists
+        try { await ensureSmsTable(connection); } catch (e) { /* ignore */ }
 
         // Create promotions table if not exists
         await connection.execute(`

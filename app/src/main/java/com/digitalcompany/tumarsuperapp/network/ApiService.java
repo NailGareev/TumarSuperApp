@@ -25,6 +25,10 @@ import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateRequest;
 import com.digitalcompany.tumarsuperapp.network.models.ProfileUpdateResponse;
 import com.digitalcompany.tumarsuperapp.network.models.AvatarUploadResponse;
 import com.digitalcompany.tumarsuperapp.network.models.PromotionsListResponse;
+import com.digitalcompany.tumarsuperapp.network.models.ChatConversationsResponse;
+import com.digitalcompany.tumarsuperapp.network.models.ChatMessagesResponse;
+import com.digitalcompany.tumarsuperapp.network.models.SendMessageRequest;
+import com.digitalcompany.tumarsuperapp.network.models.SendMessageResponse;
 // --- КОНЕЦ: Импорты ---
 
 
@@ -133,6 +137,15 @@ public interface ApiService {
 
     @GET("api/promotions")
     Call<PromotionsListResponse> getPromotions();
+
+    @GET("api/chat/conversations")
+    Call<ChatConversationsResponse> getChatConversations();
+
+    @GET("api/chat/messages")
+    Call<ChatMessagesResponse> getChatMessages(@Query("withUserId") int withUserId);
+
+    @POST("api/chat/send")
+    Call<SendMessageResponse> sendChatMessage(@Body SendMessageRequest request);
 
     // --- КОНЕЦ: Добавленные методы ---
 
