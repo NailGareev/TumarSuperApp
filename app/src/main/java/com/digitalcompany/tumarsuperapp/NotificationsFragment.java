@@ -41,6 +41,7 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -459,11 +460,12 @@ public class NotificationsFragment extends Fragment {
         private String formatRelativeTime(String raw) {
             if (raw == null || raw.isEmpty()) return "";
             try {
-                SimpleDateFormat[] fmts = {
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-                };
+                SimpleDateFormat fmt0 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+                fmt0.setTimeZone(TimeZone.getTimeZone("UTC"));
+                SimpleDateFormat fmt1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                fmt1.setTimeZone(TimeZone.getTimeZone("UTC"));
+                SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                SimpleDateFormat[] fmts = { fmt0, fmt1, fmt2 };
                 Date d = null;
                 for (SimpleDateFormat sdf : fmts) {
                     try { d = sdf.parse(raw); if (d != null) break; } catch (Exception ignored) {}
@@ -548,6 +550,7 @@ public class NotificationsFragment extends Fragment {
             if (raw == null) return "";
             try {
                 SimpleDateFormat in  = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                in.setTimeZone(TimeZone.getTimeZone("UTC"));
                 SimpleDateFormat out = new SimpleDateFormat("d MMM, HH:mm", new Locale("ru"));
                 Date d = in.parse(raw);
                 return d != null ? out.format(d) : raw.substring(0, Math.min(16, raw.length()));
