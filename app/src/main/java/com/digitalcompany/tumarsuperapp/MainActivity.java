@@ -19,6 +19,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -81,6 +85,17 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     protected void onCreate(Bundle savedInstanceState) {
         Log.e(TAG, "--- MainActivity onCreate STARTED ---"); // Лог старта
         super.onCreate(savedInstanceState);
+
+        // Setup notification channels and background polling
+        NotificationHelper.createChannels(this);
+        PeriodicWorkRequest pollWork = new PeriodicWorkRequest.Builder(
+                NotificationPollWorker.class, 15, TimeUnit.MINUTES)
+                .build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "notif_poll",
+                ExistingPeriodicWorkPolicy.KEEP,
+                pollWork);
+
         Log.d(TAG, "onCreate запущен");
 
         // ================= Проверка авторизации (с исправленными константами) =================

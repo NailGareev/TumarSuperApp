@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/banner_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#E0140828"
+    android:padding="13dp"
+    android:layout_margin="12dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <ImageView
+            android:id="@+id/banner_icon"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_bio_toggle_on"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_bell_notification"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="@null" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/banner_app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#99FFFFFF"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/banner_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/banner_body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#B3FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/banner_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#66FFFFFF"
+            android:textSize="11sp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/banner_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone">
+        <Button
+            android:id="@+id/banner_btn_primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp" />
+        <Button
+            android:id="@+id/banner_btn_secondary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>

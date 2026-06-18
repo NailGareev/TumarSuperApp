@@ -57,4 +57,6 @@ dependencies {
     // ZXing QR scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0") { isTransitive = true }
     implementation("com.google.zxing:core:3.5.3")
+
+    implementation("androidx.work:work-runtime:2.9.0")
 }

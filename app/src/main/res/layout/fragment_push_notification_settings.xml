@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F4F4F6">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="16dp"
+        android:background="#FAFAFA">
+
+        <FrameLayout
+            android:id="@+id/btn_push_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/ic_arrow_back"
+                app:tint="@color/text_primary"
+                android:contentDescription="@null" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="Уведомления"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#E6E6E6" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <!-- Master toggle card -->
+            <LinearLayout
+                android:id="@+id/card_push_master"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_menu_section_card"
+                android:padding="14dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <FrameLayout
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:background="@drawable/bg_icon_circle_purple">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        app:srcCompat="@drawable/ic_bell_notification"
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Push-уведомления"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Получать уведомления о событиях"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Master toggle -->
+                <FrameLayout
+                    android:id="@+id/toggle_push_track"
+                    android:layout_width="44dp"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_bio_toggle_on"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <View
+                        android:id="@+id/toggle_push_thumb"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="3dp"
+                        android:background="@drawable/bg_bio_toggle_thumb" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- SECTION: ПЕРЕВОДЫ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="2dp"
+                android:text="ПЕРЕВОДЫ"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_menu_section_card">
+
+                <!-- Incoming transfer -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Входящий перевод"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Когда вам переводят деньги"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_tr_in_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_tr_in_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Outgoing transfer -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Исходящий перевод"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Подтверждение отправки"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_tr_out_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_tr_out_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Chat transfer -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сообщения в чате"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Новые сообщения от получателя"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_tr_chat_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_tr_chat_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION: TUMAR MARKET -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="2dp"
+                android:text="TUMAR MARKET"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_menu_section_card">
+
+                <!-- Market order -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Статус заказа"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Изменения по вашему заказу"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_mkt_order_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_mkt_order_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Market code -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Код получения"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Уведомление о готовности к получению"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_mkt_code_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_mkt_code_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Market promo -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Акции и скидки"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Спецпредложения от магазинов"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_mkt_promo_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_mkt_promo_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION: ПЛАТЕЖИ И КРЕДИТЫ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="2dp"
+                android:text="ПЛАТЕЖИ И КРЕДИТЫ"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_menu_section_card">
+
+                <!-- Auto payment -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Автоплатёж"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Уведомление о списании по расписанию"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_pay_auto_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_pay_auto_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Security payment -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Безопасность платежей"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Подозрительные операции"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_pay_sec_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_pay_sec_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Credit -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Кредит и рассрочка"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Напоминания об оплате"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_pay_credit_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_pay_credit_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- SECTION: ОФОРМЛЕНИЕ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="2dp"
+                android:text="ОФОРМЛЕНИЕ"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_menu_section_card">
+
+                <!-- Sound -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Звук"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Воспроизводить звук уведомления"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_sound_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_sound_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginStart="16dp"
+                    android:background="#E6E6E6" />
+
+                <!-- Vibration -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="13dp"
+                    android:paddingBottom="13dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Вибрация"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_primary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="Вибрировать при уведомлениях"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/toggle_vibration_track"
+                        android:layout_width="44dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/bg_bio_toggle_on"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <View
+                            android:id="@+id/toggle_vibration_thumb"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="3dp"
+                            android:background="@drawable/bg_bio_toggle_thumb" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Bottom spacing -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

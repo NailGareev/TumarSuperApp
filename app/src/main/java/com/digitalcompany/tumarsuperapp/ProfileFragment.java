@@ -141,6 +141,21 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+        // Push notification settings
+        View rowPush = view.findViewById(R.id.row_push_notifications);
+        if (rowPush != null) {
+            rowPush.setOnClickListener(v -> {
+                if (getActivity() == null) return;
+                getActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out,
+                                R.anim.fade_in, R.anim.fade_out)
+                        .replace(R.id.fragment_container, new PushNotificationSettingsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
         LinearLayout btnLogout = view.findViewById(R.id.btn_logout);
         btnLogout.setOnClickListener(v -> {
             if (getActivity() != null) {
