@@ -7,7 +7,14 @@
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/navigation_card" android:icon="@drawable/ic_credit_card_black_24dp" android:title="@string/title_card" />
+        android:id="@+id/navigation_card"
+        android:icon="@drawable/ic_credit_card_black_24dp"
+        android:title="@string/title_card" />
+
+    <item
+        android:id="@+id/navigation_qr"
+        android:icon="@drawable/ic_bottom_nav_placeholder"
+        android:title="" />
 
     <item
         android:id="@+id/navigation_promotions"

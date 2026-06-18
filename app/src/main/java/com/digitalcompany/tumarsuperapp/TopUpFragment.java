@@ -58,12 +58,17 @@ public class TopUpFragment extends Fragment {
     private ProgressBar progressCardLoad;
     private CardView cardDisplayContainer;
     private LinearLayout layoutNoCard;
+    private LinearLayout layoutAllCardsBlocked;
     private TextView tvVirtualCardNumber, tvVirtualCardExpiry, tvVirtualCardCvv;
     private MaterialButton btnIssueCard;
 
     // Method selector cards
     private CardView methodCard, methodBank;
     private TextView tvMethodCardTitle, tvMethodCardSub, tvMethodBankTitle, tvMethodBankSub;
+    private View ctaBar;
+
+    // New radio / icon views
+    private View viewRadioCard, viewRadioBank, viewIconCard, viewIconBank;
 
     private ApiService apiService;
 
@@ -74,6 +79,22 @@ public class TopUpFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getActivity() != null)
             apiService = ApiClient.getApiService(getActivity().getApplicationContext());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).restoreNavBars();
+        }
     }
 
     @Override
@@ -107,10 +128,23 @@ public class TopUpFragment extends Fragment {
         tilCardCvv = view.findViewById(R.id.til_card_cvv);
         etCardCvv = view.findViewById(R.id.et_card_cvv);
 
+        viewRadioCard = view.findViewById(R.id.view_radio_card);
+        viewRadioBank = view.findViewById(R.id.view_radio_bank);
+        ctaBar = view.findViewById(R.id.cta_bar);
+        viewIconCard = view.findViewById(R.id.view_method_icon_card);
+        viewIconBank = view.findViewById(R.id.view_method_icon_bank);
+
+        View btnBack = view.findViewById(R.id.btn_back_topup);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getSupportFragmentManager().popBackStack());
+        }
+
         sectionBankTransfer = view.findViewById(R.id.section_bank_transfer);
         progressCardLoad = view.findViewById(R.id.progress_card_load);
         cardDisplayContainer = view.findViewById(R.id.card_display_container);
         layoutNoCard = view.findViewById(R.id.layout_no_card);
+        layoutAllCardsBlocked = view.findViewById(R.id.layout_all_cards_blocked);
         tvVirtualCardNumber = view.findViewById(R.id.tv_virtual_card_number);
         tvVirtualCardExpiry = view.findViewById(R.id.tv_virtual_card_expiry);
         tvVirtualCardCvv    = view.findViewById(R.id.tv_virtual_card_cvv);
@@ -130,37 +164,74 @@ public class TopUpFragment extends Fragment {
         etCardNumber.addTextChangedListener(new CardNumberFormatter());
         etCardExpiry.addTextChangedListener(new ExpiryFormatter());
 
+        etAmount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateTopUpButtonText();
+            }
+        });
+        updateTopUpButtonText();
+
         loadCurrentBalance();
+    }
+
+    private void updateTopUpButtonText() {
+        String raw = etAmount.getText() != null ? etAmount.getText().toString().trim() : "";
+        if (raw.isEmpty()) {
+            btnTopUp.setText("Пополнить");
+            return;
+        }
+        try {
+            BigDecimal amount = new BigDecimal(raw);
+            java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("ru"));
+            fmt.setGroupingUsed(true);
+            fmt.setMaximumFractionDigits(0);
+            btnTopUp.setText("Пополнить на ₸ " + fmt.format(amount.longValue()));
+        } catch (NumberFormatException e) {
+            btnTopUp.setText("Пополнить");
+        }
     }
 
     private void selectMethod(Method method) {
         selectedMethod = method;
         if (method == Method.CARD) {
-            methodCard.setCardBackgroundColor(0xFF6200EE);
-            methodBank.setCardBackgroundColor(resolveCardBg());
+            methodCard.setCardBackgroundColor(0xFF1E0A36);
+            methodBank.setCardBackgroundColor(0xFFFFFFFF);
             if (tvMethodCardTitle != null) {
                 tvMethodCardTitle.setTextColor(0xFFFFFFFF);
-                tvMethodCardSub.setTextColor(0xCCFFFFFF);
+                tvMethodCardSub.setTextColor(0x80FFFFFF);
             }
             if (tvMethodBankTitle != null) {
                 tvMethodBankTitle.setTextColor(0xFF212121);
                 tvMethodBankSub.setTextColor(0xFF757575);
             }
+            if (viewRadioCard != null) viewRadioCard.setBackgroundResource(R.drawable.bg_topup_radio_selected);
+            if (viewRadioBank != null) viewRadioBank.setBackgroundResource(R.drawable.bg_topup_radio_normal);
+            if (viewIconCard != null) viewIconCard.setBackgroundResource(R.drawable.bg_topup_method_icon_selected);
+            if (viewIconBank != null) viewIconBank.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.VISIBLE);
             sectionBankTransfer.setVisibility(View.GONE);
+            if (ctaBar != null) ctaBar.setVisibility(View.VISIBLE);
         } else {
-            methodBank.setCardBackgroundColor(0xFF6200EE);
-            methodCard.setCardBackgroundColor(resolveCardBg());
+            methodBank.setCardBackgroundColor(0xFF1E0A36);
+            methodCard.setCardBackgroundColor(0xFFFFFFFF);
             if (tvMethodBankTitle != null) {
                 tvMethodBankTitle.setTextColor(0xFFFFFFFF);
-                tvMethodBankSub.setTextColor(0xCCFFFFFF);
+                tvMethodBankSub.setTextColor(0x80FFFFFF);
             }
             if (tvMethodCardTitle != null) {
                 tvMethodCardTitle.setTextColor(0xFF212121);
                 tvMethodCardSub.setTextColor(0xFF757575);
             }
+            if (viewRadioBank != null) viewRadioBank.setBackgroundResource(R.drawable.bg_topup_radio_selected);
+            if (viewRadioCard != null) viewRadioCard.setBackgroundResource(R.drawable.bg_topup_radio_normal);
+            if (viewIconBank != null) viewIconBank.setBackgroundResource(R.drawable.bg_topup_method_icon_selected);
+            if (viewIconCard != null) viewIconCard.setBackgroundResource(R.drawable.bg_topup_method_icon);
             sectionCardInput.setVisibility(View.GONE);
             sectionBankTransfer.setVisibility(View.VISIBLE);
+            if (ctaBar != null) ctaBar.setVisibility(View.GONE);
             loadUserCard();
         }
     }
@@ -187,34 +258,44 @@ public class TopUpFragment extends Fragment {
     }
 
     private void loadUserCard() {
-        if (apiService == null) return;
-        progressCardLoad.setVisibility(View.VISIBLE);
-        cardDisplayContainer.setVisibility(View.GONE);
-        layoutNoCard.setVisibility(View.GONE);
+        if (getContext() == null) return;
+        progressCardLoad.setVisibility(View.GONE);
 
-        apiService.getCard().enqueue(new Callback<CardResponse>() {
-            @Override
-            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
-                if (!isAdded() || getContext() == null) return;
-                progressCardLoad.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    CardResponse.CardData card = response.body().getCard();
-                    if (card != null) {
-                        showVirtualCard(card);
-                    } else {
-                        layoutNoCard.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    layoutNoCard.setVisibility(View.VISIBLE);
+        android.content.SharedPreferences prefs = requireContext()
+                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE);
+        int count = prefs.getInt("card_count", 0);
+
+        if (count > 0) {
+            for (int i = 0; i < count; i++) {
+                String number = prefs.getString("card_" + i + "_number", "");
+                String expiry = prefs.getString("card_" + i + "_expiry", "");
+                boolean blocked = prefs.getBoolean("card_" + i + "_blocked", false);
+                if (!number.isEmpty() && !blocked) {
+                    tvVirtualCardNumber.setText(formatCardNumber(number));
+                    tvVirtualCardExpiry.setText(expiry);
+                    cardDisplayContainer.setVisibility(View.VISIBLE);
+                    layoutNoCard.setVisibility(View.GONE);
+                    if (layoutAllCardsBlocked != null)
+                        layoutAllCardsBlocked.setVisibility(View.GONE);
+                    return;
                 }
             }
-            @Override
-            public void onFailure(Call<CardResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-                progressCardLoad.setVisibility(View.GONE);
-                layoutNoCard.setVisibility(View.VISIBLE);
-            }
-        });
+            // Все карты существуют, но все заблокированы
+            cardDisplayContainer.setVisibility(View.GONE);
+            layoutNoCard.setVisibility(View.GONE);
+            if (layoutAllCardsBlocked != null)
+                layoutAllCardsBlocked.setVisibility(View.VISIBLE);
+            return;
+        }
+        cardDisplayContainer.setVisibility(View.GONE);
+        layoutNoCard.setVisibility(View.VISIBLE);
+        if (layoutAllCardsBlocked != null)
+            layoutAllCardsBlocked.setVisibility(View.GONE);
+    }
+
+    private String formatCardNumber(String n) {
+        if (n == null || n.length() != 16) return n != null ? n : "";
+        return n.substring(0,4) + " " + n.substring(4,8) + " " + n.substring(8,12) + " " + n.substring(12);
     }
 
     private void showVirtualCard(CardResponse.CardData card) {
@@ -228,51 +309,45 @@ public class TopUpFragment extends Fragment {
     private static final String CARD_PREFS = "CardDataPrefs";
 
     private void issueCard() {
-        if (apiService == null) return;
+        if (getContext() == null) return;
         btnIssueCard.setEnabled(false);
-        btnIssueCard.setText("Выпускаем...");
 
-        apiService.issueCard().enqueue(new Callback<CardResponse>() {
-            @Override
-            public void onResponse(Call<CardResponse> call, Response<CardResponse> response) {
-                if (!isAdded() || getContext() == null) return;
-                btnIssueCard.setEnabled(true);
-                btnIssueCard.setText("Выпустить карту");
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    CardResponse.CardData card = response.body().getCard();
-                    if (card != null) {
-                        layoutNoCard.setVisibility(View.GONE);
-                        showVirtualCard(card);
-                        saveCardToSharedPrefs(card);
-                        Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    String msg = response.body() != null && response.body().getMessage() != null
-                            ? response.body().getMessage() : "Ошибка сервера";
-                    Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
-                }
-            }
-            @Override
-            public void onFailure(Call<CardResponse> call, Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-                btnIssueCard.setEnabled(true);
-                btnIssueCard.setText("Выпустить карту");
-                Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        android.content.SharedPreferences prefs = requireContext()
+                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE);
+        int count = prefs.getInt("card_count", 0);
+        String number = generateLocalCardNumber();
+        String expiry = generateLocalExpiry();
+        String cvv    = generateLocalCvv();
+
+        prefs.edit()
+                .putString("card_" + count + "_number",      number)
+                .putString("card_" + count + "_expiry",      expiry)
+                .putString("card_" + count + "_cvv",         cvv)
+                .putBoolean("card_" + count + "_blocked",    false)
+                .putString("card_" + count + "_custom_name", "")
+                .putInt("card_count", count + 1)
+                .apply();
+
+        Toast.makeText(getContext(), "✅ Карта выпущена!", Toast.LENGTH_SHORT).show();
+        btnIssueCard.setEnabled(true);
+        loadUserCard();
     }
 
-    private void saveCardToSharedPrefs(CardResponse.CardData card) {
-        if (getContext() == null || card.getCardNumber() == null) return;
-        android.content.SharedPreferences.Editor ed = getContext()
-                .getSharedPreferences(CARD_PREFS, android.content.Context.MODE_PRIVATE).edit();
-        ed.putBoolean("card_exists", true);
-        ed.putString("card_number", card.getCardNumber());
-        ed.putString("card_expiry", card.getExpiry());
-        ed.putString("card_cvv", card.getCvv() != null ? card.getCvv() : "");
-        ed.putBoolean("card_blocked", false);
-        ed.putString("card_custom_name", "Tumar карта");
-        ed.apply();
+    private String generateLocalCardNumber() {
+        StringBuilder sb = new StringBuilder("772233");
+        java.util.Random r = new java.util.Random();
+        for (int i = 0; i < 10; i++) sb.append(r.nextInt(10));
+        return sb.toString();
+    }
+
+    private String generateLocalExpiry() {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.YEAR, 3);
+        return new java.text.SimpleDateFormat("MM/yy", Locale.getDefault()).format(c.getTime());
+    }
+
+    private String generateLocalCvv() {
+        return String.valueOf(100 + new java.util.Random().nextInt(900));
     }
 
     private void attemptTopUp() {
@@ -322,10 +397,40 @@ public class TopUpFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     BigDecimal newBal = response.body().getNewBalance();
                     String newBalStr = newBal != null ? formatAmount(newBal) : "—";
-                    tvCurrentBalance.setText(newBalStr);
-                    etAmount.setText("");
-                    Toast.makeText(getContext(),
-                            "Баланс пополнен! Новый баланс: " + newBalStr, Toast.LENGTH_LONG).show();
+
+                    String amountStr = etAmount.getText() != null
+                            ? etAmount.getText().toString().trim() : "0";
+                    String cardLast4 = "";
+                    if (selectedMethod == Method.CARD && etCardNumber != null
+                            && etCardNumber.getText() != null) {
+                        String digits = etCardNumber.getText().toString().replaceAll("\\s", "");
+                        if (digits.length() >= 4) cardLast4 = digits.substring(digits.length() - 4);
+                    }
+                    String methodName = selectedMethod == Method.CARD
+                            ? "Банковская карта" : "Банковский перевод";
+
+                    // Format amount with spaces as thousands separator
+                    String formattedAmt;
+                    try {
+                        BigDecimal amt = new BigDecimal(amountStr);
+                        java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("ru"));
+                        fmt.setGroupingUsed(true);
+                        fmt.setMaximumFractionDigits(0);
+                        formattedAmt = fmt.format(amt.longValue());
+                    } catch (Exception ex) {
+                        formattedAmt = amountStr;
+                    }
+
+                    TopUpSuccessFragment successFragment = TopUpSuccessFragment.newInstance(
+                            formattedAmt, methodName, cardLast4, newBalStr);
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .setCustomAnimations(
+                                    R.anim.slide_up_enter, R.anim.fade_out,
+                                    R.anim.fade_in,        R.anim.fade_out)
+                            .replace(R.id.fragment_container, successFragment)
+                            .addToBackStack("topup_success")
+                            .commit();
                 } else {
                     String msg = response.body() != null && response.body().getMessage() != null
                             ? response.body().getMessage() : "Ошибка пополнения";

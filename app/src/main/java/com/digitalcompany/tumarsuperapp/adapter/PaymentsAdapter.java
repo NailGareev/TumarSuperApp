@@ -1,23 +1,16 @@
 package com.digitalcompany.tumarsuperapp.adapter;
 
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import com.digitalcompany.tumarsuperapp.PaymentsFragment;
 import com.digitalcompany.tumarsuperapp.R;
 
 import java.util.List;
@@ -36,15 +29,22 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
         public final String icon;
         public final String category;
         public final String logoUrl;
+        public final String phoneFormat;
 
         public Service(String name, String accountLabel, String accountHint,
                        String icon, String category, String logoUrl) {
+            this(name, accountLabel, accountHint, icon, category, logoUrl, "");
+        }
+
+        public Service(String name, String accountLabel, String accountHint,
+                       String icon, String category, String logoUrl, String phoneFormat) {
             this.name         = name;
             this.accountLabel = accountLabel;
             this.accountHint  = accountHint;
             this.icon         = icon;
             this.category     = category;
             this.logoUrl      = logoUrl;
+            this.phoneFormat  = phoneFormat;
         }
     }
 
@@ -72,52 +72,67 @@ public class PaymentsAdapter extends RecyclerView.Adapter<PaymentsAdapter.Servic
     public void onBindViewHolder(@NonNull ServiceVH holder, int position) {
         Service svc = items.get(position);
         holder.tvName.setText(svc.name);
-        holder.tvIcon.setText(svc.icon);
 
-        if (svc.logoUrl != null) {
-            Glide.with(holder.itemView)
-                    .load(svc.logoUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                    Target<Drawable> target, boolean isFirstResource) {
-                            holder.ivLogo.setVisibility(View.GONE);
-                            holder.flEmojiBg.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model,
-                                                       Target<Drawable> target, DataSource dataSource,
-                                                       boolean isFirstResource) {
-                            holder.flEmojiBg.setVisibility(View.GONE);
-                            holder.ivLogo.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    })
-                    .into(holder.ivLogo);
+        // Determine subtitle (country) based on service name
+        String country = getCountryLabel(svc.name, svc.category);
+        if (country != null && !country.isEmpty()) {
+            holder.tvSub.setText(country);
+            holder.tvSub.setVisibility(View.VISIBLE);
         } else {
-            holder.ivLogo.setVisibility(View.GONE);
-            holder.flEmojiBg.setVisibility(View.VISIBLE);
+            holder.tvSub.setVisibility(View.GONE);
+        }
+
+        // Apply accent colors via GradientDrawable
+        int accentColor  = PaymentsFragment.getAccentColor(svc.category);
+        int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000; // 10% alpha
+        int accentBorder = (accentColor & 0x00FFFFFF) | 0x47000000; // 28% alpha
+
+        float density = holder.itemView.getResources().getDisplayMetrics().density;
+
+        // Icon box
+        GradientDrawable iconBoxBg = new GradientDrawable();
+        iconBoxBg.setColor(accentLight);
+        iconBoxBg.setStroke((int)(1.5f * density), accentBorder);
+        iconBoxBg.setCornerRadius(12 * density);
+        holder.flSvcIconBox.setBackground(iconBoxBg);
+
+        // Set service icon
+        int iconRes = PaymentsFragment.getServiceIconRes(svc.name);
+        holder.ivSvcIcon.setImageResource(iconRes);
+        android.graphics.PorterDuffColorFilter cf = new android.graphics.PorterDuffColorFilter(accentColor, android.graphics.PorterDuff.Mode.SRC_IN);
+        holder.ivSvcIcon.setColorFilter(cf);
+
+        // Divider: show for all but last item
+        if (holder.divider != null) {
+            holder.divider.setVisibility(position < items.size() - 1 ? View.VISIBLE : View.GONE);
         }
 
         holder.itemView.setOnClickListener(v -> { if (listener != null) listener.onServiceClick(svc); });
     }
 
+    private String getCountryLabel(String name, String category) {
+        if (!"Мобильная связь".equals(category)) return null;
+        if (name.contains("KG") || name.contains("O!") || name.contains("MegaCom")) {
+            return "Кыргызстан";
+        }
+        return "Казахстан";
+    }
+
     @Override public int getItemCount() { return items.size(); }
 
     public static class ServiceVH extends RecyclerView.ViewHolder {
-        TextView tvName, tvIcon;
-        ImageView ivLogo;
-        FrameLayout flEmojiBg;
+        TextView tvName, tvSub;
+        FrameLayout flSvcIconBox;
+        android.widget.ImageView ivSvcIcon;
+        View divider;
 
         ServiceVH(View v) {
             super(v);
-            tvName    = v.findViewById(R.id.tv_service_name);
-            tvIcon    = v.findViewById(R.id.tv_service_icon);
-            ivLogo    = v.findViewById(R.id.iv_service_logo);
-            flEmojiBg = v.findViewById(R.id.fl_emoji_bg);
+            tvName       = v.findViewById(R.id.tv_svc_name);
+            tvSub        = v.findViewById(R.id.tv_svc_sub);
+            flSvcIconBox = v.findViewById(R.id.fl_svc_icon_box);
+            ivSvcIcon    = v.findViewById(R.id.iv_svc_icon);
+            divider      = v.findViewById(R.id.view_svc_divider);
         }
     }
 }

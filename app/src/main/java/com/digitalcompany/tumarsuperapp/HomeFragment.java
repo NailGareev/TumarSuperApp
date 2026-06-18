@@ -29,6 +29,7 @@ import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.CurrencyRate;
 import com.digitalcompany.tumarsuperapp.network.models.CurrencyRatesResponse;
+import com.digitalcompany.tumarsuperapp.network.models.PendingPickupResponse;
 import com.digitalcompany.tumarsuperapp.network.models.UserProfileResponse;
 
 import java.math.BigDecimal;
@@ -145,20 +146,35 @@ public class HomeFragment extends Fragment implements MenuProvider {
     @Override
     public void onResume() {
         super.onResume();
-        refreshMessagesCard();
+        loadPendingPickup();
     }
 
-    private void refreshMessagesCard() {
-        if (getContext() == null || cardMessages == null) return;
-        SharedPreferences prefs = getContext().getSharedPreferences(USER_PREFS_NAME, Context.MODE_PRIVATE);
-        String code = prefs.getString("market_delivery_code", null);
-        if (code != null && !code.isEmpty()) {
-            if (tvMessagesSubtitle != null)
-                tvMessagesSubtitle.setText("Код получения товара: " + code);
-            cardMessages.setVisibility(View.VISIBLE);
-        } else {
-            cardMessages.setVisibility(View.GONE);
-        }
+    private void loadPendingPickup() {
+        if (apiService == null || cardMessages == null || !isAdded()) return;
+        apiService.getPendingPickup().enqueue(new Callback<PendingPickupResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PendingPickupResponse> call,
+                                   @NonNull Response<PendingPickupResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess()
+                        && response.body().getPickupCode() != null) {
+                    String code = response.body().getPickupCode();
+                    if (tvMessagesSubtitle != null)
+                        tvMessagesSubtitle.setText("Код получения товара: " + code);
+                    cardMessages.setVisibility(View.VISIBLE);
+                } else {
+                    cardMessages.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PendingPickupResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Log.w(TAG, "Pending pickup check failed: " + t.getMessage());
+                cardMessages.setVisibility(View.GONE);
+            }
+        });
     }
 
     // ── Greeting ────────────────────────────────────────────────────────────────

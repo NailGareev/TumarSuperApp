@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.util.Date; // Или используйте String, если timestamp приходит как строка
 
-public class Transaction {
+public class Transaction implements java.io.Serializable {
 
     @SerializedName("id")
     private int id;
@@ -49,6 +49,19 @@ public class Transaction {
     @SerializedName("recipient_phone")
     private String recipientPhone;
 
+    @SerializedName("sender_avatar_url")
+    private String senderAvatarUrl;
+
+    @SerializedName("recipient_avatar_url")
+    private String recipientAvatarUrl;
+
+    // 'completed' or 'cancelled' — set when a market order is cancelled
+    @SerializedName("payment_status")
+    private String paymentStatus;
+
+    @SerializedName("market_ref")
+    private String marketRef;
+
     // Геттеры для доступа к полям (обязательны или сделайте поля public)
     public int getId() { return id; }
     public int getSenderId() { return senderId; }
@@ -64,6 +77,10 @@ public class Transaction {
     public String getRecipientFirstName() { return recipientFirstName; }
     public String getRecipientLastName() { return recipientLastName; }
     public String getRecipientPhone() { return recipientPhone; }
+    public String getSenderAvatarUrl() { return senderAvatarUrl; }
+    public String getRecipientAvatarUrl() { return recipientAvatarUrl; }
+    public String getPaymentStatus() { return paymentStatus != null ? paymentStatus : "completed"; }
+    public String getMarketRef() { return marketRef; }
 
     // toString() для отладки (опционально)
     @Override

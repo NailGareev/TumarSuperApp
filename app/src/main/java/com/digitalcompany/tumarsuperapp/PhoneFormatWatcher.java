@@ -2,19 +2,18 @@ package com.digitalcompany.tumarsuperapp;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-
-import com.google.android.material.textfield.TextInputEditText;
+import android.widget.EditText;
 
 /**
  * Formats a Kazakhstan phone number as +7 (XXX) XXX XX XX while typing.
- * Use {@link #raw(TextInputEditText)} to get the stripped +7XXXXXXXXXX value for API calls.
+ * Use {@link #raw(EditText)} to get the stripped +7XXXXXXXXXX value for API calls.
  */
 public class PhoneFormatWatcher implements TextWatcher {
 
-    private final TextInputEditText editText;
+    private final EditText editText;
     private boolean formatting;
 
-    public PhoneFormatWatcher(TextInputEditText editText) {
+    public PhoneFormatWatcher(EditText editText) {
         this.editText = editText;
     }
 
@@ -69,7 +68,7 @@ public class PhoneFormatWatcher implements TextWatcher {
     }
 
     /** Returns the raw +7XXXXXXXXXX value stripped of formatting. */
-    public static String raw(TextInputEditText et) {
+    public static String raw(EditText et) {
         String text = et.getText() != null ? et.getText().toString() : "";
         String digits = text.replaceAll("[^0-9]", "");
         if (digits.length() < 11) return text.replaceAll("[^+0-9]", "");
@@ -77,7 +76,7 @@ public class PhoneFormatWatcher implements TextWatcher {
     }
 
     /** Returns true when the field contains a full 11-digit KZ number (+7 + 10 digits). */
-    public static boolean isComplete(TextInputEditText et) {
+    public static boolean isComplete(EditText et) {
         return raw(et).length() == 12;
     }
 }

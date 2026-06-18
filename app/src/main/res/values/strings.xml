@@ -3,7 +3,9 @@
     <string name="title_home">Главная</string>
     <string name="title_promotions">Акции</string>
     <string name="title_profile">Профиль</string>
-    <string name="title_card">Карта</string> <string name="action_top_up">Пополнить</string>
+    <string name="title_card">Карта</string>
+    <string name="title_qr">QR</string>
+    <string name="action_top_up">Пополнить</string>
     <string name="action_history">История</string>
     <string name="action_transfer">Перевод</string>
     <string name="action_payments">Платежи</string>

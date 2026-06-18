@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="16dp"
+        android:background="#FAFAFA">
+
+        <FrameLayout
+            android:id="@+id/btn_add_fp_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_topup_back_btn"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/ic_arrow_back"
+                app:tint="@color/text_primary" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="Добавить отпечаток"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#E6E6E6" />
+
+    <!-- Progress steps bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <View
+            android:id="@+id/step_bar_1"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:layout_weight="1"
+            android:background="#6B21A8"
+            android:layout_marginEnd="6dp" />
+        <View
+            android:id="@+id/step_bar_2"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:layout_weight="1"
+            android:background="#6B21A8"
+            android:layout_marginEnd="6dp" />
+        <View
+            android:id="@+id/step_bar_3"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:layout_weight="1"
+            android:background="#E6E6E6" />
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="32dp">
+
+            <!-- Scanner animation rings -->
+            <FrameLayout
+                android:id="@+id/scanner_container"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_marginBottom="28dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <!-- Outer ring -->
+                <FrameLayout
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:background="@drawable/bg_bio_scanner_outer">
+
+                    <!-- Middle ring -->
+                    <FrameLayout
+                        android:layout_width="108dp"
+                        android:layout_height="108dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_bio_scanner_middle">
+
+                        <!-- Center button -->
+                        <FrameLayout
+                            android:layout_width="70dp"
+                            android:layout_height="70dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/bg_bio_scanner_center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="👆"
+                                android:textSize="30sp" />
+                        </FrameLayout>
+                    </FrameLayout>
+                </FrameLayout>
+
+                <!-- Accent dot top-right -->
+                <FrameLayout
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/bg_bio_scanner_center"
+                    android:elevation="2dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="✦"
+                        android:textSize="12sp"
+                        android:textColor="#FFFFFF" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Прикоснитесь к сканеру"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:gravity="center"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Instruction -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Несколько раз приложите палец к сенсору Touch ID, чтобы добавить отпечаток"
+                android:textSize="14sp"
+                android:textColor="#777777"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.5"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Progress dots (6 total) -->
+            <LinearLayout
+                android:id="@+id/dot_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="28dp">
+
+                <View android:id="@+id/dot_1"
+                    android:layout_width="10dp" android:layout_height="10dp"
+                    android:background="@drawable/bg_dot_active"
+                    android:layout_marginEnd="10dp" />
+                <View android:id="@+id/dot_2"
+                    android:layout_width="10dp" android:layout_height="10dp"
+                    android:background="@drawable/bg_dot_active"
+                    android:layout_marginEnd="10dp" />
+                <View android:id="@+id/dot_3"
+                    android:layout_width="10dp" android:layout_height="10dp"
+                    android:background="@drawable/bg_dot_active"
+                    android:layout_marginEnd="10dp" />
+                <View android:id="@+id/dot_4"
+                    android:layout_width="8dp" android:layout_height="8dp"
+                    android:background="@drawable/bg_dot_inactive"
+                    android:layout_marginEnd="10dp" />
+                <View android:id="@+id/dot_5"
+                    android:layout_width="8dp" android:layout_height="8dp"
+                    android:background="@drawable/bg_dot_inactive"
+                    android:layout_marginEnd="10dp" />
+                <View android:id="@+id/dot_6"
+                    android:layout_width="8dp" android:layout_height="8dp"
+                    android:background="@drawable/bg_dot_inactive" />
+            </LinearLayout>
+
+            <!-- Tips card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_menu_section_card"
+                android:padding="14dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Советы:"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#444444"
+                    android:layout_marginBottom="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+                    <View
+                        android:layout_width="5dp"
+                        android:layout_height="5dp"
+                        android:background="@drawable/bg_dot_purple"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Прикладывайте разные части пальца"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+                    <View
+                        android:layout_width="5dp"
+                        android:layout_height="5dp"
+                        android:background="@drawable/bg_dot_purple"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Убедитесь, что палец чистый и сухой"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <View
+                        android:layout_width="5dp"
+                        android:layout_height="5dp"
+                        android:background="@drawable/bg_dot_purple"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Держите телефон привычным способом"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Skip -->
+            <TextView
+                android:id="@+id/btn_skip_fingerprint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Пропустить →"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#777777"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:background="#FFFFFF">
+
+    <!-- Avatar -->
+    <TextView
+        android:id="@+id/tv_th_avatar"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:gravity="center"
+        android:text="A"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/bg_icon_circle_purple"
+        android:layout_marginEnd="12dp" />
+
+    <!-- Name + direction + desc -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_th_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Имя"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
+
+        <TextView
+            android:id="@+id/tv_th_direction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Исходящий перевод"
+            android:textSize="12sp"
+            android:textColor="#9E9E9E" />
+
+        <TextView
+            android:id="@+id/tv_th_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#BDBDBD"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Amount + time -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/tv_th_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="- 5 000 ₸"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#C62828" />
+
+        <TextView
+            android:id="@+id/tv_th_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="12:00"
+            android:textSize="11sp"
+            android:textColor="#BDBDBD"
+            android:gravity="end" />
+    </LinearLayout>
+
+</LinearLayout>

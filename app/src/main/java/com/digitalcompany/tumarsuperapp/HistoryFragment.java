@@ -7,13 +7,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +23,7 @@ import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.Transaction;
 import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
+import com.digitalcompany.tumarsuperapp.MiniBarChartView;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -47,27 +47,44 @@ public class HistoryFragment extends Fragment {
     private static final String USER_PREFS_NAME = "UserPrefs";
     private static final String KEY_USER_ID = "user_id";
 
+    // Category filter constants
+    private static final String CAT_ALL      = "ALL";
+    private static final String CAT_MARKET   = "MARKET";
+    private static final String CAT_TRANSFER = "TRANSFER";
+    private static final String CAT_PAYMENT  = "PAYMENT";
+    private static final String CAT_INCOME   = "INCOME";
+
     private RecyclerView rvTransactions;
     private HistoryAdapter historyAdapter;
     private ApiService apiService;
-    private ProgressBar progressBarHistory;
+    private View progressBarHistory;
     private View tvHistoryEmpty;
     private TextView tvSummaryIncome;
     private TextView tvSummaryExpense;
-    private CardView cardSummary;
+    private LinearLayout cardSummary;
+    private MiniBarChartView miniBarChart;
 
+    // Period chips
+    private TextView chipPeriod1w;
     private TextView chipPeriod1m;
     private TextView chipPeriod3m;
     private TextView chipPeriod6m;
     private TextView chipPeriod1y;
 
+    // Category chips
+    private TextView chipCatAll;
+    private TextView chipCatMarket;
+    private TextView chipCatTransfer;
+    private TextView chipCatPayment;
+    private TextView chipCatIncome;
+
     private List<Transaction> allTransactions = new ArrayList<>();
-    private int selectedPeriodMonths = 1;
+    private int selectedPeriodDays  = 30;
+    private String selectedCategory = CAT_ALL;
+    private String selectedType     = "ALL"; // ALL / EXPENSE / INCOME
     private int currentUserId = -1;
 
-    public HistoryFragment() {
-        // Required empty public constructor
-    }
+    public HistoryFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,20 +109,33 @@ public class HistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        rvTransactions    = view.findViewById(R.id.rv_transactions);
+        rvTransactions     = view.findViewById(R.id.rv_transactions);
         progressBarHistory = view.findViewById(R.id.progressBarHistory);
-        tvHistoryEmpty    = view.findViewById(R.id.tv_history_empty);
-        tvSummaryIncome   = view.findViewById(R.id.tv_summary_income);
-        tvSummaryExpense  = view.findViewById(R.id.tv_summary_expense);
-        cardSummary       = view.findViewById(R.id.card_summary);
+        tvHistoryEmpty     = view.findViewById(R.id.tv_history_empty);
+        tvSummaryIncome    = view.findViewById(R.id.tv_summary_income);
+        tvSummaryExpense   = view.findViewById(R.id.tv_summary_expense);
+        cardSummary        = view.findViewById(R.id.card_summary);
 
+        chipPeriod1w = view.findViewById(R.id.chip_period_1w);
         chipPeriod1m = view.findViewById(R.id.chip_period_1m);
         chipPeriod3m = view.findViewById(R.id.chip_period_3m);
         chipPeriod6m = view.findViewById(R.id.chip_period_6m);
         chipPeriod1y = view.findViewById(R.id.chip_period_1y);
 
+        chipCatAll      = view.findViewById(R.id.chip_cat_all);
+        chipCatMarket   = view.findViewById(R.id.chip_cat_market);
+        chipCatTransfer = view.findViewById(R.id.chip_cat_transfer);
+        chipCatPayment  = view.findViewById(R.id.chip_cat_payment);
+        chipCatIncome   = view.findViewById(R.id.chip_cat_income);
+        miniBarChart    = view.findViewById(R.id.mini_bar_chart);
+
+        view.findViewById(R.id.btn_history_back).setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+        view.findViewById(R.id.btn_history_filter).setOnClickListener(v -> openFilterSheet());
+
         setupRecyclerView();
-        setupChips();
+        setupPeriodChips();
+        setupCategoryChips();
         setupSummaryCard();
 
         if (apiService != null && historyAdapter != null) {
@@ -118,33 +148,82 @@ public class HistoryFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof MainActivity)
+            ((MainActivity) getActivity()).setSystemNavVisible(false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() instanceof MainActivity)
+            ((MainActivity) getActivity()).restoreNavBars();
+    }
+
     private void setupRecyclerView() {
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
         rvTransactions.setAdapter(historyAdapter);
+        rvTransactions.setNestedScrollingEnabled(false);
+        historyAdapter.setOnTransactionClickListener(tx -> {
+            if (!isAdded()) return;
+            TransactionDetailFragment detail =
+                    TransactionDetailFragment.newInstance(tx, currentUserId);
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, detail)
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
-    private void setupChips() {
-        chipPeriod1m.setOnClickListener(v -> selectPeriod(1));
-        chipPeriod3m.setOnClickListener(v -> selectPeriod(3));
-        chipPeriod6m.setOnClickListener(v -> selectPeriod(6));
-        chipPeriod1y.setOnClickListener(v -> selectPeriod(12));
+    private void setupPeriodChips() {
+        chipPeriod1w.setOnClickListener(v -> selectPeriod(7));
+        chipPeriod1m.setOnClickListener(v -> selectPeriod(30));
+        chipPeriod3m.setOnClickListener(v -> selectPeriod(90));
+        chipPeriod6m.setOnClickListener(v -> selectPeriod(180));
+        chipPeriod1y.setOnClickListener(v -> selectPeriod(365));
     }
 
-    private void selectPeriod(int months) {
-        selectedPeriodMonths = months;
-        updateChipVisuals();
-        applyFilter();
+    private void setupCategoryChips() {
+        chipCatAll.setOnClickListener(v      -> selectCategory(CAT_ALL));
+        chipCatMarket.setOnClickListener(v   -> selectCategory(CAT_MARKET));
+        chipCatTransfer.setOnClickListener(v -> selectCategory(CAT_TRANSFER));
+        chipCatPayment.setOnClickListener(v  -> selectCategory(CAT_PAYMENT));
+        chipCatIncome.setOnClickListener(v   -> selectCategory(CAT_INCOME));
     }
 
-    private void updateChipVisuals() {
-        // Reset all chips to inactive
-        setChipActive(chipPeriod1m, selectedPeriodMonths == 1);
-        setChipActive(chipPeriod3m, selectedPeriodMonths == 3);
-        setChipActive(chipPeriod6m, selectedPeriodMonths == 6);
-        setChipActive(chipPeriod1y, selectedPeriodMonths == 12);
+    private void selectPeriod(int days) {
+        selectedPeriodDays = days;
+        updatePeriodChipVisuals();
+        applyFilters();
+    }
+
+    private void selectCategory(String category) {
+        selectedCategory = category;
+        updateCategoryChipVisuals();
+        applyFilters();
+    }
+
+    private void updatePeriodChipVisuals() {
+        setChipActive(chipPeriod1w, selectedPeriodDays == 7);
+        setChipActive(chipPeriod1m, selectedPeriodDays == 30);
+        setChipActive(chipPeriod3m, selectedPeriodDays == 90);
+        setChipActive(chipPeriod6m, selectedPeriodDays == 180);
+        setChipActive(chipPeriod1y, selectedPeriodDays == 365);
+    }
+
+    private void updateCategoryChipVisuals() {
+        setChipActive(chipCatAll,      CAT_ALL.equals(selectedCategory));
+        setChipActive(chipCatMarket,   CAT_MARKET.equals(selectedCategory));
+        setChipActive(chipCatTransfer, CAT_TRANSFER.equals(selectedCategory));
+        setChipActive(chipCatPayment,  CAT_PAYMENT.equals(selectedCategory));
+        setChipActive(chipCatIncome,   CAT_INCOME.equals(selectedCategory));
     }
 
     private void setChipActive(TextView chip, boolean active) {
+        if (chip == null) return;
         if (active) {
             chip.setBackgroundResource(R.drawable.bg_chip_purple_active);
             chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
@@ -155,14 +234,15 @@ public class HistoryFragment extends Fragment {
     }
 
     private void setupSummaryCard() {
-        cardSummary.setOnClickListener(v -> showCategoryBreakdown());
+        if (cardSummary != null) {
+            cardSummary.setOnClickListener(v -> showCategoryBreakdown());
+        }
     }
 
     private void loadTransactionHistory() {
         showLoading(true);
         tvHistoryEmpty.setVisibility(View.GONE);
 
-        Log.d(TAG, "Запрос истории транзакций...");
         apiService.getTransactionHistory().enqueue(new Callback<TransactionHistoryResponse>() {
             @Override
             public void onResponse(Call<TransactionHistoryResponse> call,
@@ -170,21 +250,23 @@ public class HistoryFragment extends Fragment {
                 showLoading(false);
                 if (!isAdded() || getContext() == null) return;
 
-                if (response.isSuccessful() && response.body() != null) {
-                    TransactionHistoryResponse historyResponse = response.body();
-                    Log.d(TAG, "История успешно загружена. Success: " + historyResponse.isSuccess());
-                    if (historyResponse.isSuccess() && historyResponse.getTransactions() != null) {
-                        allTransactions = new ArrayList<>(historyResponse.getTransactions());
-                        Log.d(TAG, "Получено транзакций: " + allTransactions.size());
-                        applyFilter();
-                    } else {
-                        Log.w(TAG, "API вернул success=false при загрузке истории.");
-                        Toast.makeText(getContext(), "Не удалось загрузить историю", Toast.LENGTH_SHORT).show();
-                        showEmpty();
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().isSuccess()
+                        && response.body().getTransactions() != null) {
+                    allTransactions = new ArrayList<>(response.body().getTransactions());
+                    int marketCount = 0;
+                    for (Transaction t : allTransactions) {
+                        String type = t.getTransactionType();
+                        String desc = t.getDescription();
+                        if ("MARKET_REFUND".equals(type)
+                                || ("PAYMENT".equals(type) && desc != null && desc.contains("Tumar Market"))) {
+                            marketCount++;
+                        }
                     }
+                    Log.d(TAG, "Загружено транзакций: " + allTransactions.size() + ", из них Market: " + marketCount);
+                    applyFilters();
                 } else {
-                    Log.e(TAG, "Ошибка ответа сервера при загрузке истории: " + response.code());
-                    Toast.makeText(getContext(), "Ошибка сервера (" + response.code() + ")", Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "Не удалось загрузить историю: " + response.code());
                     showEmpty();
                 }
             }
@@ -193,24 +275,32 @@ public class HistoryFragment extends Fragment {
             public void onFailure(Call<TransactionHistoryResponse> call, Throwable t) {
                 showLoading(false);
                 if (!isAdded() || getContext() == null) return;
-                Log.e(TAG, "Ошибка сети при загрузке истории", t);
+                Log.e(TAG, "Ошибка сети", t);
                 Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 showEmpty();
             }
         });
     }
 
-    private void applyFilter() {
+    private void applyFilters() {
         if (!isAdded() || getContext() == null) return;
 
-        // Determine cutoff date: selectedPeriodMonths ago from now
         Calendar cutoff = Calendar.getInstance(TimeZone.getTimeZone("Asia/Almaty"));
-        cutoff.add(Calendar.MONTH, -selectedPeriodMonths);
+        cutoff.add(Calendar.DAY_OF_YEAR, -selectedPeriodDays);
         Date cutoffDate = cutoff.getTime();
 
-        List<Transaction> filtered = new ArrayList<>();
+        List<Transaction> periodFiltered = new ArrayList<>();
         for (Transaction t : allTransactions) {
-            if (t.getTimestamp() != null && !t.getTimestamp().before(cutoffDate)) {
+            // Include if within period OR if timestamp is missing (don't silently discard)
+            if (t.getTimestamp() == null || !t.getTimestamp().before(cutoffDate)) {
+                periodFiltered.add(t);
+            }
+        }
+
+        // Apply category filter
+        List<Transaction> filtered = new ArrayList<>();
+        for (Transaction t : periodFiltered) {
+            if (matchesCategory(t)) {
                 filtered.add(t);
             }
         }
@@ -225,11 +315,49 @@ public class HistoryFragment extends Fragment {
             historyAdapter.setItems(grouped);
         }
 
-        updateSummary(filtered);
+        updateSummary(periodFiltered); // summary always uses period filter (not category)
+    }
+
+    private boolean matchesCategory(Transaction t) {
+        String txType = t.getTransactionType();
+        boolean isIncoming = t.getRecipientId() == currentUserId;
+        boolean isCancelled = "cancelled".equals(t.getPaymentStatus());
+        boolean isMarketPayment = "PAYMENT".equals(txType)
+                && t.getDescription() != null
+                && t.getDescription().contains("Tumar Market");
+
+        // Type filter (ALL / EXPENSE / INCOME)
+        if ("EXPENSE".equals(selectedType)) {
+            if ("TOPUP".equals(txType)) return false;
+            if ("TRANSFER".equals(txType) && isIncoming) return false;
+            if ("MARKET_REFUND".equals(txType)) return false;
+            if (isCancelled) return false; // cancelled payments are not expenses
+        } else if ("INCOME".equals(selectedType)) {
+            if ("PAYMENT".equals(txType) && !isCancelled) return false;
+            if ("TRANSFER".equals(txType) && !isIncoming) return false;
+        }
+
+        // Category filter
+        if (CAT_ALL.equals(selectedCategory)) return true;
+        switch (selectedCategory) {
+            case CAT_MARKET:
+                if ("MARKET_REFUND".equals(txType)) return true;
+                return isMarketPayment; // includes cancelled market payments
+            case CAT_TRANSFER:
+                return "TRANSFER".equals(txType);
+            case CAT_PAYMENT:
+                return "PAYMENT".equals(txType) && !isMarketPayment;
+            case CAT_INCOME:
+                if ("TOPUP".equals(txType)) return true;
+                if ("MARKET_REFUND".equals(txType)) return true;
+                if ("TRANSFER".equals(txType)) return isIncoming;
+                return false;
+            default:
+                return true;
+        }
     }
 
     private List<Object> groupByDate(List<Transaction> filtered) {
-        // Sort descending by timestamp
         List<Transaction> sorted = new ArrayList<>(filtered);
         Collections.sort(sorted, (a, b) -> {
             if (a.getTimestamp() == null && b.getTimestamp() == null) return 0;
@@ -239,47 +367,70 @@ public class HistoryFragment extends Fragment {
         });
 
         TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
-        Calendar today = Calendar.getInstance(tz);
+        Calendar today     = Calendar.getInstance(tz);
         Calendar yesterday = Calendar.getInstance(tz);
         yesterday.add(Calendar.DAY_OF_YEAR, -1);
 
-        List<Object> result = new ArrayList<>();
-        String lastDateLabel = null;
-
-        SimpleDateFormat sameYearFmt = new SimpleDateFormat("d MMMM", new Locale("ru"));
-        sameYearFmt.setTimeZone(tz);
+        SimpleDateFormat sameYearFmt  = new SimpleDateFormat("d MMMM", new Locale("ru"));
         SimpleDateFormat otherYearFmt = new SimpleDateFormat("d MMMM yyyy", new Locale("ru"));
+        sameYearFmt.setTimeZone(tz);
         otherYearFmt.setTimeZone(tz);
 
-        for (Transaction t : sorted) {
-            if (t.getTimestamp() == null) {
-                if (lastDateLabel == null || !lastDateLabel.equals("")) {
-                    lastDateLabel = "";
-                    result.add("");
-                }
-                result.add(t);
-                continue;
-            }
+        List<Object> result = new ArrayList<>();
+        String lastDateLabel = null;
+        BigDecimal dayTotal  = BigDecimal.ZERO;
+        int groupStartIndex  = 0;
 
-            Calendar txCal = Calendar.getInstance(tz);
-            txCal.setTime(t.getTimestamp());
+        for (int i = 0; i < sorted.size(); i++) {
+            Transaction t = sorted.get(i);
 
             String label;
-            if (isSameDay(txCal, today)) {
-                label = "Сегодня";
-            } else if (isSameDay(txCal, yesterday)) {
-                label = "Вчера";
-            } else if (txCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)) {
-                label = sameYearFmt.format(t.getTimestamp());
+            if (t.getTimestamp() == null) {
+                label = "Без даты";
             } else {
-                label = otherYearFmt.format(t.getTimestamp());
+                Calendar txCal = Calendar.getInstance(tz);
+                txCal.setTime(t.getTimestamp());
+                if (isSameDay(txCal, today)) {
+                    label = "Сегодня";
+                } else if (isSameDay(txCal, yesterday)) {
+                    label = "Вчера";
+                } else if (txCal.get(Calendar.YEAR) == today.get(Calendar.YEAR)) {
+                    label = sameYearFmt.format(t.getTimestamp());
+                } else {
+                    label = otherYearFmt.format(t.getTimestamp());
+                }
             }
 
             if (!label.equals(lastDateLabel)) {
+                // Finalize previous group header with its total
+                if (lastDateLabel != null) {
+                    result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayTotal));
+                }
+                // Start new group
+                groupStartIndex = result.size();
+                result.add(new HistoryAdapter.DateGroup(label, BigDecimal.ZERO)); // placeholder
+                dayTotal = BigDecimal.ZERO;
                 lastDateLabel = label;
-                result.add(label);
             }
+
+            // Accumulate daily expense total (only outgoing, non-cancelled payments and transfers)
+            if (t.getAmount() != null) {
+                String type = t.getTransactionType();
+                boolean cancelled = "cancelled".equals(t.getPaymentStatus());
+                BigDecimal amt = t.getAmount().abs();
+                if ("PAYMENT".equals(type) && !cancelled) {
+                    dayTotal = dayTotal.add(amt);
+                } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
+                    dayTotal = dayTotal.add(amt);
+                }
+            }
+
             result.add(t);
+        }
+
+        // Finalize last group
+        if (lastDateLabel != null) {
+            result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayTotal));
         }
 
         return result;
@@ -299,36 +450,92 @@ public class HistoryFragment extends Fragment {
         for (Transaction t : filtered) {
             if (t.getAmount() == null) continue;
             String type = t.getTransactionType();
+            boolean isCancelled = "cancelled".equals(t.getPaymentStatus());
             BigDecimal amt = t.getAmount().abs();
 
-            if ("TOPUP".equals(type)) {
+            if ("TOPUP".equals(type) || "MARKET_REFUND".equals(type)) {
                 totalIncome = totalIncome.add(amt);
-            } else if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
+            } else if ("PAYMENT".equals(type) && !isCancelled) {
                 totalExpense = totalExpense.add(amt);
             } else if ("TRANSFER".equals(type)) {
-                boolean isIncoming = t.getRecipientId() == currentUserId;
-                boolean isOutgoing = t.getSenderId() == currentUserId;
-                if (isIncoming) {
-                    totalIncome = totalIncome.add(amt);
-                } else if (isOutgoing) {
-                    totalExpense = totalExpense.add(amt);
-                }
+                if (t.getRecipientId() == currentUserId) totalIncome  = totalIncome.add(amt);
+                else if (t.getSenderId() == currentUserId) totalExpense = totalExpense.add(amt);
             }
         }
 
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(new Locale("ru", "KZ"));
-        fmt.setCurrency(Currency.getInstance("KZT"));
+        NumberFormat fmt = NumberFormat.getInstance(new Locale("ru"));
+        fmt.setGroupingUsed(true);
         fmt.setMaximumFractionDigits(0);
-        fmt.setMinimumFractionDigits(0);
 
-        tvSummaryIncome.setText("+" + fmt.format(totalIncome));
-        tvSummaryExpense.setText("-" + fmt.format(totalExpense));
+        tvSummaryIncome.setText("+ " + fmt.format(totalIncome.longValue()) + " ₸");
+        tvSummaryExpense.setText("- " + fmt.format(totalExpense.longValue()) + " ₸");
+
+        updateBarChart(filtered);
+    }
+
+    private void updateBarChart(List<Transaction> periodFiltered) {
+        if (miniBarChart == null) return;
+
+        // Build last 7 weeks of expense totals
+        TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+        Calendar now = Calendar.getInstance(tz);
+        int numWeeks = 7;
+        float[] vals = new float[numWeeks];
+        String[] labels = new String[numWeeks];
+
+        SimpleDateFormat dayFmt = new SimpleDateFormat("d", new Locale("ru"));
+        dayFmt.setTimeZone(tz);
+
+        for (int w = 0; w < numWeeks; w++) {
+            Calendar weekStart = Calendar.getInstance(tz);
+            weekStart.setTime(now.getTime());
+            weekStart.add(Calendar.WEEK_OF_YEAR, -(numWeeks - 1 - w));
+            weekStart.set(Calendar.DAY_OF_WEEK, weekStart.getFirstDayOfWeek());
+            weekStart.set(Calendar.HOUR_OF_DAY, 0);
+            weekStart.set(Calendar.MINUTE, 0);
+            weekStart.set(Calendar.SECOND, 0);
+
+            Calendar weekEnd = Calendar.getInstance(tz);
+            weekEnd.setTime(weekStart.getTime());
+            weekEnd.add(Calendar.WEEK_OF_YEAR, 1);
+
+            BigDecimal weekExpense = BigDecimal.ZERO;
+            for (Transaction t : allTransactions) {
+                if (t.getTimestamp() == null || t.getAmount() == null) continue;
+                Date ts = t.getTimestamp();
+                if (!ts.before(weekStart.getTime()) && ts.before(weekEnd.getTime())) {
+                    String type = t.getTransactionType();
+                    if ("PAYMENT".equals(type)) {
+                        weekExpense = weekExpense.add(t.getAmount().abs());
+                    } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
+                        weekExpense = weekExpense.add(t.getAmount().abs());
+                    }
+                }
+            }
+            vals[w] = weekExpense.floatValue();
+            labels[w] = dayFmt.format(weekStart.getTime());
+        }
+
+        miniBarChart.setData(vals, labels);
+    }
+
+    private void openFilterSheet() {
+        HistoryFilterBottomSheet sheet = HistoryFilterBottomSheet.newInstance(
+                selectedPeriodDays, selectedCategory, selectedType);
+        sheet.setOnFilterApplyListener((days, cat, type) -> {
+            selectedPeriodDays = days;
+            selectedCategory   = cat;
+            selectedType       = type;
+            updatePeriodChipVisuals();
+            updateCategoryChipVisuals();
+            applyFilters();
+        });
+        sheet.show(getChildFragmentManager(), "HistoryFilter");
     }
 
     private void showCategoryBreakdown() {
-        // Rebuild breakdown from currently filtered list
         Calendar cutoff = Calendar.getInstance(TimeZone.getTimeZone("Asia/Almaty"));
-        cutoff.add(Calendar.MONTH, -selectedPeriodMonths);
+        cutoff.add(Calendar.DAY_OF_YEAR, -selectedPeriodDays);
         Date cutoffDate = cutoff.getTime();
 
         List<Transaction> filtered = new ArrayList<>();
@@ -338,45 +545,42 @@ public class HistoryFragment extends Fragment {
             }
         }
 
-        BigDecimal topupTotal       = BigDecimal.ZERO;
-        int        topupCount       = 0;
-        BigDecimal paymentTotal     = BigDecimal.ZERO;
-        int        paymentCount     = 0;
-        BigDecimal transferOutTotal = BigDecimal.ZERO;
-        int        transferOutCount = 0;
-        BigDecimal transferInTotal  = BigDecimal.ZERO;
-        int        transferInCount  = 0;
+        BigDecimal topupTotal = BigDecimal.ZERO; int topupCount = 0;
+        BigDecimal payTotal   = BigDecimal.ZERO; int payCount   = 0;
+        BigDecimal outTotal   = BigDecimal.ZERO; int outCount   = 0;
+        BigDecimal inTotal    = BigDecimal.ZERO; int inCount    = 0;
 
         for (Transaction t : filtered) {
             if (t.getAmount() == null) continue;
-            String type = t.getTransactionType();
             BigDecimal amt = t.getAmount().abs();
-
+            String type = t.getTransactionType();
             if ("TOPUP".equals(type)) {
-                topupTotal = topupTotal.add(amt);
-                topupCount++;
+                topupTotal = topupTotal.add(amt); topupCount++;
             } else if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
-                paymentTotal = paymentTotal.add(amt);
-                paymentCount++;
+                payTotal = payTotal.add(amt); payCount++;
             } else if ("TRANSFER".equals(type)) {
-                boolean isIncoming = t.getRecipientId() == currentUserId;
-                boolean isOutgoing = t.getSenderId() == currentUserId;
-                if (isIncoming) {
-                    transferInTotal = transferInTotal.add(amt);
-                    transferInCount++;
-                } else if (isOutgoing) {
-                    transferOutTotal = transferOutTotal.add(amt);
-                    transferOutCount++;
-                }
+                if (t.getRecipientId() == currentUserId) { inTotal = inTotal.add(amt); inCount++; }
+                else if (t.getSenderId() == currentUserId) { outTotal = outTotal.add(amt); outCount++; }
             }
         }
 
-        CategoryBreakdownBottomSheet sheet = CategoryBreakdownBottomSheet.newInstance(
-                topupTotal, topupCount,
-                paymentTotal, paymentCount,
-                transferOutTotal, transferOutCount,
-                transferInTotal, transferInCount);
-        sheet.show(getChildFragmentManager(), "CategoryBreakdown");
+        String periodLabel = periodDaysToLabel(selectedPeriodDays);
+        CategoryHistoryFragment cat = CategoryHistoryFragment.newInstance(
+                topupTotal, topupCount, payTotal, payCount,
+                outTotal, outCount, inTotal, inCount, periodLabel);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, cat)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private String periodDaysToLabel(int days) {
+        if (days == 7)   return "1 неделя";
+        if (days == 30)  return "1 месяц";
+        if (days == 90)  return "3 месяца";
+        if (days == 180) return "6 месяцев";
+        return "1 год";
     }
 
     private void showEmpty() {
@@ -385,11 +589,9 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showLoading(boolean isLoading) {
-        if (progressBarHistory != null) {
+        if (progressBarHistory != null)
             progressBarHistory.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        }
-        if (rvTransactions != null) {
+        if (rvTransactions != null)
             rvTransactions.setVisibility(isLoading ? View.GONE : View.VISIBLE);
-        }
     }
 }

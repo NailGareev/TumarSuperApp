@@ -7,50 +7,43 @@
     android:orientation="vertical"
     android:background="@color/app_bg">
 
-    <!-- Header -->
+    <!-- Header — blue gradient -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="130dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:background="@drawable/bg_auth_header">
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:background="@drawable/bg_travel_train_header">
 
-        <ImageView
+        <FrameLayout
             android:id="@+id/btn_train_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_arrow_back"
-            android:tint="#FFFFFF"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_travel_header_btn"
             android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="@null" />
+            android:focusable="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="←"
+                android:textColor="#CCFFFFFF"
+                android:textSize="18sp" />
+        </FrameLayout>
 
-        <LinearLayout
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginEnd="40dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🚆"
-                android:textSize="32sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="ЖД Билеты"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:text="🚆  ЖД Билеты"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Form -->

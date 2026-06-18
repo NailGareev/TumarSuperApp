@@ -292,7 +292,7 @@ app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
     try {
         connection = await pool.getConnection();
         const [rows] = await connection.execute(
-            'SELECT first_name, last_name FROM users WHERE phone = ? LIMIT 1',
+            'SELECT first_name, last_name, avatar_url FROM users WHERE phone = ? LIMIT 1',
             [phone]
         );
         if (rows.length === 0) {
@@ -302,7 +302,8 @@ app.get('/api/lookup-phone', authenticateToken, async (req, res) => {
         res.status(200).json({
             success: true,
             firstName: user.first_name,
-            lastNameInitial: user.last_name ? user.last_name.charAt(0).toUpperCase() + '.' : ''
+            lastNameInitial: user.last_name ? user.last_name.charAt(0).toUpperCase() + '.' : '',
+            avatarUrl: user.avatar_url || null
         });
     } catch (error) {
         console.error('Error during phone lookup:', error);
@@ -393,7 +394,7 @@ app.post('/api/transfer', authenticateToken, async (req, res) => {
 
         // 6. Записываем транзакцию в историю
         const transferDesc = (description && description.trim()) ? description.trim().substring(0, 200) : null;
-        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, ?, ?, ?, ?, ?)';
+        const transactionSql = 'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())';
         await connection.execute(transactionSql, [senderId, recipientId, parsedAmount, senderCurrency, 'TRANSFER', transferDesc]);
         console.log(`Transaction recorded: ${senderId} -> ${recipientId}, Amount: ${parsedAmount} ${senderCurrency}`);
 
@@ -429,12 +430,16 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
             SELECT
                 t.id, t.sender_id, t.recipient_id, t.amount, t.currency,
                 t.transaction_type, t.description, t.timestamp,
+                IFNULL(t.status, 'completed')    AS payment_status,
+                t.market_ref,
                 sender.first_name    AS sender_first_name,
                 sender.last_name     AS sender_last_name,
                 sender.phone         AS sender_phone,
+                sender.avatar_url    AS sender_avatar_url,
                 recipient.first_name AS recipient_first_name,
                 recipient.last_name  AS recipient_last_name,
-                recipient.phone      AS recipient_phone
+                recipient.phone      AS recipient_phone,
+                recipient.avatar_url AS recipient_avatar_url
             FROM transactions t
             LEFT JOIN users sender    ON t.sender_id    = sender.id
             LEFT JOIN users recipient ON t.recipient_id = recipient.id
@@ -495,7 +500,7 @@ app.post('/api/pay', authenticateToken, async (req, res) => {
 
         const description = `${service}: ${accountNumber}`;
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, NULL, ?, ?, ?, ?, NOW())',
             [userId, parsedAmount, balances[0].currency || 'KZT', 'PAYMENT', description]
         );
 
@@ -544,8 +549,16 @@ app.post('/api/topup', authenticateToken, async (req, res) => {
         }
 
         const [rows] = await connection.execute(
-            'SELECT balance FROM balances WHERE user_id = ?',
+            'SELECT balance, currency FROM balances WHERE user_id = ?',
             [userId]
+        );
+
+        const currency = (rows[0].currency || 'KZT').toUpperCase();
+        await connection.execute(
+            `INSERT INTO transactions
+                (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp)
+             VALUES (NULL, ?, ?, ?, 'TOPUP', 'Пополнение баланса', NOW())`,
+            [userId, parsedAmount, currency]
         );
 
         await connection.commit();
@@ -705,12 +718,14 @@ app.post('/api/market/pay', authenticateToken, async (req, res) => {
             'UPDATE balances SET balance = balance - ?, updated_at = NOW() WHERE user_id = ?',
             [parsedAmount, userId]);
 
+        // Generate orderRef before INSERT so it can be stored as market_ref in the transaction
+        const orderRef = 'TM' + Date.now().toString().slice(-8);
+
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (?, NULL, ?, ?, ?, ?)',
-            [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market']);
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, market_ref, status, timestamp) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, NOW())',
+            [userId, parsedAmount, balRows[0].currency || 'KZT', 'PAYMENT', 'Покупка в Tumar Market', orderRef, 'completed']);
 
         await ensureMarketPurchasesTable(connection);
-        const orderRef = 'TM' + Date.now().toString().slice(-8);
         await connection.execute(
             'INSERT INTO market_purchases (user_id, order_ref, amount, items_json, address) VALUES (?, ?, ?, ?, ?)',
             [userId, orderRef, parsedAmount, items || '[]', address.trim()]);
@@ -777,7 +792,15 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
         const amount = parseFloat(rows[0].amount);
 
         await connection.execute(
-            'UPDATE market_purchases SET status = "cancelled" WHERE id = ?', [rows[0].id]);
+            'UPDATE market_purchases SET status = "cancelled", pickup_code = NULL WHERE id = ?', [rows[0].id]);
+
+        // Mark the original PAYMENT transaction as cancelled
+        try {
+            await connection.execute(
+                `UPDATE transactions SET status = 'cancelled', description = 'Покупка отменена — Tumar Market'
+                 WHERE market_ref = ? AND sender_id = ? AND status = 'completed'`,
+                [order_ref, userId]);
+        } catch (e) { /* status/market_ref columns may not exist on old schema */ }
 
         const [balRows] = await connection.execute(
             'SELECT currency FROM balances WHERE user_id = ?', [userId]);
@@ -788,8 +811,8 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
             [amount, userId]);
 
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
-            [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market']);
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, status, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, ?, NOW())',
+            [userId, amount, currency, 'MARKET_REFUND', 'Возврат — Tumar Market', 'completed']);
 
         await connection.commit();
         res.json({ success: true, refunded: amount });
@@ -797,6 +820,92 @@ app.post('/api/market/cancel', authenticateToken, async (req, res) => {
         if (connection) await connection.rollback();
         console.error('Market cancel error:', err);
         res.status(500).json({ success: false, message: 'Ошибка при отмене' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === POST /api/market/seller/dispatch — Seller sends delivery code to buyer ===
+// Called by the Tumar Market seller panel when the order is dispatched.
+// Auth: seller_secret in body (shared secret for seller panel integration).
+app.post('/api/market/seller/dispatch', async (req, res) => {
+    const { order_ref, seller_secret } = req.body;
+    if (seller_secret !== (process.env.SELLER_SECRET || 'tumar_seller_2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!order_ref) {
+        return res.status(400).json({ success: false, message: 'order_ref required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            'SELECT id, status FROM market_purchases WHERE order_ref = ?', [order_ref]);
+        if (!rows.length) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (rows[0].status === 'cancelled') {
+            return res.status(400).json({ success: false, message: 'Order is cancelled' });
+        }
+        // pickup_code = orderRef itself (shown to seller at the counter)
+        await connection.execute(
+            `UPDATE market_purchases SET status = 'shipping', pickup_code = ? WHERE id = ?`,
+            [order_ref, rows[0].id]);
+        console.log(`Seller dispatched order ${order_ref} — pickup code set`);
+        res.json({ success: true, pickup_code: order_ref });
+    } catch (err) {
+        console.error('Seller dispatch error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === POST /api/market/seller/confirm-delivery — Seller confirms the buyer received the goods ===
+app.post('/api/market/seller/confirm-delivery', async (req, res) => {
+    const { order_ref, seller_secret } = req.body;
+    if (seller_secret !== (process.env.SELLER_SECRET || 'tumar_seller_2024')) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    if (!order_ref) {
+        return res.status(400).json({ success: false, message: 'order_ref required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        await connection.execute(
+            `UPDATE market_purchases SET status = 'delivered', pickup_code = NULL WHERE order_ref = ?`,
+            [order_ref]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Confirm delivery error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// === GET /api/market/pending-pickup — Returns active delivery code for the buyer ===
+// HomeFragment calls this on resume to know if a pickup code is ready.
+app.get('/api/market/pending-pickup', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureMarketPurchasesTable(connection);
+        const [rows] = await connection.execute(
+            `SELECT order_ref, pickup_code, amount FROM market_purchases
+             WHERE user_id = ? AND status = 'shipping' AND pickup_code IS NOT NULL
+             ORDER BY created_at DESC LIMIT 1`,
+            [userId]);
+        if (rows.length) {
+            res.json({ success: true, pickup_code: rows[0].pickup_code, order_ref: rows[0].order_ref, amount: rows[0].amount });
+        } else {
+            res.json({ success: true, pickup_code: null });
+        }
+    } catch (err) {
+        console.error('Pending pickup error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка' });
     } finally {
         if (connection) connection.release();
     }
@@ -834,7 +943,7 @@ app.post('/api/market/return/process-refund', async (req, res) => {
             'UPDATE balances SET balance = balance + ?, updated_at = NOW() WHERE user_id = ?',
             [parsedAmount, buyerId]);
         await connection.execute(
-            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description) VALUES (NULL, ?, ?, ?, ?, ?)',
+            'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (NULL, ?, ?, ?, ?, ?, NOW())',
             [buyerId, parsedAmount, currency, 'MARKET_REFUND', 'Возврат товара — Tumar Market']);
 
         await connection.commit();
@@ -1010,6 +1119,218 @@ function scheduleDailyRateUpdate() {
     console.log(`Next NBK rate update scheduled in ${Math.round(msLeft / 60000)} min`);
 }
 
+// ─── SMS / CHAT ──────────────────────────────────────────────────────────────
+
+async function ensureSmsTable(conn) {
+    await conn.execute(`
+        CREATE TABLE IF NOT EXISTS sms (
+            id          INT AUTO_INCREMENT PRIMARY KEY,
+            sender_id   INT NOT NULL,
+            receiver_id INT NOT NULL,
+            message     TEXT NOT NULL,
+            is_read     TINYINT(1) DEFAULT 0,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (sender_id)   REFERENCES users(id),
+            FOREIGN KEY (receiver_id) REFERENCES users(id)
+        )
+    `);
+}
+
+// GET /api/chat/conversations — список чатов (группировка по собеседнику)
+app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        const [transferPeers] = await connection.execute(`
+            SELECT DISTINCT
+                CASE WHEN sender_id = ? THEN recipient_id ELSE sender_id END AS peer_id
+            FROM transactions
+            WHERE (sender_id = ? OR recipient_id = ?) AND transaction_type = 'TRANSFER'
+        `, [userId, userId, userId]);
+
+        let smsPeers = [];
+        try {
+            [smsPeers] = await connection.execute(`
+                SELECT DISTINCT
+                    CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS peer_id
+                FROM sms WHERE sender_id = ? OR receiver_id = ?
+            `, [userId, userId, userId]);
+        } catch (e) { /* empty */ }
+
+        const peerSet = new Set();
+        [...transferPeers, ...smsPeers].forEach(r => { if (r.peer_id) peerSet.add(r.peer_id); });
+
+        if (peerSet.size === 0) return res.json({ success: true, conversations: [] });
+
+        const conversations = [];
+        for (const peerId of peerSet) {
+            const [userRows] = await connection.execute(
+                'SELECT id, first_name, last_name, phone FROM users WHERE id = ?', [peerId]);
+            if (!userRows.length) continue;
+            const peer = userRows[0];
+
+            const [lastTransfer] = await connection.execute(`
+                SELECT amount, description, timestamp, sender_id FROM transactions
+                WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+                  AND transaction_type = 'TRANSFER'
+                ORDER BY timestamp DESC LIMIT 1
+            `, [userId, peerId, peerId, userId]);
+
+            let lastSms = [], unreadRows = [{ cnt: 0 }];
+            try {
+                [lastSms] = await connection.execute(`
+                    SELECT message, created_at, sender_id FROM sms
+                    WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+                    ORDER BY created_at DESC LIMIT 1
+                `, [userId, peerId, peerId, userId]);
+                [unreadRows] = await connection.execute(`
+                    SELECT COUNT(*) AS cnt FROM sms
+                    WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
+                `, [peerId, userId]);
+            } catch (e) { /* empty */ }
+
+            const lt = lastTransfer.length ? lastTransfer[0] : null;
+            const ls = lastSms.length ? lastSms[0] : null;
+            let lastMessage = null, lastTime = null, lastAmount = null, isIncoming = false;
+
+            if (lt && ls) {
+                if (new Date(ls.created_at) >= new Date(lt.timestamp)) {
+                    lastMessage = ls.message; lastTime = ls.created_at; isIncoming = ls.sender_id === peerId;
+                } else {
+                    lastMessage = lt.description || null; lastTime = lt.timestamp;
+                    lastAmount = lt.amount; isIncoming = lt.sender_id === peerId;
+                }
+            } else if (lt) {
+                lastMessage = lt.description || null; lastTime = lt.timestamp;
+                lastAmount = lt.amount; isIncoming = lt.sender_id === peerId;
+            } else if (ls) {
+                lastMessage = ls.message; lastTime = ls.created_at; isIncoming = ls.sender_id === peerId;
+            }
+
+            conversations.push({
+                other_user_id: peer.id,
+                other_first_name: peer.first_name,
+                other_last_name: peer.last_name,
+                other_phone: peer.phone,
+                last_message: lastMessage,
+                last_time: lastTime ? new Date(lastTime).toISOString() : null,
+                last_amount: lastAmount,
+                unread_count: unreadRows[0].cnt || 0,
+                is_incoming: isIncoming
+            });
+        }
+
+        conversations.sort((a, b) =>
+            (b.last_time ? new Date(b.last_time) : 0) - (a.last_time ? new Date(a.last_time) : 0));
+
+        res.json({ success: true, conversations });
+    } catch (err) {
+        console.error('Chat conversations error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка загрузки чатов' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// GET /api/chat/messages?withUserId=X — история переписки (переводы + смс)
+app.get('/api/chat/messages', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const otherId = parseInt(req.query.withUserId);
+    if (!otherId || isNaN(otherId)) {
+        return res.status(400).json({ success: false, message: 'withUserId required' });
+    }
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        try {
+            await connection.execute(
+                'UPDATE sms SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0',
+                [otherId, userId]);
+        } catch (e) { /* ignore */ }
+
+        const [transfers] = await connection.execute(`
+            SELECT id, sender_id, recipient_id AS receiver_id, amount, description, timestamp AS ts
+            FROM transactions
+            WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+              AND transaction_type = 'TRANSFER'
+        `, [userId, otherId, otherId, userId]);
+
+        let messages = [];
+        try {
+            [messages] = await connection.execute(`
+                SELECT id, sender_id, receiver_id, message, created_at AS ts FROM sms
+                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+            `, [userId, otherId, otherId, userId]);
+        } catch (e) { /* empty */ }
+
+        const items = [
+            ...transfers.map(t => ({
+                type: 'TRANSFER', id: t.id,
+                sender_id: t.sender_id, receiver_id: t.receiver_id,
+                amount: t.amount, description: t.description,
+                message: null, timestamp: t.ts
+            })),
+            ...messages.map(m => ({
+                type: 'SMS', id: m.id,
+                sender_id: m.sender_id, receiver_id: m.receiver_id,
+                amount: null, description: null,
+                message: m.message, timestamp: m.ts
+            }))
+        ];
+
+        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        res.json({ success: true, items });
+    } catch (err) {
+        console.error('Chat messages error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка загрузки сообщений' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// POST /api/chat/send — отправить текстовое сообщение в чате перевода
+app.post('/api/chat/send', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { receiverId, message } = req.body;
+    if (!receiverId || !message || !message.trim()) {
+        return res.status(400).json({ success: false, message: 'receiverId and message required' });
+    }
+    const trimmedMsg = message.trim().substring(0, 500);
+    const rId = parseInt(receiverId);
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await ensureSmsTable(connection);
+
+        const [userRows] = await connection.execute('SELECT id FROM users WHERE id = ?', [rId]);
+        if (!userRows.length) return res.status(404).json({ success: false, message: 'Получатель не найден' });
+
+        const [transfers] = await connection.execute(`
+            SELECT id FROM transactions
+            WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))
+              AND transaction_type = 'TRANSFER' LIMIT 1
+        `, [userId, rId, rId, userId]);
+        if (!transfers.length) {
+            return res.status(403).json({ success: false, message: 'Нет истории переводов с этим пользователем' });
+        }
+
+        const [result] = await connection.execute(
+            'INSERT INTO sms (sender_id, receiver_id, message) VALUES (?, ?, ?)',
+            [userId, rId, trimmedMsg]);
+        res.json({ success: true, message: 'Отправлено', id: result.insertId });
+    } catch (err) {
+        console.error('Chat send error:', err);
+        res.status(500).json({ success: false, message: 'Ошибка отправки' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
 // GET /api/promotions - Список активных акций (публичный)
 app.get('/api/promotions', async (req, res) => {
     let connection;
@@ -1044,10 +1365,36 @@ app.listen(port, async () => {
             );
         } catch (e) { /* already includes MARKET_REFUND */ }
 
+        // Allow NULL sender_id so MARKET_REFUND transactions (incoming refunds) can be stored
+        try {
+            await connection.execute(
+                `ALTER TABLE transactions MODIFY COLUMN sender_id INT(11) NULL DEFAULT NULL`
+            );
+            console.log('transactions.sender_id now allows NULL');
+        } catch (e) { /* already nullable */ }
+
+        // Add market_ref column to link a PAYMENT transaction to its market order
+        try {
+            await connection.execute(`ALTER TABLE transactions ADD COLUMN market_ref VARCHAR(50) NULL DEFAULT NULL`);
+        } catch (e) { /* already exists */ }
+
+        // Add status column to mark transactions as cancelled when an order is cancelled
+        try {
+            await connection.execute(`ALTER TABLE transactions ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'completed'`);
+        } catch (e) { /* already exists */ }
+
+        // Add pickup_code column to market_purchases — set by seller when dispatching order
+        try {
+            await connection.execute(`ALTER TABLE market_purchases ADD COLUMN pickup_code VARCHAR(50) NULL DEFAULT NULL`);
+        } catch (e) { /* table may not exist yet or column already exists */ }
+
         // Add avatar_url column to users table if missing
         try {
             await connection.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL COMMENT 'URL фото профиля'`);
         } catch (e) { /* already exists */ }
+
+        // Ensure sms table exists
+        try { await ensureSmsTable(connection); } catch (e) { /* ignore */ }
 
         // Create promotions table if not exists
         await connection.execute(`

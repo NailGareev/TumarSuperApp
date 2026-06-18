@@ -1,18 +1,26 @@
 package com.digitalcompany.tumarsuperapp.network;
 
 import android.content.Context;
+import android.util.Log;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
 
-    // !!! ВАЖНО: Убедитесь, что этот адрес доступен с вашего устройства/эмулятора !!!
-    // Эмулятор: http://10.0.2.2:3000/ (если сервер на localhost:3000)
-    // Физическое устройство: http://<IP-адрес вашего компьютера в сети>:3000/
-    public static final String BASE_URL = "http://10.0.2.2:3000/";
+    public static final String BASE_URL = "http://193.108.113.91:3000/";
 
     private static Retrofit retrofit = null;
     private static OkHttpClient okHttpClient = null; // Кэшируем OkHttpClient
@@ -45,11 +53,33 @@ public class ApiClient {
                 okHttpClient = httpClientBuilder.build();
             }
 
+            // Gson with ISO 8601 date parsing (mysql2 serializes timestamps as "2025-01-17T07:23:45.000Z")
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, type, ctx) -> {
+                        String s = json.getAsString();
+                        String[] formats = {
+                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                            "yyyy-MM-dd'T'HH:mm:ssZ"
+                        };
+                        for (String fmt : formats) {
+                            try {
+                                SimpleDateFormat sdf = new SimpleDateFormat(fmt, Locale.US);
+                                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                                return sdf.parse(s);
+                            } catch (Exception ignored) {}
+                        }
+                        Log.w("ApiClient", "Could not parse date: " + s);
+                        return null;
+                    })
+                    .create();
+
             // Создаем Retrofit клиент
             retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL) // Базовый URL вашего API
-                    .client(okHttpClient) // Используем настроенный OkHttpClient
-                    .addConverterFactory(GsonConverterFactory.create()) // Используем Gson для конвертации JSON
+                    .baseUrl(BASE_URL)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
         }
         return retrofit;

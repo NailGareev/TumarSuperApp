@@ -1,12 +1,17 @@
 package com.digitalcompany.tumarsuperapp;
 
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,12 +21,14 @@ import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.PayRequest;
 import com.digitalcompany.tumarsuperapp.network.models.PayResponse;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,11 +36,14 @@ import retrofit2.Response;
 
 public class PaymentBottomSheet extends BottomSheetDialogFragment {
 
-    private static final String ARG_NAME     = "name";
-    private static final String ARG_ICON     = "icon";
-    private static final String ARG_CATEGORY = "category";
-    private static final String ARG_LABEL    = "label";
-    private static final String ARG_HINT     = "hint";
+    private static final String ARG_NAME         = "name";
+    private static final String ARG_ICON         = "icon";
+    private static final String ARG_CATEGORY     = "category";
+    private static final String ARG_LABEL        = "label";
+    private static final String ARG_HINT         = "hint";
+    private static final String ARG_ACCENT_COLOR = "accent_color";
+    private static final String ARG_INITIAL_ACCOUNT = "initial_account";
+    private static final String ARG_PHONE_FORMAT = "phone_format";
 
     public interface OnPaymentSuccessListener {
         void onPaymentSuccess(BigDecimal newBalance);
@@ -42,7 +52,21 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
     private OnPaymentSuccessListener successListener;
 
     public static PaymentBottomSheet newInstance(String name, String icon, String category,
-                                                  String accountLabel, String accountHint) {
+                                                  String accountLabel, String accountHint,
+                                                  int accentColor) {
+        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, "", "");
+    }
+
+    public static PaymentBottomSheet newInstance(String name, String icon, String category,
+                                                 String accountLabel, String accountHint,
+                                                 int accentColor, String initialAccount) {
+        return newInstance(name, icon, category, accountLabel, accountHint, accentColor, initialAccount, "");
+    }
+
+    public static PaymentBottomSheet newInstance(String name, String icon, String category,
+                                                 String accountLabel, String accountHint,
+                                                 int accentColor, String initialAccount,
+                                                 String phoneFormat) {
         PaymentBottomSheet sheet = new PaymentBottomSheet();
         Bundle args = new Bundle();
         args.putString(ARG_NAME, name);
@@ -50,6 +74,9 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         args.putString(ARG_CATEGORY, category);
         args.putString(ARG_LABEL, accountLabel);
         args.putString(ARG_HINT, accountHint);
+        args.putInt(ARG_ACCENT_COLOR, accentColor);
+        args.putString(ARG_INITIAL_ACCOUNT, initialAccount);
+        args.putString(ARG_PHONE_FORMAT, phoneFormat);
         sheet.setArguments(args);
         return sheet;
     }
@@ -72,87 +99,291 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
         Bundle args = getArguments();
         if (args == null) { dismiss(); return; }
 
-        String name     = args.getString(ARG_NAME, "");
-        String icon     = args.getString(ARG_ICON, "💳");
-        String category = args.getString(ARG_CATEGORY, "");
-        String label    = args.getString(ARG_LABEL, "Номер счёта");
-        String hint     = args.getString(ARG_HINT, "");
+        String name        = args.getString(ARG_NAME, "");
+        String icon        = args.getString(ARG_ICON, "💳");
+        String category    = args.getString(ARG_CATEGORY, "");
+        String label       = args.getString(ARG_LABEL, "Номер счёта");
+        String hint        = args.getString(ARG_HINT, "");
+        int accentColor    = args.getInt(ARG_ACCENT_COLOR, 0xFF6200EE);
+        String initialAccount = args.getString(ARG_INITIAL_ACCOUNT, "");
+        String phoneFormat = args.getString(ARG_PHONE_FORMAT, "");
 
+        int accentLight  = (accentColor & 0x00FFFFFF) | 0x1A000000;
+        int accentBorder = (accentColor & 0x00FFFFFF) | 0x47000000;
+
+        float density = getResources().getDisplayMetrics().density;
+
+        // Service header
         view.<TextView>findViewById(R.id.tv_sheet_icon).setText(icon);
         view.<TextView>findViewById(R.id.tv_sheet_service_name).setText(name);
         view.<TextView>findViewById(R.id.tv_sheet_category).setText(category);
 
-        TextInputLayout tilAccount = view.findViewById(R.id.til_sheet_account);
-        tilAccount.setHint(label + (hint.isEmpty() ? "" : "  (" + hint + ")"));
+        // Color the icon box
+        FrameLayout flIconBox = view.findViewById(R.id.fl_sheet_icon_box);
+        if (flIconBox != null) {
+            GradientDrawable iconBg = new GradientDrawable();
+            iconBg.setColor(accentLight);
+            iconBg.setStroke((int)(1.5f * density), accentBorder);
+            iconBg.setCornerRadius(13 * density);
+            flIconBox.setBackground(iconBg);
+        }
+
+        // Account field label
+        TextView tvLabel = view.findViewById(R.id.tv_sheet_account_label);
+        if (tvLabel != null) {
+            tvLabel.setText(label + (hint.isEmpty() ? "" : "  (" + hint + ")"));
+        }
+
+        // Account and amount edit texts (visual ones in the new layout)
         TextInputEditText etAccount = view.findViewById(R.id.et_sheet_account);
+        TextInputEditText etAmount  = view.findViewById(R.id.et_sheet_amount);
 
-        TextInputLayout tilAmount = view.findViewById(R.id.til_sheet_amount);
-        TextInputEditText etAmount = view.findViewById(R.id.et_sheet_amount);
+        boolean isPhoneField = !phoneFormat.isEmpty() || hint.startsWith("+7") || hint.startsWith("+996");
+        boolean isKyrgyzPhone = "KG".equalsIgnoreCase(phoneFormat);
+        if (etAccount != null) {
+            if (isPhoneField) {
+                etAccount.setInputType(InputType.TYPE_CLASS_PHONE);
+                etAccount.addTextChangedListener(isKyrgyzPhone
+                        ? new KyrgyzPhoneFormatWatcher(etAccount)
+                        : new PhoneFormatWatcher(etAccount));
+            }
+            if (initialAccount != null && !initialAccount.trim().isEmpty()) {
+                etAccount.setText(initialAccount.trim());
+                if (etAccount.getText() != null) {
+                    etAccount.setSelection(etAccount.getText().length());
+                }
+            }
+        }
 
-        view.findViewById(R.id.chip_sheet_500).setOnClickListener(v -> etAmount.setText("500"));
-        view.findViewById(R.id.chip_sheet_1000).setOnClickListener(v -> etAmount.setText("1000"));
-        view.findViewById(R.id.chip_sheet_3000).setOnClickListener(v -> etAmount.setText("3000"));
-        view.findViewById(R.id.chip_sheet_5000).setOnClickListener(v -> etAmount.setText("5000"));
+        // Hidden TextInputLayouts (for error display compatibility)
+        TextInputLayout tilAccount = view.findViewById(R.id.til_sheet_account);
 
-        MaterialButton btnPay = view.findViewById(R.id.btn_sheet_pay);
+        // Error text view for amount
+        TextView tvAmountError = view.findViewById(R.id.tv_amount_error);
+
+        // CTA button text
+        TextView tvBtnPayText = view.findViewById(R.id.tv_btn_pay_text);
+
+        // Update button text as amount changes
+        if (etAmount != null && tvBtnPayText != null) {
+            etAmount.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+                @Override public void onTextChanged(CharSequence s, int st, int b, int c) {}
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String raw = s.toString().trim();
+                    if (raw.isEmpty()) {
+                        tvBtnPayText.setText("Оплатить ₸ 0");
+                    } else {
+                        try {
+                            BigDecimal val = new BigDecimal(raw);
+                            tvBtnPayText.setText("Оплатить ₸ " + formatAmount(val));
+                        } catch (NumberFormatException e) {
+                            tvBtnPayText.setText("Оплатить ₸ 0");
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chip clicks with active/inactive state toggle
+        int[] chipIds = {R.id.chip_sheet_500, R.id.chip_sheet_1000, R.id.chip_sheet_3000, R.id.chip_sheet_5000};
+        String[] chipValues = {"500", "1000", "3000", "5000"};
+        for (int i = 0; i < chipIds.length; i++) {
+            final String chipVal = chipValues[i];
+            view.findViewById(chipIds[i]).setOnClickListener(v -> {
+                setAmount(etAmount, tvBtnPayText, chipVal);
+                updateChipStates(view, chipIds, chipVal, chipValues);
+            });
+        }
+
+        LinearLayout btnPay = view.findViewById(R.id.btn_sheet_pay);
         ProgressBar progress = view.findViewById(R.id.progress_sheet);
 
         btnPay.setOnClickListener(v -> {
-            tilAccount.setError(null);
-            tilAmount.setError(null);
+            // Clear previous errors
+            if (tvAmountError != null) tvAmountError.setVisibility(View.GONE);
 
-            String account   = etAccount.getText() != null ? etAccount.getText().toString().trim() : "";
-            String amountStr = etAmount.getText() != null ? etAmount.getText().toString().trim() : "";
+            String accountInput = etAccount != null && etAccount.getText() != null ? etAccount.getText().toString().trim() : "";
+            String account = accountInput;
+            if (isPhoneField) {
+                account = isKyrgyzPhone
+                        ? KyrgyzPhoneFormatWatcher.raw(etAccount)
+                        : PhoneFormatWatcher.raw(etAccount);
+            }
+            String amountStr = etAmount  != null && etAmount.getText()  != null ? etAmount.getText().toString().trim()  : "";
 
-            if (account.isEmpty()) { tilAccount.setError("Введите " + label.toLowerCase()); etAccount.requestFocus(); return; }
-            if (amountStr.isEmpty()) { tilAmount.setError("Введите сумму"); etAmount.requestFocus(); return; }
+            if (account.isEmpty()) {
+                if (tilAccount != null) tilAccount.setError("Введите " + label.toLowerCase());
+                if (etAccount != null) etAccount.requestFocus();
+                return;
+            }
+            if (tilAccount != null) tilAccount.setError(null);
+
+            if (amountStr.isEmpty()) {
+                if (tvAmountError != null) { tvAmountError.setText("Введите сумму"); tvAmountError.setVisibility(View.VISIBLE); }
+                if (etAmount != null) etAmount.requestFocus();
+                return;
+            }
 
             BigDecimal amount;
             try {
                 amount = new BigDecimal(amountStr).setScale(2, RoundingMode.HALF_UP);
                 if (amount.compareTo(BigDecimal.ONE) < 0 || amount.compareTo(new BigDecimal("500000")) > 0) {
-                    tilAmount.setError("От 1 до 500 000 ₸");
-                    etAmount.requestFocus();
+                    if (tvAmountError != null) { tvAmountError.setText("От 1 до 500 000 ₸"); tvAmountError.setVisibility(View.VISIBLE); }
+                    if (etAmount != null) etAmount.requestFocus();
                     return;
                 }
             } catch (NumberFormatException e) {
-                tilAmount.setError("Некорректная сумма");
-                etAmount.requestFocus();
+                if (tvAmountError != null) { tvAmountError.setText("Некорректная сумма"); tvAmountError.setVisibility(View.VISIBLE); }
+                if (etAmount != null) etAmount.requestFocus();
                 return;
             }
 
             btnPay.setEnabled(false);
-            progress.setVisibility(View.VISIBLE);
+            if (progress != null) progress.setVisibility(View.VISIBLE);
+
+            final String finalAccount = account;
+            final BigDecimal finalAmount = amount;
+            final String formattedAmount = formatAmount(amount);
 
             ApiService api = ApiClient.getApiService(requireContext().getApplicationContext());
             api.pay(new PayRequest(name, account, amount)).enqueue(new Callback<PayResponse>() {
                 @Override
                 public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
                     if (!isAdded() || getContext() == null) return;
-                    progress.setVisibility(View.GONE);
+                    if (progress != null) progress.setVisibility(View.GONE);
                     btnPay.setEnabled(true);
 
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         BigDecimal newBal = response.body().getNewBalance();
-                        Toast.makeText(getContext(),
-                                "✅ Оплата прошла успешно!", Toast.LENGTH_LONG).show();
+                        String newBalStr = newBal != null ? formatAmount(newBal) : "—";
+
                         if (successListener != null) successListener.onPaymentSuccess(newBal);
+
+                        // Navigate to PaymentSuccessFragment
+                        String receiptNo = generateReceiptNo();
+                        PaymentSuccessFragment pf = PaymentSuccessFragment.newInstance(
+                                name, finalAccount, formattedAmount, category, newBalStr, accentColor, receiptNo);
                         dismiss();
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .setCustomAnimations(R.anim.slide_up_enter, R.anim.fade_out,
+                                        R.anim.fade_in, R.anim.fade_out)
+                                .replace(R.id.fragment_container, pf)
+                                .addToBackStack("pay_success")
+                                .commit();
                     } else {
                         String msg = response.body() != null && response.body().getMessage() != null
                                 ? response.body().getMessage() : "Ошибка сервера";
-                        Toast.makeText(getContext(), "Ошибка: " + msg, Toast.LENGTH_LONG).show();
+                        if (tvAmountError != null) { tvAmountError.setText("Ошибка: " + msg); tvAmountError.setVisibility(View.VISIBLE); }
                     }
                 }
 
                 @Override
                 public void onFailure(Call<PayResponse> call, Throwable t) {
                     if (!isAdded() || getContext() == null) return;
-                    progress.setVisibility(View.GONE);
+                    if (progress != null) progress.setVisibility(View.GONE);
                     btnPay.setEnabled(true);
-                    Toast.makeText(getContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    if (tvAmountError != null) { tvAmountError.setText("Ошибка сети: " + t.getMessage()); tvAmountError.setVisibility(View.VISIBLE); }
                 }
             });
         });
+    }
+
+    private void setAmount(TextInputEditText etAmount, TextView tvBtnPayText, String value) {
+        if (etAmount != null) {
+            etAmount.setText(value);
+            etAmount.setSelection(value.length());
+        }
+        if (tvBtnPayText != null) {
+            try {
+                BigDecimal val = new BigDecimal(value);
+                tvBtnPayText.setText("Оплатить ₸ " + formatAmount(val));
+            } catch (NumberFormatException e) {
+                tvBtnPayText.setText("Оплатить ₸ 0");
+            }
+        }
+    }
+
+    private void updateChipStates(View root, int[] chipIds, String selected, String[] chipValues) {
+        for (int i = 0; i < chipIds.length; i++) {
+            View chip = root.findViewById(chipIds[i]);
+            if (chip instanceof TextView) {
+                boolean isActive = chipValues[i].equals(selected);
+                chip.setBackground(root.getContext().getDrawable(
+                        isActive ? R.drawable.bg_pay_chip_country_active : R.drawable.bg_pay_chip_country));
+                ((TextView) chip).setTextColor(isActive ? 0xFFFFFFFF : 0xFF6200EE);
+            }
+        }
+    }
+
+    private static String generateReceiptNo() {
+        long ts = System.currentTimeMillis();
+        int suffix = (int) (ts % 900000) + 100000; // 6 digits
+        return "TXN-" + suffix;
+    }
+
+    private String formatAmount(BigDecimal amount) {
+        DecimalFormatSymbols sym = new DecimalFormatSymbols(Locale.getDefault());
+        sym.setGroupingSeparator(' ');
+        sym.setDecimalSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0.##", sym);
+        return df.format(amount);
+    }
+
+    private static class KyrgyzPhoneFormatWatcher implements TextWatcher {
+        private final TextInputEditText editText;
+        private boolean formatting;
+
+        KyrgyzPhoneFormatWatcher(TextInputEditText editText) {
+            this.editText = editText;
+        }
+
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (formatting) return;
+            formatting = true;
+
+            String digits = s.toString().replaceAll("[^0-9]", "");
+            if (digits.startsWith("996") && digits.length() >= 3) {
+                digits = digits.substring(3);
+            }
+            // KG local part is 9 digits: +996 XXX XXXXXX.
+            if (digits.length() > 9) {
+                digits = digits.substring(0, 9);
+            }
+
+            StringBuilder sb = new StringBuilder("+996");
+            if (!digits.isEmpty()) {
+                sb.append(" ").append(digits, 0, Math.min(3, digits.length()));
+            }
+            if (digits.length() > 3) {
+                sb.append(" ").append(digits, 3, Math.min(9, digits.length()));
+            }
+
+            s.replace(0, s.length(), sb.toString());
+            if (editText.getText() != null) {
+                editText.setSelection(editText.getText().length());
+            }
+
+            formatting = false;
+        }
+
+        static String raw(TextInputEditText et) {
+            String text = et != null && et.getText() != null ? et.getText().toString() : "";
+            String digits = text.replaceAll("[^0-9]", "");
+            if (digits.startsWith("996") && digits.length() >= 3) {
+                digits = digits.substring(3);
+            }
+            // KG local part is 9 digits: +996 XXX XXXXXX.
+            if (digits.length() > 9) {
+                digits = digits.substring(0, 9);
+            }
+            return "+996" + digits;
+        }
     }
 }
