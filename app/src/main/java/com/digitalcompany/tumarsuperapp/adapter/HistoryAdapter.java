@@ -274,7 +274,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvAmount.setTextColor(amountColor);
 
             // Format timestamp — compact: "d MMM, HH:mm"
-            TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+            TimeZone tz = TimeZone.getDefault();
             if (tx.getTimestamp() != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("d MMM, HH:mm", new Locale("ru"));
                 sdf.setTimeZone(tz);

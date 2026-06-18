@@ -285,7 +285,7 @@ public class HistoryFragment extends Fragment {
     private void applyFilters() {
         if (!isAdded() || getContext() == null) return;
 
-        Calendar cutoff = Calendar.getInstance(TimeZone.getTimeZone("Asia/Almaty"));
+        Calendar cutoff = Calendar.getInstance(TimeZone.getDefault());
         cutoff.add(Calendar.DAY_OF_YEAR, -selectedPeriodDays);
         Date cutoffDate = cutoff.getTime();
 
@@ -366,7 +366,7 @@ public class HistoryFragment extends Fragment {
             return b.getTimestamp().compareTo(a.getTimestamp());
         });
 
-        TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+        TimeZone tz = TimeZone.getDefault();
         Calendar today     = Calendar.getInstance(tz);
         Calendar yesterday = Calendar.getInstance(tz);
         yesterday.add(Calendar.DAY_OF_YEAR, -1);
@@ -477,7 +477,7 @@ public class HistoryFragment extends Fragment {
         if (miniBarChart == null) return;
 
         // Build last 7 weeks of expense totals
-        TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+        TimeZone tz = TimeZone.getDefault();
         Calendar now = Calendar.getInstance(tz);
         int numWeeks = 7;
         float[] vals = new float[numWeeks];
@@ -534,7 +534,7 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showCategoryBreakdown() {
-        Calendar cutoff = Calendar.getInstance(TimeZone.getTimeZone("Asia/Almaty"));
+        Calendar cutoff = Calendar.getInstance(TimeZone.getDefault());
         cutoff.add(Calendar.DAY_OF_YEAR, -selectedPeriodDays);
         Date cutoffDate = cutoff.getTime();
 

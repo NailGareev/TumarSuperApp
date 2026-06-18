@@ -173,7 +173,7 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
 
 
             // 3. Форматируем и устанавливаем дату/время
-            TimeZone tz = TimeZone.getTimeZone("Asia/Almaty");
+            TimeZone tz = TimeZone.getDefault();
             if ("MARKET_REFUND".equals(type)) {
                 String timeStr = "";
                 if (transaction.getTimestamp() != null) {

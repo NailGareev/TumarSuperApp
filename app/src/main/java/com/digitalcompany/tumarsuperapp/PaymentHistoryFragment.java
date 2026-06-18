@@ -446,7 +446,9 @@ public class PaymentHistoryFragment extends Fragment {
 
         if (t.getTimestamp() != null) {
             TextView tvTime = new TextView(requireContext());
-            tvTime.setText(new SimpleDateFormat("HH:mm", Locale.US).format(t.getTimestamp()));
+            SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.US);
+            timeFmt.setTimeZone(java.util.TimeZone.getDefault());
+            tvTime.setText(timeFmt.format(t.getTimestamp()));
             tvTime.setTextSize(10);
             tvTime.setTextColor(0xFFBBBBBB);
             LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(

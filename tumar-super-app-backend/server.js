@@ -1,8 +1,19 @@
 // server.js (ПОЛНАЯ ВЕРСИЯ с переводами и историей)
-process.env.TZ = 'Asia/Almaty';
+// Сервер работает в UTC; казахстанское время считается явно через ALMATY_OFFSET_MS там, где нужно
 
 // Загружаем переменные окружения из файла .env в корне проекта
 require('dotenv').config();
+
+// Алматы всегда UTC+5 (без перехода на летнее время)
+const ALMATY_OFFSET_MS = 5 * 60 * 60 * 1000;
+function getAlmatyDate() {
+    const d = new Date(Date.now() + ALMATY_OFFSET_MS);
+    return {
+        dd:   String(d.getUTCDate()).padStart(2, '0'),
+        mm:   String(d.getUTCMonth() + 1).padStart(2, '0'),
+        yyyy: d.getUTCFullYear()
+    };
+}
 
 // Подключаем необходимые модули
 const express = require('express');
@@ -1055,10 +1066,7 @@ function extractRate(xml, currCode) {
 
 // Загрузить курсы с nationalbank.kz и сохранить в БД
 async function fetchAndStoreRatesFromNBK() {
-    const now  = new Date();
-    const dd   = String(now.getDate()).padStart(2, '0');
-    const mm   = String(now.getMonth() + 1).padStart(2, '0');
-    const yyyy = now.getFullYear();
+    const { dd, mm, yyyy } = getAlmatyDate(); // дата по Алматы (UTC+5) — время публикации НБК
     const url  = `https://nationalbank.kz/rss/get_rates.cfm?fdate=${dd}.${mm}.${yyyy}`;
 
     return new Promise((resolve, reject) => {
@@ -1097,12 +1105,14 @@ async function fetchAndStoreRatesFromNBK() {
     });
 }
 
-// Планировщик: обновление каждый день в 00:00 (Asia/Almaty, задано через process.env.TZ)
+// Планировщик: обновление каждый день в 00:00 по Алматы (UTC+5, без DST)
 function scheduleDailyRateUpdate() {
-    const now       = new Date();
-    const midnight  = new Date(now);
-    midnight.setHours(24, 0, 5, 0); // следующая полночь + 5 сек запаса
-    const msLeft    = midnight - now;
+    const nowUtcMs     = Date.now();
+    const almatyMs     = nowUtcMs + ALMATY_OFFSET_MS;
+    const dayMs        = 24 * 60 * 60 * 1000;
+    // Следующая полночь по Алматы + 5 секунд запаса
+    const nextMidnightAlmaty = Math.ceil(almatyMs / dayMs) * dayMs + 5000;
+    const msLeft       = nextMidnightAlmaty - almatyMs;
 
     setTimeout(() => {
         fetchAndStoreRatesFromNBK().catch(err =>
