@@ -14,7 +14,11 @@ public class PayResponse {
     @SerializedName("newBalance")
     private BigDecimal newBalance;
 
+    @SerializedName("transactionId")
+    private int transactionId;
+
     public boolean isSuccess() { return success; }
     public String getMessage() { return message; }
     public BigDecimal getNewBalance() { return newBalance; }
+    public int getTransactionId() { return transactionId; }
 }

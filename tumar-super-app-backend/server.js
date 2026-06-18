@@ -510,15 +510,16 @@ app.post('/api/pay', authenticateToken, async (req, res) => {
         );
 
         const description = `${service}: ${accountNumber}`;
-        await connection.execute(
+        const [insertResult] = await connection.execute(
             'INSERT INTO transactions (sender_id, recipient_id, amount, currency, transaction_type, description, timestamp) VALUES (?, NULL, ?, ?, ?, ?, NOW())',
             [userId, parsedAmount, balances[0].currency || 'KZT', 'PAYMENT', description]
         );
+        const transactionId = insertResult.insertId;
 
         await connection.commit();
 
         const [rows] = await connection.execute('SELECT balance FROM balances WHERE user_id = ?', [userId]);
-        res.status(200).json({ success: true, message: 'Payment successful', newBalance: rows[0].balance });
+        res.status(200).json({ success: true, message: 'Payment successful', newBalance: rows[0].balance, transactionId });
 
     } catch (error) {
         if (connection) await connection.rollback();

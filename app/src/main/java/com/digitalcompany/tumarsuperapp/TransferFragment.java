@@ -603,6 +603,18 @@ public class TransferFragment extends Fragment {
                 if (!isAdded() || getContext() == null || call.isCanceled()) return;
                 if (cardLookupLoading != null) cardLookupLoading.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    // Check self-transfer
+                    String myPhone = requireActivity()
+                            .getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
+                            .getString("profile_phone", "").replaceAll("[^+\\d]", "");
+                    if (!myPhone.isEmpty() && myPhone.equals(phone)) {
+                        recipientFound = false;
+                        if (cardRecipientInfo != null) cardRecipientInfo.setVisibility(View.GONE);
+                        if (cardRecipientNotFound != null) cardRecipientNotFound.setVisibility(View.GONE);
+                        showInputError(etRecipientPhone, "Нельзя переводить самому себе");
+                        updateCtaLabel();
+                        return;
+                    }
                     recipientFound = true;
                     UserLookupResponse r = response.body();
                     if (tvRecipientName != null) tvRecipientName.setText(r.getDisplayName());
@@ -696,11 +708,18 @@ public class TransferFragment extends Fragment {
         String phone = PhoneFormatWatcher.raw(etRecipientPhone);
         boolean invalid = amountInvalid;
 
+        String myPhone = requireActivity()
+                .getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
+                .getString("profile_phone", "").replaceAll("[^+\\d]", "");
+
         if (phone.isEmpty()) {
             showInputError(etRecipientPhone, "Введите номер телефона получателя");
             invalid = true;
         } else if (!phone.startsWith("+7") || phone.length() != 12) {
             showInputError(etRecipientPhone, "Формат: +7XXXXXXXXXX");
+            invalid = true;
+        } else if (!myPhone.isEmpty() && myPhone.equals(phone)) {
+            showInputError(etRecipientPhone, "Нельзя переводить самому себе");
             invalid = true;
         } else if (!recipientFound) {
             showInputError(etRecipientPhone, "Клиент Tumar Bank не найден");

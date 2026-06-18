@@ -262,7 +262,8 @@ public class PaymentBottomSheet extends BottomSheetDialogFragment {
                         if (successListener != null) successListener.onPaymentSuccess(newBal);
 
                         // Navigate to PaymentSuccessFragment
-                        String receiptNo = generateReceiptNo();
+                        int txId = response.body().getTransactionId();
+                        String receiptNo = txId > 0 ? "TXN-" + txId : generateReceiptNo();
                         PaymentSuccessFragment pf = PaymentSuccessFragment.newInstance(
                                 name, finalAccount, formattedAmount, category, newBalStr, accentColor, receiptNo);
                         dismiss();
