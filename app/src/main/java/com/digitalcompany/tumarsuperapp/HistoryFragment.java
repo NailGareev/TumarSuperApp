@@ -133,7 +133,8 @@ public class HistoryFragment extends Fragment {
         chipCatTransfer = view.findViewById(R.id.chip_cat_transfer);
         chipCatPayment  = view.findViewById(R.id.chip_cat_payment);
         chipCatIncome   = view.findViewById(R.id.chip_cat_income);
-        miniBarChart    = view.findViewById(R.id.mini_bar_chart);
+        miniDonutChart  = view.findViewById(R.id.mini_donut_chart);
+        llDonutLegend   = view.findViewById(R.id.ll_donut_legend);
 
         view.findViewById(R.id.btn_history_back).setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack());
@@ -480,7 +481,6 @@ public class HistoryFragment extends Fragment {
         tvSummaryIncome.setText("+ " + fmt.format(totalIncome.longValue()) + " ₸");
         tvSummaryExpense.setText("- " + fmt.format(totalExpense.longValue()) + " ₸");
 
-        updateBarChart(filtered);
     }
 
     private void updateDonutChart(List<Transaction> periodFiltered) {
