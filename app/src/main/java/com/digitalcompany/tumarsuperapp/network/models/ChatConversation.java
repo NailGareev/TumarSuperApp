@@ -7,6 +7,7 @@ public class ChatConversation {
     @SerializedName("other_first_name") public String  otherFirstName;
     @SerializedName("other_last_name")  public String  otherLastName;
     @SerializedName("other_phone")      public String  otherPhone;
+    @SerializedName("other_avatar_url") public String  otherAvatarUrl;
     @SerializedName("last_message")     public String  lastMessage;
     @SerializedName("last_time")        public String  lastTime;
     @SerializedName("last_amount")      public Double  lastAmount;

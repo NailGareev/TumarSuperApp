@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -21,6 +22,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.ChatConversation;
@@ -405,10 +408,25 @@ public class NotificationsFragment extends Fragment {
             String name = buildName(c.otherFirstName, c.otherLastName, c.otherPhone);
             h.tvName.setText(name);
 
-            // Avatar
-            String initial = name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase();
-            h.tvAvatar.setText(initial);
-            tintAvatar(h.tvAvatar, c.otherUserId);
+            // Avatar: photo if available, otherwise colored initial
+            if (c.otherAvatarUrl != null && !c.otherAvatarUrl.isEmpty()) {
+                String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + c.otherAvatarUrl;
+                h.tvAvatar.setVisibility(View.GONE);
+                h.ivAvatar.setVisibility(View.VISIBLE);
+                Glide.with(fragment)
+                        .load(fullUrl)
+                        .circleCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .placeholder(R.drawable.ic_person_black_24dp)
+                        .error(R.drawable.ic_person_black_24dp)
+                        .into(h.ivAvatar);
+            } else {
+                h.ivAvatar.setVisibility(View.GONE);
+                h.tvAvatar.setVisibility(View.VISIBLE);
+                String initial = name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase();
+                h.tvAvatar.setText(initial);
+                tintAvatar(h.tvAvatar, c.otherUserId);
+            }
 
             // Last message preview
             if (c.lastMessage != null && !c.lastMessage.isEmpty()) {
@@ -503,9 +521,11 @@ public class NotificationsFragment extends Fragment {
 
         static class VH extends RecyclerView.ViewHolder {
             TextView tvAvatar, tvName, tvLastMsg, tvTime, tvAmount, tvUnread;
+            ImageView ivAvatar;
             VH(View v) {
                 super(v);
                 tvAvatar  = v.findViewById(R.id.tv_avatar_initial);
+                ivAvatar  = v.findViewById(R.id.iv_avatar_photo);
                 tvName    = v.findViewById(R.id.tv_chat_name);
                 tvLastMsg = v.findViewById(R.id.tv_chat_last_msg);
                 tvTime    = v.findViewById(R.id.tv_chat_time);

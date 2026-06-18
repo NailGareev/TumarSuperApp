@@ -1179,7 +1179,7 @@ app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
         const conversations = [];
         for (const peerId of peerSet) {
             const [userRows] = await connection.execute(
-                'SELECT id, first_name, last_name, phone FROM users WHERE id = ?', [peerId]);
+                'SELECT id, first_name, last_name, phone, avatar_url FROM users WHERE id = ?', [peerId]);
             if (!userRows.length) continue;
             const peer = userRows[0];
 
@@ -1226,6 +1226,7 @@ app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
                 other_first_name: peer.first_name,
                 other_last_name: peer.last_name,
                 other_phone: peer.phone,
+                other_avatar_url: peer.avatar_url || null,
                 last_message: lastMessage,
                 last_time: lastTime ? new Date(lastTime).toISOString() : null,
                 last_amount: lastAmount,

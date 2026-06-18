@@ -13,7 +13,7 @@
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Avatar circle with initial letter -->
+    <!-- Avatar circle with initial letter or photo -->
     <FrameLayout
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -29,6 +29,14 @@
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:background="@drawable/bg_icon_circle_purple" />
+
+        <ImageView
+            android:id="@+id/iv_avatar_photo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Фото" />
 
         <!-- Online indicator -->
         <View
