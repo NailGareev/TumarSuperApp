@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -74,12 +75,6 @@ public class TransferSuccessFragment extends Fragment {
         String amount = args != null ? args.getString(ARG_AMOUNT, "0") : "0";
         String method = args != null ? args.getString(ARG_METHOD, "PHONE") : "PHONE";
 
-        // Initials from recipient name
-        TextView tvInitials = view.findViewById(R.id.tv_success_initials);
-        if (tvInitials != null) {
-            tvInitials.setText(buildInitials(recipientName));
-        }
-
         // To label
         TextView tvToLabel = view.findViewById(R.id.tv_success_to_label);
         if (tvToLabel != null) {
@@ -115,6 +110,9 @@ public class TransferSuccessFragment extends Fragment {
         TextView tvBalance = view.findViewById(R.id.tv_success_balance);
         if (tvBalance != null) loadBalance(tvBalance);
 
+        // Animate content
+        playEnterAnimations(view);
+
         // Close button → pop back to transfer
         view.findViewById(R.id.btn_success_close).setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().popBackStack());
@@ -129,13 +127,41 @@ public class TransferSuccessFragment extends Fragment {
                         .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE));
     }
 
-    private String buildInitials(String name) {
-        if (name == null || name.isEmpty()) return "?";
-        String[] parts = name.trim().split("\\s+");
-        if (parts.length >= 2) {
-            return ("" + parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    private void playEnterAnimations(View root) {
+        View checkmark  = root.findViewById(R.id.checkmark_container);
+        View tvTitle    = root.findViewById(R.id.tv_success_title);
+        View tvToLabel  = root.findViewById(R.id.tv_success_to_label);
+        View tvAmount   = root.findViewById(R.id.tv_success_amount);
+        View detailsCard = root.findViewById(R.id.details_card);
+        View balanceRow = root.findViewById(R.id.balance_row);
+        View btnRepeat  = root.findViewById(R.id.btn_success_repeat);
+        View btnHome    = root.findViewById(R.id.btn_success_home);
+
+        View[] fadeViews = { tvTitle, tvToLabel, tvAmount, detailsCard, balanceRow, btnRepeat, btnHome };
+        for (View v : fadeViews) {
+            if (v != null) v.setAlpha(0f);
         }
-        return name.substring(0, Math.min(2, name.length())).toUpperCase();
+
+        if (checkmark != null) {
+            checkmark.setAlpha(0f);
+            checkmark.postDelayed(() -> {
+                if (!isAdded()) return;
+                checkmark.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.success_checkmark));
+                checkmark.setAlpha(1f);
+            }, 100);
+        }
+
+        long delay = 420;
+        for (View v : fadeViews) {
+            if (v == null) continue;
+            final long d = delay;
+            v.postDelayed(() -> {
+                if (!isAdded()) return;
+                v.setAlpha(1f);
+                v.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.fade_slide_up));
+            }, d);
+            delay += 80;
+        }
     }
 
     private void loadBalance(TextView tvBalance) {
