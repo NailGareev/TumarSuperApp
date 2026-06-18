@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,6 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.Transaction;
@@ -229,6 +232,25 @@ public class TransferHistoryFragment extends Fragment {
             gd.setColor(avatarColor);
             h.tvAvatar.setBackground(gd);
 
+            // Load real avatar photo if available, otherwise show colored initial
+            String avatarUrl = isSender ? t.getRecipientAvatarUrl() : t.getSenderAvatarUrl();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + avatarUrl;
+                h.ivAvatar.setVisibility(View.VISIBLE);
+                h.tvAvatar.setVisibility(View.INVISIBLE); // keep as background placeholder
+                Glide.with(h.itemView.getContext())
+                        .load(fullUrl)
+                        .circleCrop()
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .placeholder(h.tvAvatar.getBackground())
+                        .error(h.tvAvatar.getBackground())
+                        .into(h.ivAvatar);
+            } else {
+                h.ivAvatar.setVisibility(View.GONE);
+                h.tvAvatar.setVisibility(View.VISIBLE);
+            }
+
             // Direction label
             h.tvDirection.setText(isSender ? "Исходящий перевод" : "Входящий перевод");
             h.tvDirection.setTextColor(isSender ? 0xFF9E9E9E : 0xFF9E9E9E);
@@ -262,10 +284,12 @@ public class TransferHistoryFragment extends Fragment {
         }
 
         static class ItemVH extends RecyclerView.ViewHolder {
-            TextView tvAvatar, tvName, tvDirection, tvAmount, tvTime, tvDesc;
+            TextView  tvAvatar, tvName, tvDirection, tvAmount, tvTime, tvDesc;
+            ImageView ivAvatar;
             ItemVH(View v) {
                 super(v);
                 tvAvatar    = v.findViewById(R.id.tv_th_avatar);
+                ivAvatar    = v.findViewById(R.id.iv_th_avatar);
                 tvName      = v.findViewById(R.id.tv_th_name);
                 tvDirection = v.findViewById(R.id.tv_th_direction);
                 tvAmount    = v.findViewById(R.id.tv_th_amount);

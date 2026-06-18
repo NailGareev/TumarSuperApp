@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
@@ -180,13 +181,17 @@ public class ProfileFragment extends Fragment {
     private void loadAvatar(@Nullable String avatarUrl) {
         if (avatarUrl != null && !avatarUrl.isEmpty() && getContext() != null) {
             String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + avatarUrl;
+            // Remove XML tint (#80FFFFFF) so the actual photo is not washed out
+            imgAvatar.setImageTintList(null);
             Glide.with(requireContext())
                     .load(fullUrl)
                     .circleCrop()
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .placeholder(R.drawable.ic_person_black_24dp)
+                    .error(R.drawable.ic_person_black_24dp)
                     .into(imgAvatar);
-            imgAvatar.setColorFilter(null);
         }
     }
 

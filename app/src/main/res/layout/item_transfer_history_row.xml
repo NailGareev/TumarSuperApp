@@ -10,18 +10,32 @@
     android:paddingBottom="12dp"
     android:background="#FFFFFF">
 
-    <!-- Avatar -->
-    <TextView
-        android:id="@+id/tv_th_avatar"
+    <!-- Avatar: colored circle with initial (fallback) + photo overlay -->
+    <FrameLayout
         android:layout_width="42dp"
         android:layout_height="42dp"
-        android:gravity="center"
-        android:text="A"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/bg_icon_circle_purple"
-        android:layout_marginEnd="12dp" />
+        android:layout_marginEnd="12dp">
+
+        <TextView
+            android:id="@+id/tv_th_avatar"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="A"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_icon_circle_purple" />
+
+        <ImageView
+            android:id="@+id/iv_th_avatar"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:visibility="gone"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
 
     <!-- Name + direction + desc -->
     <LinearLayout
