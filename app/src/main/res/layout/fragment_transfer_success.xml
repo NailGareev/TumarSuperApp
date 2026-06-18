@@ -60,6 +60,7 @@
 
             <!-- Recipient avatar with green check -->
             <FrameLayout
+                android:id="@+id/checkmark_container"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 android:layout_marginBottom="20dp">
@@ -96,6 +97,7 @@
             </FrameLayout>
 
             <TextView
+                android:id="@+id/tv_success_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Перевод выполнен!"
@@ -128,6 +130,7 @@
 
             <!-- Details card -->
             <LinearLayout
+                android:id="@+id/details_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -245,6 +248,7 @@
 
             <!-- Balance remaining -->
             <LinearLayout
+                android:id="@+id/balance_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
