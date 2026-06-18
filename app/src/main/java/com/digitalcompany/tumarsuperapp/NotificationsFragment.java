@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,8 +21,6 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.ChatConversation;
@@ -118,25 +115,6 @@ public class NotificationsFragment extends Fragment {
         view.findViewById(R.id.btn_notifications_back).setOnClickListener(v -> {
             if (getActivity() != null) getActivity().onBackPressed();
         });
-
-        // Profile avatar in header
-        ImageView imgAvatar = view.findViewById(R.id.img_notif_avatar);
-        if (imgAvatar != null && getActivity() != null) {
-            SharedPreferences userPrefs = getActivity().getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE);
-            String avatarUrl = userPrefs.getString("profile_avatar_url", null);
-            if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                String fullUrl = ApiClient.BASE_URL.replaceAll("/$", "") + avatarUrl;
-                imgAvatar.setImageTintList(null);
-                Glide.with(this)
-                        .load(fullUrl)
-                        .circleCrop()
-                        .skipMemoryCache(true)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .placeholder(R.drawable.ic_person_black_24dp)
-                        .error(R.drawable.ic_person_black_24dp)
-                        .into(imgAvatar);
-            }
-        }
 
         // Tabs
         tabTransfers = view.findViewById(R.id.tab_transfers);
