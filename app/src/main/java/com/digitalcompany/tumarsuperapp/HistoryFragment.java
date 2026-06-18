@@ -23,9 +23,12 @@ import com.digitalcompany.tumarsuperapp.network.ApiClient;
 import com.digitalcompany.tumarsuperapp.network.ApiService;
 import com.digitalcompany.tumarsuperapp.network.models.Transaction;
 import com.digitalcompany.tumarsuperapp.network.models.TransactionHistoryResponse;
-import com.digitalcompany.tumarsuperapp.MiniBarChartView;
+
+import android.graphics.drawable.GradientDrawable;
+import android.view.Gravity;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,7 +65,8 @@ public class HistoryFragment extends Fragment {
     private TextView tvSummaryIncome;
     private TextView tvSummaryExpense;
     private LinearLayout cardSummary;
-    private MiniBarChartView miniBarChart;
+    private DonutChartView miniDonutChart;
+    private LinearLayout llDonutLegend;
 
     // Period chips
     private TextView chipPeriod1w;
@@ -114,7 +118,9 @@ public class HistoryFragment extends Fragment {
         tvHistoryEmpty     = view.findViewById(R.id.tv_history_empty);
         tvSummaryIncome    = view.findViewById(R.id.tv_summary_income);
         tvSummaryExpense   = view.findViewById(R.id.tv_summary_expense);
-        cardSummary        = view.findViewById(R.id.card_summary);
+        cardSummary    = view.findViewById(R.id.card_summary);
+        miniDonutChart = view.findViewById(R.id.mini_donut_chart);
+        llDonutLegend  = view.findViewById(R.id.ll_donut_legend);
 
         chipPeriod1w = view.findViewById(R.id.chip_period_1w);
         chipPeriod1m = view.findViewById(R.id.chip_period_1m);
@@ -315,7 +321,8 @@ public class HistoryFragment extends Fragment {
             historyAdapter.setItems(grouped);
         }
 
-        updateSummary(periodFiltered); // summary always uses period filter (not category)
+        updateSummary(periodFiltered);
+        updateDonutChart(periodFiltered);
     }
 
     private boolean matchesCategory(Transaction t) {
@@ -377,9 +384,10 @@ public class HistoryFragment extends Fragment {
         otherYearFmt.setTimeZone(tz);
 
         List<Object> result = new ArrayList<>();
-        String lastDateLabel = null;
-        BigDecimal dayTotal  = BigDecimal.ZERO;
-        int groupStartIndex  = 0;
+        String lastDateLabel  = null;
+        BigDecimal dayExpense = BigDecimal.ZERO;
+        BigDecimal dayIncome  = BigDecimal.ZERO;
+        int groupStartIndex   = 0;
 
         for (int i = 0; i < sorted.size(); i++) {
             Transaction t = sorted.get(i);
@@ -402,35 +410,37 @@ public class HistoryFragment extends Fragment {
             }
 
             if (!label.equals(lastDateLabel)) {
-                // Finalize previous group header with its total
                 if (lastDateLabel != null) {
-                    result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayTotal));
+                    result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayExpense, dayIncome));
                 }
-                // Start new group
                 groupStartIndex = result.size();
-                result.add(new HistoryAdapter.DateGroup(label, BigDecimal.ZERO)); // placeholder
-                dayTotal = BigDecimal.ZERO;
+                result.add(new HistoryAdapter.DateGroup(label, BigDecimal.ZERO, BigDecimal.ZERO));
+                dayExpense = BigDecimal.ZERO;
+                dayIncome  = BigDecimal.ZERO;
                 lastDateLabel = label;
             }
 
-            // Accumulate daily expense total (only outgoing, non-cancelled payments and transfers)
             if (t.getAmount() != null) {
                 String type = t.getTransactionType();
                 boolean cancelled = "cancelled".equals(t.getPaymentStatus());
                 BigDecimal amt = t.getAmount().abs();
                 if ("PAYMENT".equals(type) && !cancelled) {
-                    dayTotal = dayTotal.add(amt);
-                } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
-                    dayTotal = dayTotal.add(amt);
+                    dayExpense = dayExpense.add(amt);
+                } else if ("MARKET_REFUND".equals(type)) {
+                    dayIncome = dayIncome.add(amt);
+                } else if ("TOPUP".equals(type)) {
+                    dayIncome = dayIncome.add(amt);
+                } else if ("TRANSFER".equals(type)) {
+                    if (t.getSenderId() == currentUserId) dayExpense = dayExpense.add(amt);
+                    else if (t.getRecipientId() == currentUserId) dayIncome = dayIncome.add(amt);
                 }
             }
 
             result.add(t);
         }
 
-        // Finalize last group
         if (lastDateLabel != null) {
-            result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayTotal));
+            result.set(groupStartIndex, new HistoryAdapter.DateGroup(lastDateLabel, dayExpense, dayIncome));
         }
 
         return result;
@@ -473,50 +483,105 @@ public class HistoryFragment extends Fragment {
         updateBarChart(filtered);
     }
 
-    private void updateBarChart(List<Transaction> periodFiltered) {
-        if (miniBarChart == null) return;
+    private void updateDonutChart(List<Transaction> periodFiltered) {
+        if (miniDonutChart == null) return;
 
-        // Build last 7 weeks of expense totals
-        TimeZone tz = TimeZone.getDefault();
-        Calendar now = Calendar.getInstance(tz);
-        int numWeeks = 7;
-        float[] vals = new float[numWeeks];
-        String[] labels = new String[numWeeks];
+        BigDecimal payTotal    = BigDecimal.ZERO;
+        BigDecimal marketTotal = BigDecimal.ZERO;
+        BigDecimal outTotal    = BigDecimal.ZERO;
+        BigDecimal topupTotal  = BigDecimal.ZERO;
+        BigDecimal inTotal     = BigDecimal.ZERO;
 
-        SimpleDateFormat dayFmt = new SimpleDateFormat("d", new Locale("ru"));
-        dayFmt.setTimeZone(tz);
+        for (Transaction t : periodFiltered) {
+            if (t.getAmount() == null) continue;
+            String type = t.getTransactionType();
+            BigDecimal amt = t.getAmount().abs();
+            boolean cancelled = "cancelled".equals(t.getPaymentStatus());
+            boolean isMarket = "PAYMENT".equals(type)
+                    && t.getDescription() != null
+                    && t.getDescription().contains("Tumar Market");
 
-        for (int w = 0; w < numWeeks; w++) {
-            Calendar weekStart = Calendar.getInstance(tz);
-            weekStart.setTime(now.getTime());
-            weekStart.add(Calendar.WEEK_OF_YEAR, -(numWeeks - 1 - w));
-            weekStart.set(Calendar.DAY_OF_WEEK, weekStart.getFirstDayOfWeek());
-            weekStart.set(Calendar.HOUR_OF_DAY, 0);
-            weekStart.set(Calendar.MINUTE, 0);
-            weekStart.set(Calendar.SECOND, 0);
-
-            Calendar weekEnd = Calendar.getInstance(tz);
-            weekEnd.setTime(weekStart.getTime());
-            weekEnd.add(Calendar.WEEK_OF_YEAR, 1);
-
-            BigDecimal weekExpense = BigDecimal.ZERO;
-            for (Transaction t : allTransactions) {
-                if (t.getTimestamp() == null || t.getAmount() == null) continue;
-                Date ts = t.getTimestamp();
-                if (!ts.before(weekStart.getTime()) && ts.before(weekEnd.getTime())) {
-                    String type = t.getTransactionType();
-                    if ("PAYMENT".equals(type)) {
-                        weekExpense = weekExpense.add(t.getAmount().abs());
-                    } else if ("TRANSFER".equals(type) && t.getSenderId() == currentUserId) {
-                        weekExpense = weekExpense.add(t.getAmount().abs());
-                    }
-                }
+            if ("TOPUP".equals(type)) {
+                topupTotal = topupTotal.add(amt);
+            } else if ("MARKET_REFUND".equals(type)) {
+                marketTotal = marketTotal.add(amt);
+            } else if ("PAYMENT".equals(type) && !cancelled) {
+                if (isMarket) marketTotal = marketTotal.add(amt);
+                else          payTotal    = payTotal.add(amt);
+            } else if ("TRANSFER".equals(type)) {
+                if (t.getRecipientId() == currentUserId)   inTotal  = inTotal.add(amt);
+                else if (t.getSenderId() == currentUserId) outTotal = outTotal.add(amt);
             }
-            vals[w] = weekExpense.floatValue();
-            labels[w] = dayFmt.format(weekStart.getTime());
         }
 
-        miniBarChart.setData(vals, labels);
+        BigDecimal grandTotal = payTotal.add(marketTotal).add(outTotal).add(topupTotal).add(inTotal);
+        if (grandTotal.compareTo(BigDecimal.ZERO) == 0) {
+            miniDonutChart.setData(new float[0], new int[0], "", "0 ₸");
+            if (llDonutLegend != null) llDonutLegend.removeAllViews();
+            return;
+        }
+
+        String[]    names   = {"Платежи", "Market", "Переводы", "Пополнения", "Вх. переводы"};
+        BigDecimal[] amounts = {payTotal, marketTotal, outTotal, topupTotal, inTotal};
+        int[]        colors  = {0xFFD97222, 0xFF6B21A8, 0xFF1A4A8A, 0xFF1A8A4A, 0xFF9C27B0};
+
+        float[] pcts = new float[names.length];
+        for (int i = 0; i < amounts.length; i++) {
+            pcts[i] = amounts[i].divide(grandTotal, 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100")).floatValue();
+        }
+
+        BigDecimal totalExp = payTotal.add(marketTotal).add(outTotal);
+        NumberFormat fmt = NumberFormat.getInstance(new Locale("ru"));
+        fmt.setGroupingUsed(true);
+        fmt.setMaximumFractionDigits(0);
+        miniDonutChart.setData(pcts, colors, "Расходы", fmt.format(totalExp.longValue()) + " ₸");
+
+        if (llDonutLegend != null) {
+            llDonutLegend.removeAllViews();
+            for (int i = 0; i < names.length; i++) {
+                if (amounts[i].compareTo(BigDecimal.ZERO) > 0) {
+                    llDonutLegend.addView(buildMiniLegendRow(names[i], Math.round(pcts[i]), colors[i]));
+                }
+            }
+        }
+    }
+
+    private android.view.View buildMiniLegendRow(String name, int pct, int color) {
+        LinearLayout row = new LinearLayout(requireContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(0, 3, 0, 3);
+
+        android.widget.ImageView dot = new android.widget.ImageView(requireContext());
+        float d = getResources().getDisplayMetrics().density;
+        int sz = (int)(7 * d);
+        LinearLayout.LayoutParams dotLp = new LinearLayout.LayoutParams(sz, sz);
+        dotLp.setMarginEnd((int)(5 * d));
+        dot.setLayoutParams(dotLp);
+        GradientDrawable circ = new GradientDrawable();
+        circ.setShape(GradientDrawable.OVAL);
+        circ.setColor(color);
+        dot.setBackground(circ);
+
+        TextView tvName = new TextView(requireContext());
+        LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        tvName.setLayoutParams(nameLp);
+        tvName.setText(name);
+        tvName.setTextSize(10f);
+        tvName.setTextColor(0xFF555555);
+
+        TextView tvPct = new TextView(requireContext());
+        tvPct.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        tvPct.setText(pct + "%");
+        tvPct.setTextSize(10f);
+        tvPct.setTextColor(0xFF111111);
+        tvPct.getPaint().setFakeBoldText(true);
+
+        row.addView(dot);
+        row.addView(tvName);
+        row.addView(tvPct);
+        return row;
     }
 
     private void openFilterSheet() {
@@ -545,21 +610,30 @@ public class HistoryFragment extends Fragment {
             }
         }
 
-        BigDecimal topupTotal = BigDecimal.ZERO; int topupCount = 0;
-        BigDecimal payTotal   = BigDecimal.ZERO; int payCount   = 0;
-        BigDecimal outTotal   = BigDecimal.ZERO; int outCount   = 0;
-        BigDecimal inTotal    = BigDecimal.ZERO; int inCount    = 0;
+        BigDecimal topupTotal  = BigDecimal.ZERO; int topupCount  = 0;
+        BigDecimal payTotal    = BigDecimal.ZERO; int payCount    = 0;
+        BigDecimal marketTotal = BigDecimal.ZERO; int marketCount = 0;
+        BigDecimal outTotal    = BigDecimal.ZERO; int outCount    = 0;
+        BigDecimal inTotal     = BigDecimal.ZERO; int inCount     = 0;
 
         for (Transaction t : filtered) {
             if (t.getAmount() == null) continue;
             BigDecimal amt = t.getAmount().abs();
             String type = t.getTransactionType();
+            boolean cancelled = "cancelled".equals(t.getPaymentStatus());
+            boolean isMarket = "PAYMENT".equals(type)
+                    && t.getDescription() != null
+                    && t.getDescription().contains("Tumar Market");
+
             if ("TOPUP".equals(type)) {
                 topupTotal = topupTotal.add(amt); topupCount++;
-            } else if ("PAYMENT".equals(type) || "MARKET_REFUND".equals(type)) {
-                payTotal = payTotal.add(amt); payCount++;
+            } else if ("MARKET_REFUND".equals(type)) {
+                marketTotal = marketTotal.add(amt); marketCount++;
+            } else if ("PAYMENT".equals(type) && !cancelled) {
+                if (isMarket) { marketTotal = marketTotal.add(amt); marketCount++; }
+                else          { payTotal    = payTotal.add(amt);    payCount++;    }
             } else if ("TRANSFER".equals(type)) {
-                if (t.getRecipientId() == currentUserId) { inTotal = inTotal.add(amt); inCount++; }
+                if (t.getRecipientId() == currentUserId) { inTotal  = inTotal.add(amt);  inCount++;  }
                 else if (t.getSenderId() == currentUserId) { outTotal = outTotal.add(amt); outCount++; }
             }
         }
@@ -567,7 +641,7 @@ public class HistoryFragment extends Fragment {
         String periodLabel = periodDaysToLabel(selectedPeriodDays);
         CategoryHistoryFragment cat = CategoryHistoryFragment.newInstance(
                 topupTotal, topupCount, payTotal, payCount,
-                outTotal, outCount, inTotal, inCount, periodLabel);
+                marketTotal, marketCount, outTotal, outCount, inTotal, inCount, periodLabel);
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, cat)

@@ -26,6 +26,8 @@ public class CategoryHistoryFragment extends Fragment {
     private static final String ARG_TOPUP_COUNT        = "topup_count";
     private static final String ARG_PAYMENT_TOTAL      = "payment_total";
     private static final String ARG_PAYMENT_COUNT      = "payment_count";
+    private static final String ARG_MARKET_TOTAL       = "market_total";
+    private static final String ARG_MARKET_COUNT       = "market_count";
     private static final String ARG_TRANSFER_OUT_TOTAL = "transfer_out_total";
     private static final String ARG_TRANSFER_OUT_COUNT = "transfer_out_count";
     private static final String ARG_TRANSFER_IN_TOTAL  = "transfer_in_total";
@@ -33,10 +35,11 @@ public class CategoryHistoryFragment extends Fragment {
     private static final String ARG_PERIOD_LABEL       = "period_label";
 
     public static CategoryHistoryFragment newInstance(
-            BigDecimal topupTotal,   int topupCount,
-            BigDecimal payTotal,     int payCount,
-            BigDecimal outTotal,     int outCount,
-            BigDecimal inTotal,      int inCount,
+            BigDecimal topupTotal,  int topupCount,
+            BigDecimal payTotal,    int payCount,
+            BigDecimal marketTotal, int marketCount,
+            BigDecimal outTotal,    int outCount,
+            BigDecimal inTotal,     int inCount,
             String periodLabel) {
 
         CategoryHistoryFragment f = new CategoryHistoryFragment();
@@ -45,6 +48,8 @@ public class CategoryHistoryFragment extends Fragment {
         args.putInt(ARG_TOPUP_COUNT,           topupCount);
         args.putString(ARG_PAYMENT_TOTAL,      payTotal.toPlainString());
         args.putInt(ARG_PAYMENT_COUNT,         payCount);
+        args.putString(ARG_MARKET_TOTAL,       marketTotal.toPlainString());
+        args.putInt(ARG_MARKET_COUNT,          marketCount);
         args.putString(ARG_TRANSFER_OUT_TOTAL, outTotal.toPlainString());
         args.putInt(ARG_TRANSFER_OUT_COUNT,    outCount);
         args.putString(ARG_TRANSFER_IN_TOTAL,  inTotal.toPlainString());
@@ -84,21 +89,23 @@ public class CategoryHistoryFragment extends Fragment {
         Bundle args = getArguments();
         if (args == null) return;
 
-        BigDecimal topupTotal = safeDecimal(args.getString(ARG_TOPUP_TOTAL));
-        int        topupCount = args.getInt(ARG_TOPUP_COUNT, 0);
-        BigDecimal payTotal   = safeDecimal(args.getString(ARG_PAYMENT_TOTAL));
-        int        payCount   = args.getInt(ARG_PAYMENT_COUNT, 0);
-        BigDecimal outTotal   = safeDecimal(args.getString(ARG_TRANSFER_OUT_TOTAL));
-        int        outCount   = args.getInt(ARG_TRANSFER_OUT_COUNT, 0);
-        BigDecimal inTotal    = safeDecimal(args.getString(ARG_TRANSFER_IN_TOTAL));
-        int        inCount    = args.getInt(ARG_TRANSFER_IN_COUNT, 0);
-        String periodLabel    = args.getString(ARG_PERIOD_LABEL, "1 месяц");
+        BigDecimal topupTotal  = safeDecimal(args.getString(ARG_TOPUP_TOTAL));
+        int        topupCount  = args.getInt(ARG_TOPUP_COUNT, 0);
+        BigDecimal payTotal    = safeDecimal(args.getString(ARG_PAYMENT_TOTAL));
+        int        payCount    = args.getInt(ARG_PAYMENT_COUNT, 0);
+        BigDecimal marketTotal = safeDecimal(args.getString(ARG_MARKET_TOTAL));
+        int        marketCount = args.getInt(ARG_MARKET_COUNT, 0);
+        BigDecimal outTotal    = safeDecimal(args.getString(ARG_TRANSFER_OUT_TOTAL));
+        int        outCount    = args.getInt(ARG_TRANSFER_OUT_COUNT, 0);
+        BigDecimal inTotal     = safeDecimal(args.getString(ARG_TRANSFER_IN_TOTAL));
+        int        inCount     = args.getInt(ARG_TRANSFER_IN_COUNT, 0);
+        String periodLabel     = args.getString(ARG_PERIOD_LABEL, "1 месяц");
 
         TextView tvSubtitle = view.findViewById(R.id.tv_cat_period_subtitle);
         tvSubtitle.setText(periodLabel);
 
         // Total expenses for percentage calculation
-        BigDecimal totalExp = payTotal.add(outTotal);
+        BigDecimal totalExp = payTotal.add(marketTotal).add(outTotal);
         if (totalExp.compareTo(BigDecimal.ZERO) == 0) totalExp = BigDecimal.ONE;
 
         // Categories: name, amount, count, color, isExpense
@@ -109,16 +116,17 @@ public class CategoryHistoryFragment extends Fragment {
         }
 
         List<CatData> cats = new ArrayList<>();
-        cats.add(new CatData("Платежи",          payTotal,  payCount,   0xFFD97222, true));
-        cats.add(new CatData("Переводы",          outTotal,  outCount,   0xFF1A4A8A, true));
-        cats.add(new CatData("Пополнения",        topupTotal,topupCount, 0xFF1A8A4A, false));
-        cats.add(new CatData("Вх. переводы",      inTotal,   inCount,    0xFF6B21A8, false));
+        cats.add(new CatData("Платежи",      payTotal,    payCount,    0xFFD97222, true));
+        cats.add(new CatData("Market",        marketTotal, marketCount, 0xFF6B21A8, true));
+        cats.add(new CatData("Переводы",      outTotal,    outCount,    0xFF1A4A8A, true));
+        cats.add(new CatData("Пополнения",    topupTotal,  topupCount,  0xFF1A8A4A, false));
+        cats.add(new CatData("Вх. переводы",  inTotal,     inCount,     0xFF9C27B0, false));
 
         // Donut chart
         DonutChartView donut = view.findViewById(R.id.donut_chart);
         float[] pcts  = new float[cats.size()];
         int[]   clrs  = new int[cats.size()];
-        BigDecimal grandTotal = topupTotal.add(payTotal).add(outTotal).add(inTotal);
+        BigDecimal grandTotal = topupTotal.add(payTotal).add(marketTotal).add(outTotal).add(inTotal);
         if (grandTotal.compareTo(BigDecimal.ZERO) == 0) grandTotal = BigDecimal.ONE;
 
         NumberFormat fmt = NumberFormat.getInstance(new Locale("ru"));

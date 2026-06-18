@@ -32,10 +32,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public static class DateGroup {
         public final String label;
         public final BigDecimal totalExpense;
+        public final BigDecimal totalIncome;
 
-        public DateGroup(String label, BigDecimal totalExpense) {
+        public DateGroup(String label, BigDecimal totalExpense, BigDecimal totalIncome) {
             this.label = label;
             this.totalExpense = totalExpense;
+            this.totalIncome  = totalIncome;
         }
     }
 
@@ -104,19 +106,29 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static class DateHeaderViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvDateHeader;
         private final TextView tvDateTotal;
+        private final TextView tvDateIncome;
 
         DateHeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDateHeader = itemView.findViewById(R.id.tv_date_header);
             tvDateTotal  = itemView.findViewById(R.id.tv_date_total);
+            tvDateIncome = itemView.findViewById(R.id.tv_date_income);
         }
 
         void bind(DateGroup group) {
             tvDateHeader.setText(group.label);
+            NumberFormat fmt = NumberFormat.getInstance(new Locale("ru"));
+            fmt.setGroupingUsed(true);
+            fmt.setMaximumFractionDigits(0);
+
+            if (group.totalIncome != null && group.totalIncome.compareTo(BigDecimal.ZERO) > 0) {
+                tvDateIncome.setText("+" + fmt.format(group.totalIncome.longValue()) + " ₸");
+                tvDateIncome.setVisibility(View.VISIBLE);
+            } else {
+                tvDateIncome.setVisibility(View.GONE);
+            }
+
             if (group.totalExpense != null && group.totalExpense.compareTo(BigDecimal.ZERO) > 0) {
-                NumberFormat fmt = NumberFormat.getInstance(new Locale("ru"));
-                fmt.setGroupingUsed(true);
-                fmt.setMaximumFractionDigits(0);
                 tvDateTotal.setText("-" + fmt.format(group.totalExpense.longValue()) + " ₸");
                 tvDateTotal.setVisibility(View.VISIBLE);
             } else {

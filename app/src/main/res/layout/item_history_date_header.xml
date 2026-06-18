@@ -23,11 +23,22 @@
         android:text="Сегодня" />
 
     <TextView
+        android:id="@+id/tv_date_income"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="@color/income_color"
+        android:visibility="gone"
+        android:text="" />
+
+    <TextView
         android:id="@+id/tv_date_total"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="11sp"
         android:textColor="@color/expense_color"
+        android:layout_marginStart="6dp"
+        android:visibility="gone"
         android:text="" />
 
 </LinearLayout>

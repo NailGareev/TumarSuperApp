@@ -267,12 +267,28 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Mini bar chart (weekly spending) -->
-                <com.digitalcompany.tumarsuperapp.MiniBarChartView
-                    android:id="@+id/mini_bar_chart"
+                <!-- Donut chart with category legend -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="12dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="12dp">
+
+                    <com.digitalcompany.tumarsuperapp.DonutChartView
+                        android:id="@+id/mini_donut_chart"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_donut_legend"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="14dp" />
+
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
