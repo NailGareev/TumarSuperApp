@@ -20,10 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
 
-    // !!! ВАЖНО: Убедитесь, что этот адрес доступен с вашего устройства/эмулятора !!!
-    // Эмулятор: http://10.0.2.2:3000/ (если сервер на localhost:3000)
-    // Физическое устройство: http://<IP-адрес вашего компьютера в сети>:3000/
-    public static final String BASE_URL = "http://10.0.2.2:3000/";
+    public static final String BASE_URL = "http://193.108.113.91:3000/";
 
     private static Retrofit retrofit = null;
     private static OkHttpClient okHttpClient = null; // Кэшируем OkHttpClient

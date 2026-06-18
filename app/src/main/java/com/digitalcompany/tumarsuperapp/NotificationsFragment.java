@@ -52,7 +52,7 @@ import okhttp3.Response;
 
 public class NotificationsFragment extends Fragment {
 
-    private static final String MARKET_URL = "http://10.0.2.2:8080";
+    private static final String MARKET_URL = "http://193.108.113.91:8080";
     private static final String APP_SECRET = "tumar_app_secret_2024";
     private static final String USER_PREFS = "UserPrefs";
     private static final String KEY_TOKEN  = "auth_token";
