@@ -540,9 +540,7 @@ public class HistoryFragment extends Fragment {
         if (llDonutLegend != null) {
             llDonutLegend.removeAllViews();
             for (int i = 0; i < names.length; i++) {
-                if (amounts[i].compareTo(BigDecimal.ZERO) > 0) {
-                    llDonutLegend.addView(buildMiniLegendRow(names[i], Math.round(pcts[i]), colors[i]));
-                }
+                llDonutLegend.addView(buildMiniLegendRow(names[i], Math.round(pcts[i]), colors[i]));
             }
         }
     }
