@@ -75,12 +75,6 @@ public class TransferSuccessFragment extends Fragment {
         String amount = args != null ? args.getString(ARG_AMOUNT, "0") : "0";
         String method = args != null ? args.getString(ARG_METHOD, "PHONE") : "PHONE";
 
-        // Initials from recipient name
-        TextView tvInitials = view.findViewById(R.id.tv_success_initials);
-        if (tvInitials != null) {
-            tvInitials.setText(buildInitials(recipientName));
-        }
-
         // To label
         TextView tvToLabel = view.findViewById(R.id.tv_success_to_label);
         if (tvToLabel != null) {
@@ -168,15 +162,6 @@ public class TransferSuccessFragment extends Fragment {
             }, d);
             delay += 80;
         }
-    }
-
-    private String buildInitials(String name) {
-        if (name == null || name.isEmpty()) return "?";
-        String[] parts = name.trim().split("\\s+");
-        if (parts.length >= 2) {
-            return ("" + parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
-        }
-        return name.substring(0, Math.min(2, name.length())).toUpperCase();
     }
 
     private void loadBalance(TextView tvBalance) {

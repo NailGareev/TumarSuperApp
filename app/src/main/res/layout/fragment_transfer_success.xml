@@ -58,39 +58,26 @@
             android:paddingTop="32dp"
             android:paddingBottom="32dp">
 
-            <!-- Recipient avatar with green check -->
+            <!-- Checkmark (same as top-up success) -->
             <FrameLayout
                 android:id="@+id/checkmark_container"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_marginBottom="20dp">
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_topup_success_outer">
 
                 <FrameLayout
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:background="@drawable/bg_avatar_circle">
-                    <TextView
-                        android:id="@+id/tv_success_initials"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="NG"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
-                </FrameLayout>
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_topup_success_inner">
 
-                <FrameLayout
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_gravity="bottom|end"
-                    android:background="@drawable/bg_icon_circle_green">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:text="✓"
-                        android:textSize="13sp"
+                        android:textSize="22sp"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF" />
                 </FrameLayout>
